@@ -36,6 +36,8 @@ public class Config {
     
     private Properties properties = new Properties();
 
+    public Config(){}
+
     public Config(String file) {
         try {
             properties.load(new FileReader(file));
