@@ -6,14 +6,14 @@ import java.io.InputStream;
 import java.net.URI;
 import java.security.MessageDigest;
 
+/**
+ * This class offers methods for both weak/strong etags
+ * Weak etag is computed by looking on the file last modified date
+ * Strong etag is computed using md5
+ */
 public class EtagGenerator {
 
-    /**
-     * Weak etag generation
-     *
-     * @param file
-     * @return
-     */
+
     public static String getDateBasedEtag(File file) {
         return "W/" + file.lastModified();
     }
@@ -26,7 +26,7 @@ public class EtagGenerator {
      */
     public static String computeMD5BasedEtag(InputStream in) {
         try {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
             MessageDigest complete = MessageDigest.getInstance("MD5");
             int numRead;
             do {

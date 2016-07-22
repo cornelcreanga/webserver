@@ -10,7 +10,7 @@ import java.util.Properties;
  * Map of mime types
  */
 public class Mime {
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
+    private static final Logger log = LoggerFactory.getLogger(ServerConfiguration.class);
     private static Properties properties = new Properties();
     private static String applicationStream = "application/octet-stream";
 

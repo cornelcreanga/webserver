@@ -108,7 +108,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.ccreanga.webserver.HTTPServer</mainClass>
+                            <mainClass>com.ccreanga.webserver.Server</mainClass>
                         </manifest>
                     </archive>
                     <finalName>${project.artifactId}-${project.version}</finalName>

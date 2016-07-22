@@ -1,7 +1,7 @@
 package com.ccreanga.webserver.util;
 
 
-import com.adobe.webserver.FatalException;
+import com.ccreanga.webserver.InternalException;
 
 import java.io.*;
 import java.net.Socket;
@@ -33,7 +33,7 @@ public class IOUtil {
         try {
             return s.getBytes(encoding);
         } catch (UnsupportedEncodingException e) {
-            throw new FatalException("unsupported encoding", e);
+            throw new InternalException("unsupported encoding:"+encoding);
         }
     }
 

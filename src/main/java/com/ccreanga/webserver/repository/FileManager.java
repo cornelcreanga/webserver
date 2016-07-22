@@ -1,4 +1,4 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.repository;
 
 import java.io.File;
 import java.io.InputStream;
@@ -17,6 +17,9 @@ public class FileManager {
     }
 
     public File getFile(String file){
+        if (file.contains("../")) {
+            throw new ForbiddenException("../ is not allowed");
+        }
         return new File(file);
     }
     public void createFile(String file, InputStream in){
@@ -29,6 +32,9 @@ public class FileManager {
 
     }
 
-
+    public static void main(String[] args) {
+        File file = new File("../");
+        System.out.println(file.list().length);
+    }
 
 }

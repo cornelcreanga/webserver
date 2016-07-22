@@ -9,14 +9,14 @@ import java.util.Properties;
 
 
 
-public class Config {
+public class ServerConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(Config.class);
+    private static final Logger log = LoggerFactory.getLogger(ServerConfiguration.class);
 
     private int serverPort = 8080;
     private String rootFolder;
     private int initialThreads = 128;
-    private int maxThreads = 5000;
+    private int maxThreads = 1000;
     private int waitQueue = 64;
     private boolean weakEtag = true;
     private int maxGetSize = 4096;
@@ -33,33 +33,40 @@ public class Config {
 
 
     private final String requestGetEncoding = "ISO8859_1";
+
+    private static ServerConfiguration instance = new ServerConfiguration();
     
     private Properties properties = new Properties();
 
-    public Config(){}
+    private ServerConfiguration(){};
 
-    public Config(String file) {
+
+    public static ServerConfiguration instance(){
+        return instance;
+    }
+
+    public static void reload(String file) {
         try {
-            properties.load(new FileReader(file));
+            instance.properties.load(new FileReader(file));
         } catch (IOException e) {
             log.error("cannot load file "+file);
             System.exit(-1);
         }
         try{
-            timeoutSeconds = Integer.parseInt((String) properties.get("timeoutSeconds"));
-            rootFolder = (String) properties.get("rootFolder");
-            serverPort = Integer.parseInt((String) properties.get("serverPort"));
-            initialThreads = Integer.parseInt((String) properties.get("initialThreads"));
-            maxThreads = Integer.parseInt((String) properties.get("maxThreads"));
-            waitQueue = Integer.parseInt((String) properties.get("waitQueue"));
-            weakEtag = Boolean.getBoolean((String) properties.get("weakEtag"));
-            maxGetSize = Integer.parseInt((String) properties.get("maxGetSize"));
-            maxHeaders = Integer.parseInt((String) properties.get("maxHeaders"));
-            chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
-            maxEntitySize = Long.parseLong((String) properties.get("maxEntitySize"));
-            maxGetBodySize = Integer.parseInt((String) properties.get("maxGetBodySize"));
-            maxPutBodySize = Long.parseLong((String) properties.get("maxPutBodySize"));
-            xForwardedForTag = Boolean.getBoolean((String) properties.get("xForwardedForTag"));
+            instance.timeoutSeconds = Integer.parseInt((String) instance.properties.get("timeoutSeconds"));
+            instance.rootFolder = (String) instance.properties.get("rootFolder");
+            instance.serverPort = Integer.parseInt((String) instance.properties.get("serverPort"));
+            instance.initialThreads = Integer.parseInt((String) instance.properties.get("initialThreads"));
+            instance.maxThreads = Integer.parseInt((String) instance.properties.get("maxThreads"));
+            instance.waitQueue = Integer.parseInt((String) instance.properties.get("waitQueue"));
+            instance.weakEtag = Boolean.getBoolean((String) instance.properties.get("weakEtag"));
+            instance.maxGetSize = Integer.parseInt((String) instance.properties.get("maxGetSize"));
+            instance.maxHeaders = Integer.parseInt((String) instance.properties.get("maxHeaders"));
+            instance.chunkLength = Integer.parseInt((String) instance.properties.get("chunkLength"));
+            instance.maxEntitySize = Long.parseLong((String) instance.properties.get("maxEntitySize"));
+            instance.maxGetBodySize = Integer.parseInt((String) instance.properties.get("maxGetBodySize"));
+            instance.maxPutBodySize = Long.parseLong((String) instance.properties.get("maxPutBodySize"));
+            instance.xForwardedForTag = Boolean.getBoolean((String) instance.properties.get("xForwardedForTag"));
 
         }catch (Exception e){
             //todo - add more details

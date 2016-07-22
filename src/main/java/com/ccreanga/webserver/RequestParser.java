@@ -1,6 +1,9 @@
 package com.ccreanga.webserver;
 
-import com.adobe.webserver.util.LimitedLengthInputStream;
+
+import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HTTPMethod;
+import com.ccreanga.webserver.util.LimitedLengthInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,13 +45,13 @@ public class RequestParser {
         String method;
         String resource = null;
         String version = null;
-        Headers headers = null;
-
+        HTTPHeaders headers = null;
+        ServerConfiguration serverConfiguration = ServerConfiguration.instance();
         try {
             //prevent dos attacks.
-            LimitedLengthInputStream reader = new LimitedLengthInputStream(in, Config.getConfig().getMaxGetSize());
+            LimitedLengthInputStream reader = new LimitedLengthInputStream(in, serverConfiguration.getMaxGetSize());
             //read the first line
-            while ((line = readLine(reader,Config.getConfig().getRequestGetEncoding())) != null) {
+            while ((line = readLine(reader, serverConfiguration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty())//empty line is allowed
                     continue;
 
@@ -75,10 +78,10 @@ public class RequestParser {
             if (httpMethod == null)
                 throw new InvalidMessageFormat();
 
-            headers = new Headers();
-            //read the headers.
+            headers = new HTTPHeaders();
+            //read the HTTPHeaders.
             String previousHeader = "";
-            while ((line = readLine(reader,Config.getConfig().getRequestGetEncoding())) != null) {
+            while ((line = readLine(reader, serverConfiguration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty()) {
                     break;
                 }
@@ -99,10 +102,10 @@ public class RequestParser {
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormat();
         }
-        boolean chunk = "chunked".equals(headers.getHeader(Headers.transferEncoding));
+        boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.transferEncoding));
         long length = -1;
         try {
-            String len = headers.getHeader(Headers.contentLength);
+            String len = headers.getHeader(HTTPHeaders.contentLength);
             if (len != null)
                 length = Long.parseLong(len);
         } catch (NumberFormatException e) {

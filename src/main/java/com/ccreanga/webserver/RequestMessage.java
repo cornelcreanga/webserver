@@ -1,6 +1,7 @@
 package com.ccreanga.webserver;
 
-import com.adobe.webserver.util.ChunkedInputStream;
+import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HTTPMethod;
 import com.ccreanga.webserver.util.ChunkedInputStream;
 
 import java.io.InputStream;
@@ -13,16 +14,16 @@ public class RequestMessage {
     private static final String HTTP1_1 = "HTTP/1.1";
 
     private HTTPMethod method;
-    private Headers headers;
+    private HTTPHeaders headers;
     private String resource;
     private String version;//for the moment it can only 1.1
     protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
     protected boolean chunk;//specifies if the body will be sent using chunked transmission
     protected long length;//body length; makes sense only when chunk=false
 
-    public RequestMessage(HTTPMethod method, Headers headers, String resource, String version, InputStream body,boolean chunk,long bodyLength) {
+    public RequestMessage(HTTPMethod method, HTTPHeaders HTTPHeaders, String resource, String version, InputStream body, boolean chunk, long bodyLength) {
         this.method = method;
-        this.headers = headers;
+        this.headers = HTTPHeaders;
         this.resource = resource;
         this.version = version;
         if (chunk)

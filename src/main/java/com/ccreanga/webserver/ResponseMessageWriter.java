@@ -1,7 +1,7 @@
 package com.ccreanga.webserver;
 
-import com.adobe.webserver.util.DateUtil;
-import com.adobe.webserver.util.IOUtil;
+import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.util.DateUtil;
 import com.ccreanga.webserver.util.IOUtil;
 
@@ -19,11 +19,11 @@ public class ResponseMessageWriter {
     private boolean chunked = false;
 
 
-    private String buildHtmlError(int status) {
+    private String buildHtmlError(HttpStatus status) {
         StringBuilder sb = new StringBuilder();
         sb.append("<html>");
-        sb.append("<head><title>").append(status).append(' ').append(Status.getStatusAsString(status)).append("</title></head>");
-        sb.append("<body><h1>").append(status).append(' ').append(Status.getStatusAsString(status)).append("</h1></body>");
+        sb.append("<head><title>").append(status).append(' ').append(status.getReasonPhrase()).append("</title></head>");
+        sb.append("<body><h1>").append(status).append(' ').append(status.getReasonPhrase()).append("</h1></body>");
         sb.append("</html>");
         return sb.toString();
     }
@@ -52,7 +52,7 @@ public class ResponseMessageWriter {
         out.write(SP);
         out.write(IOUtil.ascii("" + response.getStatus()));
         out.write(SP);
-        out.write((IOUtil.ascii(Status.getStatusAsString(response.getStatus()))));
+        out.write((IOUtil.ascii(response.getStatus().getReasonPhrase())));
         out.write(CRLF);
 
         String errorHtml = "";
@@ -64,16 +64,16 @@ public class ResponseMessageWriter {
         if (index!=-1)
             resource = resource.substring(0,index);
 
-        response.setHeader(Headers.contentType, Mime.getType(IOUtil.getExtension(resource)));
+        response.setHeader(HTTPHeaders.contentType, Mime.getType(IOUtil.getExtension(resource)));
         if (response.getStatus() == HttpStatus.OK) {
-            response.setHeader(Headers.contentLength, "" + new File(response.getResourceFullPath()).length());
+            response.setHeader(HTTPHeaders.contentLength, "" + new File(response.getResourceFullPath()).length());
         } else {
             if (isHTML(resource)) {
                 errorHtml = buildHtmlError(response.getStatus());
                 byte[] body = IOUtil.utf(errorHtml);
-                response.setHeader(Headers.contentLength, "" + body.length);
+                response.setHeader(HTTPHeaders.contentLength, "" + body.length);
             } else {
-                response.setHeader(Headers.contentLength, "0");
+                response.setHeader(HTTPHeaders.contentLength, "0");
             }
         }
 
@@ -86,7 +86,7 @@ public class ResponseMessageWriter {
         }
         out.write(CRLF);
 
-        if ((response.getStatus() == Status.ok) && (!response.isIgnoreBody())) {
+        if ((response.getStatus() == HttpStatus.OK) && (!response.isIgnoreBody())) {
             IOUtil.inputToOutput(new FileInputStream(response.getResourceFullPath()), out);
         } else if (isHTML(resource)) {
             out.write(IOUtil.utf(errorHtml));

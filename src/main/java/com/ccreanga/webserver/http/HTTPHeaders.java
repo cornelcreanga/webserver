@@ -1,11 +1,11 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Headers {
+public class HTTPHeaders {
 
 
     /**
@@ -198,7 +198,7 @@ public class Headers {
     public static String xForwardedProto = "X-Forwarded-Proto";
     public static String xPoweredBy = "X-Powered-By";
 
-    private HashMap<String, String> headers = new HashMap<String, String>(32);//it should have near zero collisions
+    private HashMap<String, String> headers = new HashMap<>(32);
 
     public String getHeader(String header) {
         return headers.get(header);
@@ -207,9 +207,8 @@ public class Headers {
     public Map<String, String> getAllHeadersMap() {
         return Collections.unmodifiableMap(headers);
     }
-    //public String get
 
-    public Headers appendHeader(String header, String value) {
+    public HTTPHeaders appendHeader(String header, String value) {
         String previousValue = headers.get(header);
         if (previousValue == null) {
             headers.put(header, value);
@@ -220,14 +219,14 @@ public class Headers {
         return this;
     }
 
-    public Headers putHeader(String header, String value) {
+    public HTTPHeaders putHeader(String header, String value) {
         headers.put(header, value);
         return this;
     }
 
     @Override
     public String toString() {
-        return "Headers{" +
+        return "HTTPHeaders{" +
                 "headers=" + headers +
                 '}';
     }
