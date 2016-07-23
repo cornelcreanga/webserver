@@ -69,7 +69,7 @@ public class RequestParser {
                 if (secondIndex == -1)
                     throw new InvalidMessageFormat();
                 //remove the '/' in front of the resource
-                resource = line.substring(index + 1, secondIndex).trim();
+                resource = line.substring(index + 1, secondIndex).trim();//todo - decode resource
                 version = line.substring(secondIndex).trim();
                 break;
             }
