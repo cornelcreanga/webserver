@@ -13,13 +13,13 @@ import java.util.Date;
 public class MessageHandler {
 
 
-    public ResponseMessage handleMessage(RequestMessage request) throws IOException{
+    public ResponseMessage handleMessage(RequestMessage request,Configuration configuration) throws IOException{
         //EXPECT header is not yet handled
         switch (request.getMethod()) {
             case GET:
-                return handleGetResponse(request);
+                return handleGetResponse(request,configuration);
             case HEAD:
-                return handleGetResponse(request, false);
+                return handleGetResponse(request, false,configuration);
             case POST:
                 return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
             case PUT:
@@ -41,15 +41,14 @@ public class MessageHandler {
         throw new InternalException("invalid method "+request.getMethod()+". this should never happen(internal error)");
     }
 
-    private ResponseMessage handleGetResponse(RequestMessage request) throws IOException{
-        return handleGetResponse(request, true);
+    private ResponseMessage handleGetResponse(RequestMessage request,Configuration configuration) throws IOException{
+        return handleGetResponse(request, true,configuration);
     }
 
-    private ResponseMessage handleGetResponse(RequestMessage request, boolean hasBody) throws IOException {
+    private ResponseMessage handleGetResponse(RequestMessage request, boolean hasBody,Configuration configuration) throws IOException {
         DateUtil dateUtil = new DateUtil();
         ResponseMessage response;
         String value;
-        ServerConfiguration serverConfiguration = ServerConfiguration.instance();
         //ignore body and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
         //if the body is larger than the declared header the following request will be broken and the persistent connection will be closed
@@ -65,11 +64,11 @@ public class MessageHandler {
         int index = resource.indexOf('?');
         if (index!=-1)
             resource = resource.substring(0,index);
-        File file = FileManager.getInstance().getFile(serverConfiguration.getRootFolder() + resource);
+        File file = FileManager.getInstance().getFile(configuration.getRootFolder() + resource);
         if ((!file.exists()) || (!file.isFile()))
             return new ResponseMessage(HttpStatus.NOT_FOUND);
         //check if the requested file is not too large
-        if (file.length() > serverConfiguration.getMaxEntitySize())
+        if (file.length() > configuration.getMaxEntitySize())
             return new ResponseMessage(HttpStatus.PAYLOAD_TOO_LARGE);
 
         /**
@@ -115,7 +114,7 @@ public class MessageHandler {
         response = new ResponseMessage(HttpStatus.OK);
         if (!hasBody)
             response.setIgnoreBody(true);
-        response.setResourceFullPath(serverConfiguration.getRootFolder() + File.separator + resource);
+        response.setResourceFullPath(configuration.getRootFolder() + File.separator + resource);
         response.setHeader(HTTPHeaders.lastModified, dateUtil.formatDate(file.lastModified()));
         response.setHeader(HTTPHeaders.etag, EtagGenerator.getDateBasedEtag(file));
         response.setResourceLength(file.length());

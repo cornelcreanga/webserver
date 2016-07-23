@@ -14,9 +14,12 @@ import java.net.SocketTimeoutException;
 public class PersistentConnectionProcessor implements Runnable {
 
     protected Socket socket = null;
+    Configuration configuration;
 
-    public PersistentConnectionProcessor(Socket socket) {
+    public PersistentConnectionProcessor(Socket socket,Configuration configuration) {
+
         this.socket = socket;
+        this.configuration = configuration;
     }
 
     public void run() {
@@ -30,7 +33,7 @@ public class PersistentConnectionProcessor implements Runnable {
                 RequestMessage request = null;
 
                 try {
-                    request = new RequestParser().parseRequest(input);
+                    request = new RequestParser().parseRequest(input,configuration);
                 } catch (InvalidMessageFormat e) {
                     response = new ResponseMessage(HttpStatus.BAD_REQUEST);
                 } catch (LengthExceededException e) {
@@ -41,7 +44,7 @@ public class PersistentConnectionProcessor implements Runnable {
 
                     //todo - if X-Do-Not-Track and DNT Requests are not present and logging is enabled log the request
 
-                    response = new MessageHandler().handleMessage(request);
+                    response = new MessageHandler().handleMessage(request,configuration);
                     new ResponseMessageWriter().write(request, response, output);
                     //we should be at the end of out input stream here. check if we received close
                     close = "close".equals(request.getHeader(HTTPHeaders.connection));

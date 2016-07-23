@@ -16,42 +16,47 @@ public class Server implements Runnable {
     protected ServerSocket serverSocket = null;
     protected boolean isStopped = false;
     private ExecutorService threadPool;
+    private Configuration configuration = new Configuration();
 
 
     public Server() {
-        ServerConfiguration serverConfiguration = ServerConfiguration.instance();
-        threadPool = new ThreadPoolExecutor(
-                serverConfiguration.getInitialThreads(),
-                serverConfiguration.getMaxThreads(),
-                60,
-                TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(serverConfiguration.getWaitQueue()));
     }
 
-    public Server(String configurationPath) {
+    public Server(Configuration configuration) {
         super();
+        this.configuration = configuration;
 
 
     }
 
     public void run() {
         log.info("Server started.");
-        ServerConfiguration serverConfiguration = ServerConfiguration.instance();
+        threadPool = new ThreadPoolExecutor(
+                configuration.getInitialThreads(),
+                configuration.getMaxThreads(),
+                60,
+                TimeUnit.MILLISECONDS,
+                new ArrayBlockingQueue<>(configuration.getWaitQueue()));
+
         try {
-            serverSocket = new ServerSocket(serverConfiguration.getServerPort());
+
+//            serverSocket = ServerSocketFactory.getDefault().createServerSocket(configuration.getServerPort());
+            serverSocket = new ServerSocket(configuration.getServerPort());
             while (!isStopped()) {
                 Socket socket = serverSocket.accept();
                 //socket.setSoLinger(false, -1); todo - thing again
                 socket.setTcpNoDelay(true);
-                socket.setSoTimeout(serverConfiguration.getTimeoutSeconds()*1000);
+                socket.setSoTimeout(configuration.getTimeoutSeconds()*1000);
                 try {
-                    threadPool.execute(new PersistentConnectionProcessor(socket));
+                    threadPool.execute(new PersistentConnectionProcessor(socket,configuration));
                 } catch (RejectedExecutionException e) {
                     new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HttpStatus.SERVICE_UNAVAILABLE);
                 }
             }
             threadPool.shutdown();
         } catch (IOException e) {
+            //todo
+            e.printStackTrace();
             log.error("Fatal error.");
         }
     }
@@ -63,7 +68,8 @@ public class Server implements Runnable {
     public synchronized void stop() {
         isStopped = true;
         try {
-            serverSocket.close();
+            if (serverSocket!=null)
+                serverSocket.close();
         } catch (IOException e) {
             throw new RuntimeException("Error closing server", e);
         }
@@ -71,10 +77,11 @@ public class Server implements Runnable {
 
     public static void main(String[] args) {
 
+        Configuration configuration = new Configuration();
         if (args.length>0)
-            ServerConfiguration.reload(args[1]);
+            configuration.loadFromFile(args[1]);
 
-        Server server = new Server();
+        Server server = new Server(configuration);
 
         try {
             new Thread(server).start();

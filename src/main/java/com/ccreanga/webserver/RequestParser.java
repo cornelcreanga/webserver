@@ -39,19 +39,18 @@ public class RequestParser {
     }
 
 
-    public RequestMessage parseRequest(InputStream in) throws IOException, InvalidMessageFormat {
+    public RequestMessage parseRequest(InputStream in,Configuration configuration) throws IOException, InvalidMessageFormat {
         String line;
         HTTPMethod httpMethod = null;
         String method;
         String resource = null;
         String version = null;
         HTTPHeaders headers = null;
-        ServerConfiguration serverConfiguration = ServerConfiguration.instance();
         try {
             //prevent dos attacks.
-            LimitedLengthInputStream reader = new LimitedLengthInputStream(in, serverConfiguration.getMaxGetSize());
+            LimitedLengthInputStream reader = new LimitedLengthInputStream(in, configuration.getMaxGetSize());
             //read the first line
-            while ((line = readLine(reader, serverConfiguration.getRequestGetEncoding())) != null) {
+            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty())//empty line is allowed
                     continue;
 
@@ -81,7 +80,7 @@ public class RequestParser {
             headers = new HTTPHeaders();
             //read the HTTPHeaders.
             String previousHeader = "";
-            while ((line = readLine(reader, serverConfiguration.getRequestGetEncoding())) != null) {
+            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty()) {
                     break;
                 }
