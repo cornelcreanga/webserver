@@ -30,7 +30,7 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        log.info("Server started.");
+        log.info("Starting server...");
         threadPool = new ThreadPoolExecutor(
                 configuration.getInitialThreads(),
                 configuration.getMaxThreads(),
@@ -42,6 +42,7 @@ public class Server implements Runnable {
 
 //            serverSocket = ServerSocketFactory.getDefault().createServerSocket(configuration.getServerPort());
             serverSocket = new ServerSocket(configuration.getServerPort());
+            log.info("Server is started,listening on "+configuration.getServerPort());
             while (!isStopped()) {
                 Socket socket = serverSocket.accept();
                 //socket.setSoLinger(false, -1); todo - thing again
@@ -56,8 +57,10 @@ public class Server implements Runnable {
             threadPool.shutdown();
         } catch (IOException e) {
             //todo
-            e.printStackTrace();
-            log.error("Fatal error.");
+            if (!isStopped) {
+                e.printStackTrace();
+                log.error("Fatal error.");
+            }
         }
     }
 

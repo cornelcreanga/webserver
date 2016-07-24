@@ -4,10 +4,12 @@ package com.ccreanga.webserver;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.repository.FileManager;
+import com.ccreanga.webserver.repository.ForbiddenException;
 import com.ccreanga.webserver.util.DateUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.Date;
 
 public class MessageHandler {
@@ -59,12 +61,18 @@ public class MessageHandler {
             return new ResponseMessage(HttpStatus.BAD_REQUEST);
 
         //check if resource exists
-        //remove the parameters, as we only deliver static files
+        //decode the resource and remove any possible the parameters (as we only deliver static files)
         String resource = request.getResource();
         int index = resource.indexOf('?');
         if (index!=-1)
             resource = resource.substring(0,index);
-        File file = FileManager.getInstance().getFile(configuration.getRootFolder() + resource);
+        resource = URLDecoder.decode(resource,configuration.getRequestGetEncoding());
+        File file;
+        try {
+            file = FileManager.getInstance().getFile(configuration.getRootFolder() + resource);
+        }catch (ForbiddenException e) {
+            return new ResponseMessage(HttpStatus.FORBIDDEN);
+        }
         if ((!file.exists()) || (!file.isFile()))
             return new ResponseMessage(HttpStatus.NOT_FOUND);
         //check if the requested file is not too large

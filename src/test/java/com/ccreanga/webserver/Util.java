@@ -6,10 +6,18 @@ import java.io.InputStream;
 
 public class Util {
 
+    public static String extension(String fileName){
+        int i = fileName.lastIndexOf('.');
+        return (i > 0)? fileName.substring(i+1):"";
+    }
+
+    public static String readAsUtfString(String file) throws IOException {
+        return new String(readFromClasspath(file),"UTF-8");
+    }
+
     public static String readAsUtfString(InputStream in) throws IOException {
         return new String(readAsByte(in),"UTF-8");
     }
-
 
     public static byte[] readAsByte(InputStream in) throws IOException {
 

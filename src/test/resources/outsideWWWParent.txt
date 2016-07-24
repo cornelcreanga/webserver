@@ -1,0 +1,1 @@
+the content of this file should not be seen (being outside of the www folder)
