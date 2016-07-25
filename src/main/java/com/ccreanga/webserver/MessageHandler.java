@@ -75,9 +75,6 @@ public class MessageHandler {
         }
         if ((!file.exists()) || (!file.isFile()))
             return new ResponseMessage(HttpStatus.NOT_FOUND);
-        //check if the requested file is not too large
-        if (file.length() > configuration.getMaxEntitySize())
-            return new ResponseMessage(HttpStatus.PAYLOAD_TOO_LARGE);
 
         /**
          * Check for conditionals. If-Range is not supported for the moment

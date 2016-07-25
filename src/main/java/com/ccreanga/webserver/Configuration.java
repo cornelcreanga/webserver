@@ -29,7 +29,6 @@ public class Configuration {
 
     private boolean xForwardedForTag = false;
     private int chunkLength = 128 * 1024;
-    private long maxEntitySize = 2147483648L;
 
 
     private final String requestGetEncoding = "ISO8859_1";
@@ -65,7 +64,6 @@ public class Configuration {
             maxGetSize = Integer.parseInt((String) properties.get("maxGetSize"));
             maxHeaders = Integer.parseInt((String) properties.get("maxHeaders"));
             chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
-            maxEntitySize = Long.parseLong((String) properties.get("maxEntitySize"));
             maxGetBodySize = Integer.parseInt((String) properties.get("maxGetBodySize"));
             maxPutBodySize = Long.parseLong((String) properties.get("maxPutBodySize"));
             xForwardedForTag = Boolean.getBoolean((String) properties.get("xForwardedForTag"));
@@ -127,10 +125,6 @@ public class Configuration {
 
     public int getChunkLength() {
         return chunkLength;
-    }
-
-    public long getMaxEntitySize() {
-        return maxEntitySize;
     }
 
     public String getRequestGetEncoding() {
