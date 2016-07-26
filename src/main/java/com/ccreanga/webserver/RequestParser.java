@@ -102,10 +102,10 @@ public class RequestParser {
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormat();
         }
-        boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.transferEncoding));
+        boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.TRANSFER_ENCODING));
         long length = -1;
         try {
-            String len = headers.getHeader(HTTPHeaders.contentLength);
+            String len = headers.getHeader(HTTPHeaders.CONTENT_LENGTH);
             if (len != null)
                 length = Long.parseLong(len);
         } catch (NumberFormatException e) {

@@ -18,8 +18,8 @@ public class ResponseMessage {
 
     public ResponseMessage(HttpStatus status) {
         this.status = status;
-        headers.putHeader(HTTPHeaders.date, new DateUtil().formatDate(new Date()) + " GMT");
-        headers.putHeader(HTTPHeaders.connection,"keep-alive");
+        headers.putHeader(HTTPHeaders.DATE, new DateUtil().formatDate(new Date()) + " GMT");
+        headers.putHeader(HTTPHeaders.CONNECTION,"keep-alive");
     }
 
     public long getResourceLength() {

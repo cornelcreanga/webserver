@@ -99,9 +99,9 @@ public class ServerGetTestIT {
 
                 StatusLine statusLine = response.getStatusLine();
                 Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.connection).getValue(), "keep-alive");
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.contentLength).getValue(), "" + fileContent.length());
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.contentType).getValue(), Mime.getType(extension));
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "keep-alive");
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
                 HttpEntity entity = response.getEntity();
                 String content = Util.readAsUtfString(entity.getContent());
                 Assert.assertEquals(content, Util.readAsUtfString("www/file.txt"));
@@ -123,9 +123,9 @@ public class ServerGetTestIT {
 
                 StatusLine statusLine = response.getStatusLine();
                 Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.connection).getValue(), "keep-alive");
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.contentLength).getValue(), "" + fileContent.length());
-                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.contentType).getValue(), Mime.getType(extension));
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "keep-alive");
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
+                Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
                 HttpEntity entity = response.getEntity();
                 String content = Util.readAsUtfString(entity.getContent());
                 Assert.assertEquals(content, Util.readAsUtfString(fileName));

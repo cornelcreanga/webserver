@@ -37,8 +37,8 @@ public class MessageHandler {
                 return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
             case OPTIONS:
                 ResponseMessage response = new ResponseMessage(HttpStatus.OK);
-                response.setHeader(HTTPHeaders.allow, "GET, HEAD, OPTIONS");
-                response.setHeader(HTTPHeaders.contentLength, "0");
+                response.setHeader(HTTPHeaders.ALLOW, "GET, HEAD, OPTIONS");
+                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
                 return response;
         }
         throw new InternalException("invalid method "+request.getMethod()+". this should never happen(internal error)");
@@ -58,7 +58,7 @@ public class MessageHandler {
         if (request.getLength() != 0)
             request.getBody().skip(request.getLength());
 
-        if (request.getHeader(HTTPHeaders.host) == null)//host is mandatory
+        if (request.getHeader(HTTPHeaders.HOST) == null)//host is mandatory
             return new ResponseMessage(HttpStatus.BAD_REQUEST);
 
         //check if resource exists
@@ -81,18 +81,18 @@ public class MessageHandler {
          * Check for conditionals. If-Range is not supported for the moment
          * If conditionals are used improperly return badrequest instead of ignoring them
          */
-        value = request.getHeader(HTTPHeaders.ifNoneMatch);
+        value = request.getHeader(HTTPHeaders.IF_NONE_MATCH);
         if (value != null) {
             String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
             if ((value.contains(etag))) {
                 response = new ResponseMessage(HttpStatus.NOT_MODIFIED);
-                response.setHeader(HTTPHeaders.etag, etag);
+                response.setHeader(HTTPHeaders.ETAG, etag);
                 return response;
             }
         }
 
-        value = request.getHeader(HTTPHeaders.ifModifiedSince);
-        if ((value != null) && (request.getHeader(HTTPHeaders.ifNoneMatch) != null)) {
+        value = request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
+        if ((value != null) && (request.getHeader(HTTPHeaders.IF_NONE_MATCH) != null)) {
             Date date = dateUtil.getDate(value);
             if (date == null)
                 return new ResponseMessage(HttpStatus.BAD_REQUEST);
@@ -100,14 +100,14 @@ public class MessageHandler {
                 return new ResponseMessage(HttpStatus.NOT_MODIFIED);
         }
 
-        value = request.getHeader(HTTPHeaders.ifMatch);
+        value = request.getHeader(HTTPHeaders.IF_MATCH);
         if (value != null) {
             String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
             if (etag.equals(value))
                 return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
         }
 
-        value = request.getHeader(HTTPHeaders.ifUnmodifiedSince);
+        value = request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
         if (value != null) {
             Date date = dateUtil.getDate(value);
             if (date == null)
@@ -121,8 +121,8 @@ public class MessageHandler {
         if (!hasBody)
             response.setIgnoreBody(true);
         response.setResourceFullPath(configuration.getRootFolder() + File.separator + resource);
-        response.setHeader(HTTPHeaders.lastModified, dateUtil.formatDate(file.lastModified()));
-        response.setHeader(HTTPHeaders.etag, EtagGenerator.getDateBasedEtag(file));
+        response.setHeader(HTTPHeaders.LAST_MODIFIED, dateUtil.formatDate(file.lastModified()));
+        response.setHeader(HTTPHeaders.ETAG, EtagGenerator.getDateBasedEtag(file));
         response.setResourceLength(file.length());
 
 

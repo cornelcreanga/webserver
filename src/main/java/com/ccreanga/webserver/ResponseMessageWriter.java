@@ -64,16 +64,16 @@ public class ResponseMessageWriter {
         if (index!=-1)
             resource = resource.substring(0,index);
 
-        response.setHeader(HTTPHeaders.contentType, Mime.getType(IOUtil.getExtension(resource)));
+        response.setHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(IOUtil.getExtension(resource)));
         if (response.getStatus() == HttpStatus.OK) {
-            response.setHeader(HTTPHeaders.contentLength, "" + new File(response.getResourceFullPath()).length());
+            response.setHeader(HTTPHeaders.CONTENT_LENGTH, "" + new File(response.getResourceFullPath()).length());
         } else {
             if (isHTML(resource)) {
                 errorHtml = buildHtmlError(response.getStatus());
                 byte[] body = IOUtil.utf(errorHtml);
-                response.setHeader(HTTPHeaders.contentLength, "" + body.length);
+                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "" + body.length);
             } else {
-                response.setHeader(HTTPHeaders.contentLength, "0");
+                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
             }
         }
 

@@ -47,7 +47,7 @@ public class PersistentConnectionProcessor implements Runnable {
                     response = new MessageHandler().handleMessage(request,configuration);
                     new ResponseMessageWriter().write(request, response, output);
                     //we should be at the end of out input stream here. check if we received close
-                    close = "close".equals(request.getHeader(HTTPHeaders.connection));
+                    close = "close".equals(request.getHeader(HTTPHeaders.CONNECTION));
                 } else{ //we were not event able to parse the request body, so write an error and close the connection in order to free the resources.
                     new ResponseMessageWriter().writeRequestError(output,response.getStatus());
                     close = true;
