@@ -5,6 +5,7 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
+import com.ccreanga.webserver.repository.NotFoundException;
 import com.ccreanga.webserver.util.DateUtil;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class MessageHandler {
         //ignore body and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
         //if the body is larger than the declared header the following request will be broken and the persistent connection will be closed
-        if (request.getLength()!=0)
+        if (request.getLength() != 0)
             request.getBody().skip(request.getLength());
 
         if (request.getHeader(HTTPHeaders.host) == null)//host is mandatory
@@ -62,19 +63,19 @@ public class MessageHandler {
 
         //check if resource exists
         //decode the resource and remove any possible the parameters (as we only deliver static files)
-        String resource = request.getResource();
+        String resource = request.getUri();
         int index = resource.indexOf('?');
-        if (index!=-1)
-            resource = resource.substring(0,index);
-        resource = URLDecoder.decode(resource,configuration.getRequestGetEncoding());
+        if (index != -1)
+            resource = resource.substring(0, index);
+        resource = URLDecoder.decode(resource, configuration.getRequestGetEncoding());
         File file;
         try {
             file = FileManager.getInstance().getFile(configuration.getRootFolder() + resource);
-        }catch (ForbiddenException e) {
+        } catch (ForbiddenException e) {
             return new ResponseMessage(HttpStatus.FORBIDDEN);
-        }
-        if ((!file.exists()) || (!file.isFile()))
+        } catch (NotFoundException e){
             return new ResponseMessage(HttpStatus.NOT_FOUND);
+        }
 
         /**
          * Check for conditionals. If-Range is not supported for the moment

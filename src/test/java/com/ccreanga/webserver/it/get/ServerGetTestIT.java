@@ -4,6 +4,7 @@ package com.ccreanga.webserver.it.get;
 import com.ccreanga.webserver.*;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
+import freemarker.template.TemplateException;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ResponseHandler;
@@ -71,7 +72,10 @@ public class ServerGetTestIT {
                 Assert.assertEquals(statusLine.getReasonPhrase(), HttpStatus.NOT_FOUND.getReasonPhrase());
                 HttpEntity entity = response.getEntity();
                 String content = Util.readAsUtfString(entity.getContent());
-                Assert.assertEquals(content, "");
+
+                try {
+                    Assert.assertEquals(content, new TemplateRepository().buildError(HttpStatus.NOT_FOUND,""));
+                } catch (IOException e) {/**ignore**/}
                 return entity;
             });
         } catch (IOException e) {
@@ -103,9 +107,7 @@ public class ServerGetTestIT {
                 Assert.assertEquals(content, Util.readAsUtfString("www/file.txt"));
                 return entity;
             });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {/**ignore**/}
 
     }
 

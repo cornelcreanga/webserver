@@ -55,6 +55,7 @@
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
         <fluent-hc.version>4.5.2</fluent-hc.version>
+        <freemarker.version>2.3.23</freemarker.version>
     </properties>
 
     <dependencies>
@@ -90,6 +91,12 @@
             <scope>runtime</scope>
         </dependency>
         <!-- Log end -->
+
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>${freemarker.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>junit</groupId>

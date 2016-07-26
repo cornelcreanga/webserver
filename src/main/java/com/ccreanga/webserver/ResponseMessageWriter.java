@@ -57,9 +57,9 @@ public class ResponseMessageWriter {
 
         String errorHtml = "";
 
-        //check if resource exists
+
         //remove the parameters, as we only deliver static files
-        String resource = request.getResource();
+        String resource = request.getUri();
         int index = resource.indexOf('?');
         if (index!=-1)
             resource = resource.substring(0,index);

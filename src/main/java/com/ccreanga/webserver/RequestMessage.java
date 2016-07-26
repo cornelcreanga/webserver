@@ -15,16 +15,16 @@ public class RequestMessage {
 
     private HTTPMethod method;
     private HTTPHeaders headers;
-    private String resource;
-    private String version;//for the moment it can only 1.1
+    private String uri;
+    private String version;//for the moment only 1.1
     protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
     protected boolean chunk;//specifies if the body will be sent using chunked transmission
     protected long length;//body length; makes sense only when chunk=false
 
-    public RequestMessage(HTTPMethod method, HTTPHeaders HTTPHeaders, String resource, String version, InputStream body, boolean chunk, long bodyLength) {
+    public RequestMessage(HTTPMethod method, HTTPHeaders HTTPHeaders, String uri, String version, InputStream body, boolean chunk, long bodyLength) {
         this.method = method;
         this.headers = HTTPHeaders;
-        this.resource = resource;
+        this.uri = uri;
         this.version = version;
         if (chunk)
             this.body = new ChunkedInputStream(body);
@@ -60,7 +60,7 @@ public class RequestMessage {
         return headers.getHeader(header);
     }
 
-    public String getResource() {
-        return resource;
+    public String getUri() {
+        return uri;
     }
 }

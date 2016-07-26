@@ -2,15 +2,13 @@ package com.ccreanga.webserver.http;
 
 public enum HttpStatus {
 
-    // 1xx Informational
-
+    //1xx: Informational - Request received, continuing process
     CONTINUE(100, "Continue"),
     SWITCHING_PROTOCOLS(101, "Switching Protocols"),
     PROCESSING(102, "Processing"),
     CHECKPOINT(103, "Checkpoint"),
 
-    // 2xx Success
-
+    //2xx: Success - The action was successfully received,understood, and accepted
     OK(200, "OK"),
     CREATED(201, "Created"),
     ACCEPTED(202, "Accepted"),
@@ -22,8 +20,7 @@ public enum HttpStatus {
     ALREADY_REPORTED(208, "Already Reported"),
     IM_USED(226, "IM Used"),
 
-    // 3xx Redirection
-
+    //3xx: Redirection - Further action must be taken in order to complete the request
     MULTIPLE_CHOICES(300, "Multiple Choices"),
     MOVED_PERMANENTLY(301, "Moved Permanently"),
     FOUND(302, "Found"),
@@ -32,8 +29,7 @@ public enum HttpStatus {
     TEMPORARY_REDIRECT(307, "Temporary Redirect"),
     PERMANENT_REDIRECT(308, "Permanent Redirect"),
 
-    // --- 4xx Client Error ---
-
+    //4xx: Client Error - The request contains bad syntax or cannot be fulfilled
     BAD_REQUEST(400, "Bad Request"),
     UNAUTHORIZED(401, "Unauthorized"),
     PAYMENT_REQUIRED(402, "Payment Required"),
@@ -62,8 +58,7 @@ public enum HttpStatus {
     REQUEST_HEADER_FIELDS_TOO_LARGE(431, "Request Header Fields Too Large"),
     UNAVAILABLE_FOR_LEGAL_REASONS(451, "Unavailable For Legal Reasons"),
 
-    // --- 5xx Server Error ---
-
+    //5xx: Server Error - The server failed to fulfill an apparently valid request
     INTERNAL_SERVER_ERROR(500, "Internal Server Error"),
     NOT_IMPLEMENTED(501, "Not Implemented"),
     BAD_GATEWAY(502, "Bad Gateway"),
@@ -88,7 +83,6 @@ public enum HttpStatus {
         this.reasonPhrase = reasonPhrase;
     }
 
-
     public int value() {
         return this.value;
     }
@@ -97,12 +91,7 @@ public enum HttpStatus {
         return this.reasonPhrase;
     }
 
-    @Override
-    public String toString() {
-        return Integer.toString(this.value);
-    }
-
-    public static HttpStatus valueOf(int statusCode) {
+    public static HttpStatus from(int statusCode) {
         for (HttpStatus status : values()) {
             if (status.value == statusCode) {
                 return status;
@@ -111,5 +100,8 @@ public enum HttpStatus {
         throw new IllegalArgumentException("No matching constant for [" + statusCode + "]");
     }
 
-
+    @Override
+    public String toString() {
+        return ""+value;
+    }
 }
