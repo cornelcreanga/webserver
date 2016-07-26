@@ -4,7 +4,6 @@ package com.ccreanga.webserver.it.get;
 import com.ccreanga.webserver.*;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
-import freemarker.template.TemplateException;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ResponseHandler;
@@ -113,10 +112,10 @@ public class ServerGetTestIT {
 
     @Test
     public void testResourceWithSpecialChars() {
-        String fileName = "www/parent1/a?b.txt";
+        String fileName = "www/folder1/a?b.txt";
         String extension = Util.extension(fileName);
         try {
-            Request.Get("http://" + host + ":" + port + "/parent1/a%3Fb.txt")
+            Request.Get("http://" + host + ":" + port + "/folder1/a%3Fb.txt")
                     .execute().handleResponse((ResponseHandler<Object>) response -> {
 
                 String fileContent = Util.readAsUtfString(fileName);

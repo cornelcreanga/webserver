@@ -42,7 +42,7 @@ public class IOUtil {
             try {
                 socket.close();
             } catch (IOException e) {
-                throw new RuntimeException("cannot close socket", e);
+                //ignore
             }
         }
     }
@@ -52,7 +52,7 @@ public class IOUtil {
             try {
                 out.close();
             } catch (IOException e) {
-                throw new RuntimeException("cannot close output stream", e);
+                //ignore
             }
         }
     }
@@ -62,7 +62,7 @@ public class IOUtil {
             try {
                 in.close();
             } catch (IOException e) {
-                throw new RuntimeException("cannot close output stream", e);
+                //ignore
             }
         }
     }
@@ -73,7 +73,7 @@ public class IOUtil {
             try {
                 out.close();
             } catch (IOException e) {
-                throw new RuntimeException("cannot close output stream", e);
+                //ignore
             }
         }
     }

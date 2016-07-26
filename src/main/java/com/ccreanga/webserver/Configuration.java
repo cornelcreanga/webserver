@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class Configuration {
 
-    private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
     private int serverPort = 8080;
     private String rootFolder;
@@ -46,7 +46,7 @@ public class Configuration {
         try {
             properties.load(new FileReader(file));
         } catch (IOException e) {
-            log.error("cannot load file "+file);
+            serverLog.info("cannot load file "+file);
             System.exit(-1);
         }
         load();
@@ -70,7 +70,7 @@ public class Configuration {
 
         }catch (Exception e){
             //todo - add more details
-            log.error("properties cannot be parsed");
+            serverLog.info("properties cannot be parsed");
             System.exit(-1);
         }
     }

@@ -22,7 +22,8 @@ public class FileManager {
             throw new ForbiddenException("../ is not allowed");
         }
         File file = new File(fileName);
-        if (!file.exists())
+        //if file is hidden/starts with . return not found. do not return forbidden! - don't allow someone to 'guess'
+        if (!file.exists() || (isHidden(file)))
             throw new NotFoundException("can't find file "+fileName);
 
         if (!file.canRead())
@@ -40,9 +41,8 @@ public class FileManager {
 
     }
 
-    public static void main(String[] args) {
-        File file = new File("../");
-        System.out.println(file.list().length);
+    private boolean isHidden(File file){
+        return file.isHidden() || file.getName().charAt(0)=='.';
     }
 
 }

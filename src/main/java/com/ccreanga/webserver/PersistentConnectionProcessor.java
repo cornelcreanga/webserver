@@ -11,21 +11,13 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public class PersistentConnectionProcessor implements Runnable {
+public class PersistentConnectionProcessor implements ConnectionProcessor{
 
-    protected Socket socket = null;
-    Configuration configuration;
+    public void handleConnection(Socket socket,Configuration configuration) {
 
-    public PersistentConnectionProcessor(Socket socket,Configuration configuration) {
-
-        this.socket = socket;
-        this.configuration = configuration;
-    }
-
-    public void run() {
-
-        try(InputStream input = socket.getInputStream();OutputStream output=socket.getOutputStream(); ) {
-
+        try {
+            InputStream input = socket.getInputStream();
+            OutputStream output=socket.getOutputStream();
             //because we support http 1.1 all the connection are persistent.
             while (true) {
                 boolean close = false;
@@ -57,9 +49,10 @@ public class PersistentConnectionProcessor implements Runnable {
 
             }
         } catch (SocketTimeoutException e) {
+            e.printStackTrace();//todo
             //If the client is not sending any other requests close the socket.
         } catch (IOException e) {
-            //todo
+            e.printStackTrace();//todo
         }
 
 
