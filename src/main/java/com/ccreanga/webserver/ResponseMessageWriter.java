@@ -4,6 +4,8 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.util.DateUtil;
 import com.ccreanga.webserver.util.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,25 +21,11 @@ public class ResponseMessageWriter {
     private boolean chunked = false;
 
 
-    private String buildHtmlError(HttpStatus status) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>");
-        sb.append("<head><title>").append(status).append(' ').append(status.getReasonPhrase()).append("</title></head>");
-        sb.append("<body><h1>").append(status).append(' ').append(status.getReasonPhrase()).append("</h1></body>");
-        sb.append("</html>");
-        return sb.toString();
-    }
-
-    private boolean isHTML(String resource) {
-        String extension = IOUtil.getExtension(resource);
-        return ("html".equals(extension)) || ("htm".equals(extension));
-    }
-
     public void writeRequestError(OutputStream out,HttpStatus status) throws IOException {
-        DateUtil dateUtil = new DateUtil();
+        //todo - recheck
         String response = "HTTP/1.1 " + status.value() + " " + status.getReasonPhrase() + "\n" +
                 "Content-Length: 0\n" +
-                "Date:" + dateUtil.formatDate(System.currentTimeMillis()) + "\n\n";
+                "Date:" + DateUtil.currentDate() + "\n\n";
         out.write(IOUtil.ascii(response));
     }
 
@@ -47,7 +35,7 @@ public class ResponseMessageWriter {
      */
     public void write(RequestMessage request, ResponseMessage response, OutputStream out) throws IOException {
 
-
+        ContextHolder.get().setStatusCode(""+response.getStatus().value());
         out.write(IOUtil.ascii(request.getVersion()));
         out.write(SP);
         out.write(IOUtil.ascii("" + response.getStatus()));
@@ -57,7 +45,6 @@ public class ResponseMessageWriter {
 
         String errorHtml = "";
 
-
         //remove the parameters, as we only deliver static files
         String resource = request.getUri();
         int index = resource.indexOf('?');
@@ -66,15 +53,16 @@ public class ResponseMessageWriter {
 
         response.setHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(IOUtil.getExtension(resource)));
         if (response.getStatus() == HttpStatus.OK) {
-            response.setHeader(HTTPHeaders.CONTENT_LENGTH, "" + new File(response.getResourceFullPath()).length());
+            String length = String.valueOf(new File(response.getResourceFullPath()).length());
+            ContextHolder.get().setContentLength(length);
+            response.setHeader(HTTPHeaders.CONTENT_LENGTH, length);
         } else {
-            if (isHTML(resource)) {
-                errorHtml = buildHtmlError(response.getStatus());
-                byte[] body = IOUtil.utf(errorHtml);
-                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "" + body.length);
-            } else {
-                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
-            }
+            //todo - it should not return html unless the client accepts that
+            errorHtml = TemplateRepository.instance().buildError(response.getStatus(),"");
+            byte[] body = IOUtil.utf(errorHtml);
+            ContextHolder.get().setContentLength(String.valueOf(body.length));
+            response.setHeader(HTTPHeaders.CONTENT_LENGTH, String.valueOf(body.length));
+            //response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
         }
 
         Map<String, String> headerMap = response.getHeaders().getAllHeadersMap();
@@ -88,7 +76,8 @@ public class ResponseMessageWriter {
 
         if ((response.getStatus() == HttpStatus.OK) && (!response.isIgnoreBody())) {
             IOUtil.inputToOutput(new FileInputStream(response.getResourceFullPath()), out);
-        } else if (isHTML(resource)) {
+        } else {
+            //todo - it should not return html unless the client accepts that
             out.write(IOUtil.utf(errorHtml));
         }
         out.flush();

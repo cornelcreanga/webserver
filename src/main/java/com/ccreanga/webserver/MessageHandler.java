@@ -11,6 +11,10 @@ import com.ccreanga.webserver.util.DateUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 public class MessageHandler {
@@ -49,7 +53,6 @@ public class MessageHandler {
     }
 
     private ResponseMessage handleGetResponse(RequestMessage request, boolean hasBody,Configuration configuration) throws IOException {
-        DateUtil dateUtil = new DateUtil();
         ResponseMessage response;
         String value;
         //ignore body and skip the data in order to be able to read the next request
@@ -81,6 +84,7 @@ public class MessageHandler {
          * Check for conditionals. If-Range is not supported for the moment
          * If conditionals are used improperly return badrequest instead of ignoring them
          */
+        LocalDateTime fileLastModifiedDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC"));
         value = request.getHeader(HTTPHeaders.IF_NONE_MATCH);
         if (value != null) {
             String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
@@ -93,10 +97,10 @@ public class MessageHandler {
 
         value = request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
         if ((value != null) && (request.getHeader(HTTPHeaders.IF_NONE_MATCH) != null)) {
-            Date date = dateUtil.getDate(value);
+            LocalDateTime date = DateUtil.parseDate(value);
             if (date == null)
                 return new ResponseMessage(HttpStatus.BAD_REQUEST);
-            if ((file.lastModified()) <= date.getTime())
+            if (date.isAfter(fileLastModifiedDate))
                 return new ResponseMessage(HttpStatus.NOT_MODIFIED);
         }
 
@@ -109,10 +113,10 @@ public class MessageHandler {
 
         value = request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
         if (value != null) {
-            Date date = dateUtil.getDate(value);
+            LocalDateTime date = DateUtil.parseDate(value);
             if (date == null)
                 return new ResponseMessage(HttpStatus.BAD_REQUEST);
-            if ((file.lastModified()) > date.getTime())
+            if (date.isBefore(fileLastModifiedDate))
                 return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
         }
 
@@ -121,7 +125,7 @@ public class MessageHandler {
         if (!hasBody)
             response.setIgnoreBody(true);
         response.setResourceFullPath(configuration.getRootFolder() + File.separator + resource);
-        response.setHeader(HTTPHeaders.LAST_MODIFIED, dateUtil.formatDate(file.lastModified()));
+        response.setHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(fileLastModifiedDate.toInstant(ZoneOffset.UTC)));
         response.setHeader(HTTPHeaders.ETAG, EtagGenerator.getDateBasedEtag(file));
         response.setResourceLength(file.length());
 

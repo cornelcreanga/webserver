@@ -5,6 +5,7 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.util.DateUtil;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class ResponseMessage {
@@ -18,7 +19,9 @@ public class ResponseMessage {
 
     public ResponseMessage(HttpStatus status) {
         this.status = status;
-        headers.putHeader(HTTPHeaders.DATE, new DateUtil().formatDate(new Date()) + " GMT");
+        String currentDate = DateUtil.currentDate();
+        ContextHolder.get().setDate(currentDate);
+        headers.putHeader(HTTPHeaders.DATE, currentDate + " GMT");
         headers.putHeader(HTTPHeaders.CONNECTION,"keep-alive");
     }
 

@@ -4,13 +4,17 @@ package com.ccreanga.webserver;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPMethod;
 import com.ccreanga.webserver.util.LimitedLengthInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 
 public class RequestParser {
 
+    private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
     private static final String version1_1 = "HTTP/1.1";
 
     /**
@@ -43,40 +47,38 @@ public class RequestParser {
     public RequestMessage parseRequest(InputStream in,Configuration configuration) throws IOException, InvalidMessageFormat {
         String line;
         HTTPMethod httpMethod = null;
-        String method;
         String resource = null;
         String version = null;
-        HTTPHeaders headers = null;
+        HTTPHeaders headers;
         try {
-            //prevent dos attacks.
+            //prevent dos attack/huge strings.
             LimitedLengthInputStream reader = new LimitedLengthInputStream(in, configuration.getMaxGetSize());
+
             //read the first line
             while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty())//empty line is allowed
                     continue;
-
+                ContextHolder.get().setUrl(line);
                 int index = line.indexOf(' ');
                 if (index == -1)
-                    throw new InvalidMessageFormat();
-                method = line.substring(0, index).trim();
+                    throw new InvalidMessageFormat("malformed url");
+                String method = line.substring(0, index).trim();
 
                 try {
                     httpMethod = HTTPMethod.valueOf(method);
                 } catch (IllegalArgumentException e) {
-                    throw new InvalidMessageFormat();
+                    throw new InvalidMessageFormat("invalid http method");
                 }
 
                 int secondIndex = line.indexOf(' ', index + 1);
                 if (secondIndex == -1)
-                    throw new InvalidMessageFormat();
+                    throw new InvalidMessageFormat("malformed url");
                 //remove the '/' in front of the resource
-                resource = line.substring(index + 1, secondIndex).trim();//todo - decode resource
+                resource = line.substring(index + 1, secondIndex).trim();
                 version = line.substring(secondIndex).trim();
+
                 break;
             }
-
-            if (httpMethod == null)
-                throw new InvalidMessageFormat();
 
             headers = new HTTPHeaders();
             //read the HTTPHeaders.
@@ -90,7 +92,7 @@ public class RequestParser {
                 } else {
                     int separator = line.indexOf(':');
                     if (separator == -1)
-                        throw new InvalidMessageFormat();
+                        throw new InvalidMessageFormat("malformed http header");
                     String header = line.substring(0, separator).trim();
                     String value = line.substring(separator + 1).trim();
                     headers.appendHeader(header, value);
@@ -98,22 +100,22 @@ public class RequestParser {
                 }
             }
 
-
         } catch (IndexOutOfBoundsException e) {
-            throw new InvalidMessageFormat();
+            throw new InvalidMessageFormat("malformed url");
         }
         boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.TRANSFER_ENCODING));
         long length = -1;
+
+        String len = headers.getHeader(HTTPHeaders.CONTENT_LENGTH);
         try {
-            String len = headers.getHeader(HTTPHeaders.CONTENT_LENGTH);
             if (len != null)
                 length = Long.parseLong(len);
         } catch (NumberFormatException e) {
-            throw new InvalidMessageFormat();
+            throw new InvalidMessageFormat("invalid content lenght value "+len);
         }
         //we cannot have both chunk and length
         if ((chunk) && (length != -1))
-            throw new InvalidMessageFormat();
+            throw new InvalidMessageFormat("chunked and Content-Length are mutually exclusive");
         return new RequestMessage(httpMethod, headers, resource, version, in, chunk, length);
 
     }

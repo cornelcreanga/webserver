@@ -16,7 +16,9 @@ public class TemplateRepository {
     private Template index;
     private Template error;
 
-    public TemplateRepository() {
+    private static TemplateRepository instance = new TemplateRepository();
+
+    private TemplateRepository() {
         Configuration cfg = new Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         cfg.setClassLoaderForTemplateLoading(ClassLoader.getSystemClassLoader(),"templates");
         try {
@@ -26,6 +28,10 @@ public class TemplateRepository {
             throw new InternalException("i/o error, cannot load templates");
             //todo
         }
+    }
+
+    public static TemplateRepository instance(){
+        return instance;
     }
 
     public String buildIndex(String folderName, File[] content) throws IOException {
