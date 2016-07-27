@@ -14,6 +14,7 @@ import java.net.URLDecoder;
 
 public class RequestParser {
 
+    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
     private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
     private static final String version1_1 = "HTTP/1.1";
 
@@ -58,6 +59,7 @@ public class RequestParser {
             while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty())//empty line is allowed
                     continue;
+                serverLog.info("Connection "+ContextHolder.get().getUuid()+ " : "+line);
                 ContextHolder.get().setUrl(line);
                 int index = line.indexOf(' ');
                 if (index == -1)
@@ -87,6 +89,7 @@ public class RequestParser {
                 if (line.isEmpty()) {
                     break;
                 }
+                //System.out.println(line);
                 if (Character.isSpaceChar(line.charAt(0))) {
                     headers.appendHeader(previousHeader, line.trim());
                 } else {
@@ -99,7 +102,8 @@ public class RequestParser {
                     previousHeader = header;
                 }
             }
-
+            //while (in.read()!=-1);//consume remaining bytes
+            //System.out.println("done");
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormat("malformed url");
         }

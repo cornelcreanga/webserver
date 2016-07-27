@@ -85,40 +85,40 @@ public class MessageHandler {
          * If conditionals are used improperly return badrequest instead of ignoring them
          */
         LocalDateTime fileLastModifiedDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC"));
-        value = request.getHeader(HTTPHeaders.IF_NONE_MATCH);
-        if (value != null) {
-            String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
-            if ((value.contains(etag))) {
-                response = new ResponseMessage(HttpStatus.NOT_MODIFIED);
-                response.setHeader(HTTPHeaders.ETAG, etag);
-                return response;
-            }
-        }
-
-        value = request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
-        if ((value != null) && (request.getHeader(HTTPHeaders.IF_NONE_MATCH) != null)) {
-            LocalDateTime date = DateUtil.parseDate(value);
-            if (date == null)
-                return new ResponseMessage(HttpStatus.BAD_REQUEST);
-            if (date.isAfter(fileLastModifiedDate))
-                return new ResponseMessage(HttpStatus.NOT_MODIFIED);
-        }
-
-        value = request.getHeader(HTTPHeaders.IF_MATCH);
-        if (value != null) {
-            String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
-            if (etag.equals(value))
-                return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
-        }
-
-        value = request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
-        if (value != null) {
-            LocalDateTime date = DateUtil.parseDate(value);
-            if (date == null)
-                return new ResponseMessage(HttpStatus.BAD_REQUEST);
-            if (date.isBefore(fileLastModifiedDate))
-                return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
-        }
+//        value = request.getHeader(HTTPHeaders.IF_NONE_MATCH);
+//        if (value != null) {
+//            String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
+//            if ((value.contains(etag))) {
+//                response = new ResponseMessage(HttpStatus.NOT_MODIFIED);
+//                response.setHeader(HTTPHeaders.ETAG, etag);
+//                return response;
+//            }
+//        }
+//
+//        value = request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
+//        if ((value != null) && (request.getHeader(HTTPHeaders.IF_NONE_MATCH) != null)) {
+//            LocalDateTime date = DateUtil.parseDate(value);
+//            if (date == null)
+//                return new ResponseMessage(HttpStatus.BAD_REQUEST);
+//            if (date.isAfter(fileLastModifiedDate))
+//                return new ResponseMessage(HttpStatus.NOT_MODIFIED);
+//        }
+//
+//        value = request.getHeader(HTTPHeaders.IF_MATCH);
+//        if (value != null) {
+//            String etag = EtagGenerator.getDateBasedEtag(file);//weak etag for the moment
+//            if (etag.equals(value))
+//                return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
+//        }
+//
+//        value = request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
+//        if (value != null) {
+//            LocalDateTime date = DateUtil.parseDate(value);
+//            if (date == null)
+//                return new ResponseMessage(HttpStatus.BAD_REQUEST);
+//            if (date.isBefore(fileLastModifiedDate))
+//                return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
+//        }
 
         //Everything is ok, we will build the headers
         response = new ResponseMessage(HttpStatus.OK);

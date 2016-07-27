@@ -13,15 +13,15 @@ public class Configuration {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
-    private int serverPort = 8080;
-    private String rootFolder;
+    private int serverPort = 8082;
+    private String rootFolder = "/var/www/html";
     private int initialThreads = 128;
     private int maxThreads = 1000;
     private int waitQueue = 64;
     private boolean weakEtag = true;
     private int maxGetSize = 4096;
     private int maxHeaders = 64;
-    private int timeoutSeconds = 5000;
+    private int timeoutSeconds = 5;
 
     private int maxGetBodySize = 64000;
     private long maxPutBodySize = 2147483648L;

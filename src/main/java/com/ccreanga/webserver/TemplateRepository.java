@@ -1,14 +1,17 @@
 package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HttpStatus;
+import com.ccreanga.webserver.util.DateUtil;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.ccreanga.webserver.util.FormatUtil.readableSize;
 import static freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS;
 
 public class TemplateRepository {
@@ -47,8 +50,8 @@ public class TemplateRepository {
         List<Map<String,String>> files = Arrays.stream(content).map(file -> {
             Map<String,String> map = new HashMap<>(4);
             map.put("name",file.getName());
-            map.put("lastModified",""+file.lastModified());
-            map.put("size",""+file.length());
+            map.put("lastModified",""+ DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified())));
+            map.put("size",file.isDirectory()?"-":readableSize(file.length()));
             map.put("type",file.isDirectory()?"folder":"file");
             return map;
         }).collect(Collectors.toList());

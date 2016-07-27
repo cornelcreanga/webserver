@@ -4,6 +4,8 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.util.IOUtil;
 import com.ccreanga.webserver.util.LengthExceededException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,14 +15,20 @@ import java.util.UUID;
 
 public class PersistentConnectionProcessor implements ConnectionProcessor{
 
+    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+    private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
 
 
     public void handleConnection(Socket socket,Configuration configuration) {
         ContextHolder.put(new Context());
+
         try(InputStream input = socket.getInputStream();OutputStream output=socket.getOutputStream();) {
 
-            ContextHolder.get().setUuid(UUID.randomUUID());
-            ContextHolder.get().setIp(getIp(socket)) ;
+            UUID uuid = UUID.randomUUID();
+            ContextHolder.get().setUuid(uuid);
+            String ip = getIp(socket);
+            ContextHolder.get().setIp(ip) ;
+            serverLog.info("Connection from ip "+ip + " started, uuid="+uuid);
 
             //because we support http 1.1 all the connection are persistent.
             while (true) {
@@ -42,20 +50,24 @@ public class PersistentConnectionProcessor implements ConnectionProcessor{
 
                     response = new MessageHandler().handleMessage(request,configuration);
                     new ResponseMessageWriter().write(request, response, output);
+                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " responded with "+response.getStatus());
+                    accessLog.info(ContextHolder.get().generateLogEntry());
                     //todo - log something in the access log
                     //we should be at the end of out input stream here. check if we received close
                     close = "close".equals(request.getHeader(HTTPHeaders.CONNECTION));
                 } else{ //we were not event able to parse the request body, so write an error and close the connection in order to free the resources.
                     new ResponseMessageWriter().writeRequestError(output,response.getStatus());
+                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " response was unparsable, responded with "+response.getStatus());
                     close = true;
                 }
-                if (close)
+                if (close) {
+                    serverLog.info("Connection "+ ContextHolder.get().getUuid()+" requested close");
                     break;
+                }
 
             }
         } catch (SocketTimeoutException e) {
-            e.printStackTrace();//todo
-            //If the client is not sending any other requests close the socket.
+            serverLog.info("Connection "+ ContextHolder.get().getUuid()+" was closed due to timeout");
         } catch (IOException e) {
             e.printStackTrace();//todo
         }finally{

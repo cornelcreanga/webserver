@@ -70,6 +70,17 @@ class Context {
         this.contentLength = contentLength;
     }
 
+    public String generateLogEntry(){
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(ip).append('\t');
+        sb.append(user==null?'-':user).append('\t');
+        sb.append(date).append('\t');
+        sb.append(url).append('\t');
+        sb.append(statusCode).append('\t');
+        sb.append(contentLength).append('\r');
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         return "Context{" +

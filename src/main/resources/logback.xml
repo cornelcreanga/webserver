@@ -39,7 +39,7 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
-    <logger name="accessLog" level="INFO" additivity="false">
+    <logger name="accessLog" level="INFO">
         <appender-ref ref="FILE"/>
     </logger>
 

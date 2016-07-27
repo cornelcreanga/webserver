@@ -51,18 +51,30 @@ public class ResponseMessageWriter {
         if (index!=-1)
             resource = resource.substring(0,index);
 
-        response.setHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(IOUtil.getExtension(resource)));
+
+        //build headers
+        String indexPage = null;
+
         if (response.getStatus() == HttpStatus.OK) {
-            String length = String.valueOf(new File(response.getResourceFullPath()).length());
-            ContextHolder.get().setContentLength(length);
-            response.setHeader(HTTPHeaders.CONTENT_LENGTH, length);
+            File file = new File(response.getResourceFullPath());
+            if (file.isFile()){
+                response.setHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(IOUtil.getExtension(resource)));
+                String length = String.valueOf(new File(response.getResourceFullPath()).length());
+                ContextHolder.get().setContentLength(length);
+                response.setHeader(HTTPHeaders.CONTENT_LENGTH, length);
+            }else{
+                //todo - it should not return html unless the client accepts that
+                indexPage = TemplateRepository.instance().buildIndex(response.getResourceFullPath(),file.listFiles());
+                response.setHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));
+                ContextHolder.get().setContentLength(""+indexPage.length());
+                response.setHeader(HTTPHeaders.CONTENT_LENGTH, ""+indexPage.length());
+            }
         } else {
             //todo - it should not return html unless the client accepts that
             errorHtml = TemplateRepository.instance().buildError(response.getStatus(),"");
             byte[] body = IOUtil.utf(errorHtml);
             ContextHolder.get().setContentLength(String.valueOf(body.length));
             response.setHeader(HTTPHeaders.CONTENT_LENGTH, String.valueOf(body.length));
-            //response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
         }
 
         Map<String, String> headerMap = response.getHeaders().getAllHeadersMap();
@@ -74,8 +86,16 @@ public class ResponseMessageWriter {
         }
         out.write(CRLF);
 
+        //build body
         if ((response.getStatus() == HttpStatus.OK) && (!response.isIgnoreBody())) {
-            IOUtil.inputToOutput(new FileInputStream(response.getResourceFullPath()), out);
+
+            File file = new File(response.getResourceFullPath());
+            if (file.isFile())
+                IOUtil.inputToOutput(new FileInputStream(response.getResourceFullPath()), out);
+            else if (file.isDirectory()){
+                 String page = TemplateRepository.instance().buildIndex(response.getResourceFullPath(),file.listFiles());
+                 out.write(page.getBytes("UTF-8"));
+            }
         } else {
             //todo - it should not return html unless the client accepts that
             out.write(IOUtil.utf(errorHtml));
