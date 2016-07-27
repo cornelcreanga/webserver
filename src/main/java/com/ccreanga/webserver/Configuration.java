@@ -21,7 +21,7 @@ public class Configuration {
     private boolean weakEtag = true;
     private int maxGetSize = 4096;
     private int maxHeaders = 64;
-    private int timeoutSeconds = 5;
+    private int timeoutSeconds = 60;
 
     private int maxGetBodySize = 64000;
     private long maxPutBodySize = 2147483648L;

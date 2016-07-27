@@ -12,16 +12,18 @@
         <th>Size</th>
         <th>Type</th>
     </tr>
-
+    <tr><th colspan="4"><hr></th></tr>
     <#list folderFiles as file>
         <tr>
-            <td>${file.name}</td>
-            <td>${file.lastModified}</td>
-            <td>${file.size}</td>
-            <td>${file.type}</td>
+            <td>
+                <a href="${file.link}">${file.name}</a>
+            </td>
+            <td align="right">${file.lastModified}</td>
+            <td align="right">${file.size}</td>
+            <td align="right">${file.type}</td>
         <tr>
     </#list>
-
+    <tr><th colspan="4"><hr></th></tr>
 </table>
 </body>
 </html>
