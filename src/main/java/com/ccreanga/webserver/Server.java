@@ -1,7 +1,7 @@
 package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.util.IOUtil;
+import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,12 +51,14 @@ public class Server implements Runnable {
                                 ConnectionProcessor connectionProcessor = new PersistentConnectionProcessor();
                                 connectionProcessor.handleConnection(socket, configuration);
                             }finally{
-                                IOUtil.close(socket);
+                                try {
+                                    Closeables.close(socket,true);
+                                } catch (IOException e) {/**ignore**/}
                             }
                         });
 
                     } catch (RejectedExecutionException e) {
-                        new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HttpStatus.SERVICE_UNAVAILABLE);
+                        //todo - new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HttpStatus.SERVICE_UNAVAILABLE);
                     }
                 }catch (IOException e){
                     serverLog.info(e.getMessage());

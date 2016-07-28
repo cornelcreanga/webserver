@@ -2,11 +2,16 @@ package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.util.DateUtil;
+import com.google.common.base.Charsets;
+import com.google.common.escape.Escaper;
+import com.google.common.html.HtmlEscapers;
+import com.google.common.net.UrlEscapers;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,21 +42,27 @@ public class TemplateRepository {
         return instance;
     }
 
-    public String buildIndex(String folderName, File[] content) throws IOException {
+    public String buildIndex(File folder,boolean root) throws IOException {
         StringWriter writer = new StringWriter();
-        buildIndex(folderName,content,writer);
+        buildIndex(folder,writer,root);
         return writer.toString();
     }
 
-    public void buildIndex(String folderName, File[] content, Writer writer) throws IOException {
+    public void buildIndex(File folder, Writer writer,boolean root) throws IOException {
+        if (!folder.isDirectory())
+            throw new InternalException("internal error, file:"+folder.getName()+" is not a folder");
         Map<String,Object> data = new HashMap<>(2);
-        data.put("parentFolder",folderName);
+        Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
+        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
+        data.put("parentFolder", htmlEscaper.escape(folder.getName()));
+        if (!root)
+            data.put("allowBrowsing","true");
 
-        List<Map<String,String>> files = Arrays.stream(content).map(file -> {
+        List<Map<String,String>> files = Arrays.stream(folder.listFiles()).map(file -> {
             Map<String,String> map = new HashMap<>(4);
-            map.put("name",file.getName());
-            map.put("link",file.getName()+(file.isDirectory()?"/":""));
-            map.put("lastModified",""+ DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified())));
+            map.put("name",htmlEscaper.escape(file.getName())+(file.isDirectory()?"/":""));
+            map.put("link", urlPathEscaper.escape(file.getName())+(file.isDirectory()?"/":""));
+            map.put("lastModified",""+ DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT));
             map.put("size",file.isDirectory()?"-":readableSize(file.length()));
             map.put("type",file.isDirectory()?"folder":"file");
             return map;

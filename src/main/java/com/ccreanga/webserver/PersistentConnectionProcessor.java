@@ -2,7 +2,6 @@ package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.util.IOUtil;
 import com.ccreanga.webserver.util.LengthExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,37 +28,36 @@ public class PersistentConnectionProcessor implements ConnectionProcessor{
             String ip = getIp(socket);
             ContextHolder.get().setIp(ip) ;
             serverLog.info("Connection from ip "+ip + " started, uuid="+uuid);
-
             //because we support http 1.1 all the connection are persistent.
             while (true) {
                 boolean close = false;
-                ResponseMessage response = null;
                 RequestMessage request = null;
                 boolean responseSyntaxCorrect = true;
-
+                HttpStatus invalidStatus = null;
                 try {
                     request = new RequestParser().parseRequest(input,configuration);
                 } catch (InvalidMessageFormat e) {
                     responseSyntaxCorrect = false;
-                    response = new ResponseMessage(HttpStatus.BAD_REQUEST);
+                    invalidStatus = HttpStatus.BAD_REQUEST;
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
-                    response = new ResponseMessage(HttpStatus.URI_TOO_LONG);
+                    invalidStatus = HttpStatus.URI_TOO_LONG;
                 }
                 if (responseSyntaxCorrect) {
-
-                    response = new MessageHandler().handleMessage(request,configuration);
-                    new ResponseMessageWriter().write(request, response, output);
-                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " responded with "+response.getStatus());
-                    accessLog.info(ContextHolder.get().generateLogEntry());
-                    //todo - log something in the access log
+                    //todo - we might want to wrap the outstream into another one (zip)
+                    MessageHandler messageHandler = new MessageHandler();
+                    messageHandler.handleMessage(request,configuration, output);
+                    output.flush();
+                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " responded with "+ContextHolder.get().getStatusCode());
                     //we should be at the end of out input stream here. check if we received close
                     close = "close".equals(request.getHeader(HTTPHeaders.CONNECTION));
                 } else{ //we were not event able to parse the request body, so write an error and close the connection in order to free the resources.
-                    new ResponseMessageWriter().writeRequestError(output,response.getStatus());
-                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " response was unparsable, responded with "+response.getStatus());
+                    ContextHolder.get().setStatusCode(invalidStatus.toString());
+                    MessageWriter.writeResponseLine(invalidStatus,output);
+                    serverLog.info("Connection "+ContextHolder.get().getUuid()+ " response was unparsable, responded with "+ContextHolder.get().getStatusCode());
                     close = true;
                 }
+                accessLog.info(ContextHolder.get().generateLogEntry());
                 if (close) {
                     serverLog.info("Connection "+ ContextHolder.get().getUuid()+" requested close");
                     break;
@@ -69,7 +67,7 @@ public class PersistentConnectionProcessor implements ConnectionProcessor{
         } catch (SocketTimeoutException e) {
             serverLog.info("Connection "+ ContextHolder.get().getUuid()+" was closed due to timeout");
         } catch (IOException e) {
-            e.printStackTrace();//todo
+            serverLog.info("Connection "+ ContextHolder.get().getUuid()+" received "+e.getMessage());
         }finally{
             ContextHolder.cleanup();
         }

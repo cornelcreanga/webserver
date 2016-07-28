@@ -7,62 +7,86 @@ import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
 import com.ccreanga.webserver.repository.NotFoundException;
 import com.ccreanga.webserver.util.DateUtil;
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Date;
+
+import static com.ccreanga.webserver.MessageWriter.*;
+import static com.ccreanga.webserver.util.DateUtil.FORMATTER_LOG;
+import static com.ccreanga.webserver.util.DateUtil.FORMATTER_RFC822;
 
 public class MessageHandler {
 
 
-    public ResponseMessage handleMessage(RequestMessage request,Configuration configuration) throws IOException{
+    public void handleMessage(RequestMessage request, Configuration configuration, OutputStream out) throws IOException{
         //EXPECT header is not yet handled
+        if ((request==null) || (request.getMethod()==null))
+            System.out.println("request:"+request);
         switch (request.getMethod()) {
             case GET:
-                return handleGetResponse(request,configuration);
+                handleGetResponse(request,configuration,out);
+                return;
             case HEAD:
-                return handleGetResponse(request, false,configuration);
+                handleGetResponse(request, false,configuration,out);
+                return;
             case POST:
-                return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
+                writeResponseLine(HttpStatus.NOT_IMPLEMENTED,out);
+                return;
             case PUT:
-                return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
+                writeResponseLine(HttpStatus.NOT_IMPLEMENTED,out);
+                return;
             case DELETE:
-                return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
+                writeResponseLine(HttpStatus.NOT_IMPLEMENTED,out);
+                return;
             case CONNECT:
-                break;
+                return;
             case PATCH:
-                return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
+                writeResponseLine(HttpStatus.NOT_IMPLEMENTED,out);
+                return;
             case TRACE:
-                return new ResponseMessage(HttpStatus.NOT_IMPLEMENTED);
+                writeResponseLine(HttpStatus.NOT_IMPLEMENTED,out);
+                return;
             case OPTIONS:
-                ResponseMessage response = new ResponseMessage(HttpStatus.OK);
-                response.setHeader(HTTPHeaders.ALLOW, "GET, HEAD, OPTIONS");
-                response.setHeader(HTTPHeaders.CONTENT_LENGTH, "0");
-                return response;
+                HTTPHeaders responseHeaders = new HTTPHeaders();
+                responseHeaders.putHeader(HTTPHeaders.ALLOW, "GET, HEAD, OPTIONS");
+                responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
+                writeResponseLine(HttpStatus.OK,out);
+                writeHeaders(responseHeaders,out);
+                return;
         }
         throw new InternalException("invalid method "+request.getMethod()+". this should never happen(internal error)");
     }
 
-    private ResponseMessage handleGetResponse(RequestMessage request,Configuration configuration) throws IOException{
-        return handleGetResponse(request, true,configuration);
+    private void handleGetResponse(RequestMessage request,Configuration configuration,OutputStream out) throws IOException{
+        handleGetResponse(request, true,configuration,out);
     }
 
-    private ResponseMessage handleGetResponse(RequestMessage request, boolean hasBody,Configuration configuration) throws IOException {
-        ResponseMessage response;
+    private void handleGetResponse(RequestMessage request, boolean hasBody,Configuration configuration,OutputStream out) throws IOException {
+        HTTPHeaders responseHeaders = new HTTPHeaders();
+        HttpStatus responseStatus;
         String value;
-        //ignore body and skip the data in order to be able to read the next request
+        //ignore body for a GET request and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
         //if the body is larger than the declared header the following request will be broken and the persistent connection will be closed
         if (request.getLength() != 0)
             request.getBody().skip(request.getLength());
 
-        if (request.getHeader(HTTPHeaders.HOST) == null)//host is mandatory
-            return new ResponseMessage(HttpStatus.BAD_REQUEST);
+        String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
+        ContextHolder.get().setDate(DateUtil.currentDate(FORMATTER_LOG));
+        responseHeaders.putHeader(HTTPHeaders.DATE, currentDate.replace("UTC","GMT"));
+        responseHeaders.putHeader(HTTPHeaders.CONNECTION,"keep-alive");
+
+        if (request.getHeader(HTTPHeaders.HOST) == null){//host is mandatory
+            writeErrorResponse(responseHeaders,HttpStatus.BAD_REQUEST,"missing host header",out);
+            return;
+        }
 
         //check if resource exists
         //decode the resource and remove any possible the parameters (as we only deliver static files)
@@ -75,9 +99,11 @@ public class MessageHandler {
         try {
             file = FileManager.getInstance().getFile(configuration.getRootFolder() + resource);
         } catch (ForbiddenException e) {
-            return new ResponseMessage(HttpStatus.FORBIDDEN);
+            writeErrorResponse(responseHeaders,HttpStatus.FORBIDDEN,"",out);
+            return;
         } catch (NotFoundException e){
-            return new ResponseMessage(HttpStatus.NOT_FOUND);
+            writeErrorResponse(responseHeaders,HttpStatus.NOT_FOUND,"",out);
+            return;
         }
 
         /**
@@ -120,18 +146,41 @@ public class MessageHandler {
 //                return new ResponseMessage(HttpStatus.PRECONDITION_FAILED);
 //        }
 
+
+
         //Everything is ok, we will build the headers
-        response = new ResponseMessage(HttpStatus.OK);
-        if (!hasBody)
-            response.setIgnoreBody(true);
-        response.setResourceFullPath(configuration.getRootFolder() + File.separator + resource);
-        response.setHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(fileLastModifiedDate.toInstant(ZoneOffset.UTC)));
-        response.setHeader(HTTPHeaders.ETAG, EtagGenerator.getDateBasedEtag(file));
-        response.setResourceLength(file.length());
+        if (!hasBody){
+            writeNoBodyResponse(responseHeaders,HttpStatus.OK,out);
+            return;
+        }
+
+        responseHeaders.putHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(fileLastModifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        responseHeaders.putHeader(HTTPHeaders.ETAG, EtagGenerator.getDateBasedEtag(file));
+
+        String indexPage = null;
+
+        writeResponseLine(HttpStatus.OK,out);
 
 
-        return response;
+        if (file.isFile()){
+            responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(Files.getFileExtension((resource))));
+            String length = String.valueOf(file.length());
+            ContextHolder.get().setContentLength(length);
+            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, length);
+            writeHeaders(responseHeaders,out);
+            ByteStreams.copy(new FileInputStream(file), out);
+        }else{
+            //todo - it should not return html unless the client accepts that
+            indexPage = TemplateRepository.instance().buildIndex(file,configuration.getRootFolder().equals(file.getAbsolutePath()));
+            responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));
+            ContextHolder.get().setContentLength(""+indexPage.length());
+            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, ""+indexPage.length());
+            writeHeaders(responseHeaders,out);
+            out.write(indexPage.getBytes(Charsets.UTF_8));
+        }
+        out.flush();
     }
+
 
 
 }

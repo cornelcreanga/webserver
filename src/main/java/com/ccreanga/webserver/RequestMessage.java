@@ -63,4 +63,17 @@ public class RequestMessage {
     public String getUri() {
         return uri;
     }
+
+    @Override
+    public String toString() {
+        return "RequestMessage{" +
+                "method=" + method +
+                ", headers=" + headers +
+                ", uri='" + uri + '\'' +
+                ", version='" + version + '\'' +
+                ", body=" + body +
+                ", chunk=" + chunk +
+                ", length=" + length +
+                '}';
+    }
 }

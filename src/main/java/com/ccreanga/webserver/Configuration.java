@@ -31,7 +31,7 @@ public class Configuration {
     private int chunkLength = 128 * 1024;
 
 
-    private final String requestGetEncoding = "ISO8859_1";
+    private final String requestGetEncoding = "UTF-8";
 
     private Properties properties = new Properties();
 

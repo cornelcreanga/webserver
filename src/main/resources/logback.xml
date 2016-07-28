@@ -21,6 +21,9 @@
             <ActiveFileName>access.log"</ActiveFileName>
             <FileNamePattern>access.%d{yyyy-MM-dd}.log.zip</FileNamePattern>
         </rollingPolicy>
+        <encoder>
+            <pattern>%msg</pattern>
+        </encoder>
 
         <layout class="ch.qos.logback.access.PatternLayout">
             <pattern>combined</pattern>

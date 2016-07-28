@@ -58,7 +58,7 @@ public class RequestParser {
             //read the first line
             while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
                 if (line.isEmpty())//empty line is allowed
-                    continue;
+                    continue;//todo - what if you only have an empty line?
                 serverLog.info("Connection "+ContextHolder.get().getUuid()+ " : "+line);
                 ContextHolder.get().setUrl(line);
                 int index = line.indexOf(' ');
@@ -102,8 +102,6 @@ public class RequestParser {
                     previousHeader = header;
                 }
             }
-            //while (in.read()!=-1);//consume remaining bytes
-            //System.out.println("done");
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormat("malformed url");
         }
