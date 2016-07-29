@@ -1,12 +1,16 @@
 package com.ccreanga.webserver.repository;
 
+import com.ccreanga.webserver.InternalException;
+import com.google.common.base.Preconditions;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-/**
- * The FileManager class handles file operations. In future it should deal with consistency problems too- reading while updating etc.
- */
 public class FileManager {
 
     private static final FileManager manager = new FileManager();
@@ -18,6 +22,7 @@ public class FileManager {
     }
 
     public File getFile(String fileName){
+        Preconditions.checkNotNull(fileName);
         if (fileName.contains("../")) {
             throw new ForbiddenException("../ is not allowed");
         }
@@ -31,18 +36,33 @@ public class FileManager {
 
         return file;
     }
-    public void createFile(String file, InputStream in){
 
+    public List<File> getFolderContent(File folder){
+        Preconditions.checkNotNull(folder);
+        if (!folder.isDirectory())
+            throw new InternalException("file "+folder.getName()+" is not a folder");
+        File[] file = folder.listFiles();
+        if (file==null)//this should not happen unless some I/O issue
+            throw new InternalException("cannot list folder "+folder.getName());
+        return Arrays.stream(file).filter(this::isNotHidden).collect(Collectors.toList());
     }
-    public void updateFile(String file, InputStream in){
 
-    }
-    public void deleteFile(String file, InputStream in){
-
-    }
+//    public void createFile(String file, InputStream in){
+//
+//    }
+//    public void updateFile(String file, InputStream in){
+//
+//    }
+//    public void deleteFile(String file, InputStream in){
+//
+//    }
 
     private boolean isHidden(File file){
         return file.isHidden() || file.getName().charAt(0)=='.';
+    }
+
+    private boolean isNotHidden(File file){
+        return !isHidden(file);
     }
 
 }

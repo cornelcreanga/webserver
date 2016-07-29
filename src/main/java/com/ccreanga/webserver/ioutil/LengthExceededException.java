@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.util;
+package com.ccreanga.webserver.ioutil;
 
 /**
  * This exception is thrown if the LimitedLengthInputStream is trying to read too many chars

@@ -3,7 +3,8 @@ package com.ccreanga.webserver.it.get;
 
 import com.ccreanga.webserver.*;
 import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HttpStatus;
+import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.Mime;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ResponseHandler;
@@ -65,12 +66,12 @@ public class ServerGetTestIT {
         Request.Get("http://" + host + ":" + port + "/notExisting.html")
                 .execute().handleResponse((ResponseHandler<Object>) response -> {
             StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.NOT_FOUND.value());
-            Assert.assertEquals(statusLine.getReasonPhrase(), HttpStatus.NOT_FOUND.getReasonPhrase());
+            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.NOT_FOUND.value());
+            Assert.assertEquals(statusLine.getReasonPhrase(), HTTPStatus.NOT_FOUND.getReasonPhrase());
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
 
-            Assert.assertEquals(content, TemplateRepository.instance().buildError(HttpStatus.NOT_FOUND, ""));
+            Assert.assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.NOT_FOUND, ""));
 
             return entity;
         });
@@ -89,8 +90,8 @@ public class ServerGetTestIT {
             String fileContent = Util.readAsUtfString(fileName);
 
             StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "keep-alive");
+            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "Keep-Alive");
             Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
             Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
             HttpEntity entity = response.getEntity();
@@ -113,8 +114,8 @@ public class ServerGetTestIT {
             String fileContent = Util.readAsUtfString(fileName);
 
             StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "keep-alive");
+            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "Keep-Alive");
             Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
             Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
             HttpEntity entity = response.getEntity();
@@ -132,11 +133,11 @@ public class ServerGetTestIT {
                 .execute().handleResponse((ResponseHandler<Object>) response -> {
 
             StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HttpStatus.FORBIDDEN.value());
-            Assert.assertEquals(statusLine.getReasonPhrase(), HttpStatus.FORBIDDEN.getReasonPhrase());
+            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.FORBIDDEN.value());
+            Assert.assertEquals(statusLine.getReasonPhrase(), HTTPStatus.FORBIDDEN.getReasonPhrase());
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
-            Assert.assertEquals(content, TemplateRepository.instance().buildError(HttpStatus.FORBIDDEN, ""));
+            Assert.assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.FORBIDDEN, ""));
 
 
             return entity;

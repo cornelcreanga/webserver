@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.util;
+package com.ccreanga.webserver.ioutil;
 
 import java.io.File;
 import java.io.FileInputStream;

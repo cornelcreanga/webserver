@@ -1,6 +1,7 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
 
+import com.ccreanga.webserver.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

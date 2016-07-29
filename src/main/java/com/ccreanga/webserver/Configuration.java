@@ -30,9 +30,6 @@ public class Configuration {
     private boolean xForwardedForTag = false;
     private int chunkLength = 128 * 1024;
 
-
-    private final String requestGetEncoding = "UTF-8";
-
     private Properties properties = new Properties();
 
     public Configuration(){};
@@ -127,8 +124,5 @@ public class Configuration {
         return chunkLength;
     }
 
-    public String getRequestGetEncoding() {
-        return requestGetEncoding;
-    }
 
 }

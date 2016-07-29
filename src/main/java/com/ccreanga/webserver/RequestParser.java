@@ -3,14 +3,15 @@ package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPMethod;
-import com.ccreanga.webserver.util.LimitedLengthInputStream;
+import com.ccreanga.webserver.http.HTTPVersion;
+import com.ccreanga.webserver.ioutil.BoundedBufferedReader;
+import com.ccreanga.webserver.logging.ContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
+import java.io.InputStreamReader;
 
 public class RequestParser {
 
@@ -45,47 +46,58 @@ public class RequestParser {
     }
 
 
-    public RequestMessage parseRequest(InputStream in,Configuration configuration) throws IOException, InvalidMessageFormat {
+    public RequestMessage parseRequest(InputStream in,Configuration configuration) throws IOException, InvalidMessageFormatException {
         String line;
         HTTPMethod httpMethod = null;
         String resource = null;
-        String version = null;
+        HTTPVersion version = null;
         HTTPHeaders headers;
         try {
             //prevent dos attack/huge strings.
-            LimitedLengthInputStream reader = new LimitedLengthInputStream(in, configuration.getMaxGetSize());
+            BoundedBufferedReader reader = new BoundedBufferedReader(new InputStreamReader(in, "ISO8859_1"),100,1024);
+            //LimitedLengthInputStream reader = new LimitedLengthInputStream(in, configuration.getMaxGetSize());
 
             //read the first line
-            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
+//            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.isEmpty())//empty line is allowed
                     continue;//todo - what if you only have an empty line?
-                serverLog.info("Connection "+ContextHolder.get().getUuid()+ " : "+line);
+                serverLog.info("Connection "+ ContextHolder.get().getUuid()+ " : "+line);
                 ContextHolder.get().setUrl(line);
                 int index = line.indexOf(' ');
                 if (index == -1)
-                    throw new InvalidMessageFormat("malformed url");
+                    throw new InvalidMessageFormatException("malformed url");
                 String method = line.substring(0, index).trim();
 
                 try {
                     httpMethod = HTTPMethod.valueOf(method);
                 } catch (IllegalArgumentException e) {
-                    throw new InvalidMessageFormat("invalid http method");
+                    throw new InvalidMessageFormatException("invalid http method "+method);
                 }
 
                 int secondIndex = line.indexOf(' ', index + 1);
                 if (secondIndex == -1)
-                    throw new InvalidMessageFormat("malformed url");
+                    throw new InvalidMessageFormatException("malformed url");
                 //remove the '/' in front of the resource
                 resource = line.substring(index + 1, secondIndex).trim();
-                version = line.substring(secondIndex).trim();
+                try{
+                    version = HTTPVersion.from(line.substring(secondIndex).trim());
+                }catch (IllegalArgumentException e){
+                    throw new InvalidMessageFormatException("invalid http version "+version);
+                }
 
                 break;
             }
 
+//            if (httpMethod==null){
+//
+//            }
+
             headers = new HTTPHeaders();
             //read the HTTPHeaders.
             String previousHeader = "";
-            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
+//            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
+            while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) {
                     break;
                 }
@@ -95,15 +107,16 @@ public class RequestParser {
                 } else {
                     int separator = line.indexOf(':');
                     if (separator == -1)
-                        throw new InvalidMessageFormat("malformed http header");
+                        throw new InvalidMessageFormatException("malformed http header");
                     String header = line.substring(0, separator).trim();
                     String value = line.substring(separator + 1).trim();
                     headers.appendHeader(header, value);
                     previousHeader = header;
                 }
             }
+
         } catch (IndexOutOfBoundsException e) {
-            throw new InvalidMessageFormat("malformed url");
+            throw new InvalidMessageFormatException("malformed url");
         }
         boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.TRANSFER_ENCODING));
         long length = -1;
@@ -113,11 +126,11 @@ public class RequestParser {
             if (len != null)
                 length = Long.parseLong(len);
         } catch (NumberFormatException e) {
-            throw new InvalidMessageFormat("invalid content lenght value "+len);
+            throw new InvalidMessageFormatException("invalid content lenght value "+len);
         }
         //we cannot have both chunk and length
         if ((chunk) && (length != -1))
-            throw new InvalidMessageFormat("chunked and Content-Length are mutually exclusive");
+            throw new InvalidMessageFormatException("chunked and Content-Length are mutually exclusive");
         return new RequestMessage(httpMethod, headers, resource, version, in, chunk, length);
 
     }

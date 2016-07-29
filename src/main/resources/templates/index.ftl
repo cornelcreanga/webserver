@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Index of ${parentFolder}</title>
+    <title>Index of ${folder}</title>
 </head>
 <body>
-<h1>Index of ${parentFolder}</h1>
+<h1>Index of ${folder}</h1>
 <table>
     <tr>
         <th>Name</th>
@@ -16,7 +16,7 @@
 <#if allowBrowsing?has_content>
     <tr>
         <td>
-            <a href="/">Go to Parent Directory	</a>
+            <a href="${parentFolder}">Go to Parent Directory	</a>
         </td>
         <td align="right">&nbsp;</td>
         <td align="right">&nbsp;</td>

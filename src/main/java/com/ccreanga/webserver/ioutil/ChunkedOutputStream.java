@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.util;
+package com.ccreanga.webserver.ioutil;
 
 
 import java.io.FilterOutputStream;
@@ -6,8 +6,7 @@ import java.io.OutputStream;
 
 
 /**
- * This class should wrap the output stream if chuncked transmission is used. Not yet implemented, not sure if needed taking into
- * account that we only deliver static content
+ * This class should wrap the output stream if chunked transmission is used. Not yet implemented
  */
 public class ChunkedOutputStream extends FilterOutputStream{
 

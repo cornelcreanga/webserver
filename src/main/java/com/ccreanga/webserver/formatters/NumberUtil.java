@@ -1,10 +1,10 @@
-package com.ccreanga.webserver.util;
+package com.ccreanga.webserver.formatters;
 
 import java.text.DecimalFormat;
 
-public class FormatUtil {
+public class NumberUtil {
 
-    public static String readableSize(long size) {
+    public static String fileSizePretty(long size) {
         if (size <= 0) return "0";
         final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
         int digitGroups = (int) (Math.log10(size) / Math.log10(1024));

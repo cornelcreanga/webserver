@@ -1,6 +1,5 @@
 package com.ccreanga.webserver;
 
-import com.ccreanga.webserver.http.HttpStatus;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class Server implements Runnable {
                         });
 
                     } catch (RejectedExecutionException e) {
-                        //todo - new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HttpStatus.SERVICE_UNAVAILABLE);
+                        //todo - new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HTTPStatus.SERVICE_UNAVAILABLE);
                     }
                 }catch (IOException e){
                     serverLog.info(e.getMessage());
@@ -90,6 +89,7 @@ public class Server implements Runnable {
             configuration.loadFromFile(args[1]);
 
         Server server = new Server(configuration);
+        Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutDownHook(server)));
 
         try {
             new Thread(server).start();

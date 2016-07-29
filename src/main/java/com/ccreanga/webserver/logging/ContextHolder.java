@@ -1,6 +1,9 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.logging;
 
-class ContextHolder {
+/**
+ * This class is used for contextual logging
+ */
+public class ContextHolder {
     private static final ThreadLocal<Context> threadLocal = new ThreadLocal<>();
 
     private ContextHolder() {}

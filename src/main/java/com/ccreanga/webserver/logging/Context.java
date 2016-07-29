@@ -1,8 +1,8 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.logging;
 
 import java.util.UUID;
 
-class Context {
+public class Context {
     private UUID uuid;
     private String ip;
     private String user;
