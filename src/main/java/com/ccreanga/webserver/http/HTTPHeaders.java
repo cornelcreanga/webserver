@@ -1,6 +1,8 @@
 package com.ccreanga.webserver.http;
 
 
+import com.google.common.collect.ImmutableMap;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -198,14 +200,14 @@ public class HTTPHeaders {
     public static String X_FORWARDED_PROTO = "X-Forwarded-Proto";
     public static String X_POWERED_BY = "X-Powered-By";
 
-    private HashMap<String, String> headers = new HashMap<>(32);
+    private HashMap<String, String> headers = new HashMap<>(8);
 
     public String getHeader(String header) {
         return headers.get(header);
     }
 
     public Map<String, String> getAllHeadersMap() {
-        return Collections.unmodifiableMap(headers);
+        return ImmutableMap.copyOf(headers);
     }
 
     public HTTPHeaders appendHeader(String header, String value) {

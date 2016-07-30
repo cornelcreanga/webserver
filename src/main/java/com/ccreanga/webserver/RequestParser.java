@@ -55,11 +55,6 @@ public class RequestParser {
         try {
             //prevent dos attack/huge strings.
             BoundedBufferedReader reader = new BoundedBufferedReader(new InputStreamReader(in, "ISO8859_1"),100,1024);
-            //LimitedLengthInputStream reader = new LimitedLengthInputStream(in, configuration.getMaxGetSize());
-
-            //read the first line
-//            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
-            //todo - second time will read null - do something
 
             //read the first line
             while(((line = reader.readLine())==null) || (line.isEmpty()));
@@ -85,7 +80,7 @@ public class RequestParser {
                 try{
                     version = HTTPVersion.from(line.substring(secondIndex).trim());
                 }catch (IllegalArgumentException e){
-                    throw new InvalidMessageFormatException("invalid http version "+version);
+                    throw new InvalidMessageFormatException("invalid http version "+line.substring(secondIndex).trim());
                 }
 
             headers = new HTTPHeaders();

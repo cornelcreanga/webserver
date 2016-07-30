@@ -91,9 +91,9 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
         if (socketAddress instanceof InetSocketAddress) {
             InetAddress inetAddress = ((InetSocketAddress) socketAddress).getAddress();
             return inetAddress.toString();
-        } else {
-            return "Not an internet protocol socket.";
         }
+        return "Not an IP socket";
+
     }
 
 }

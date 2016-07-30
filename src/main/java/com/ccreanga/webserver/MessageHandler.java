@@ -3,6 +3,7 @@ package com.ccreanga.webserver;
 
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HTTPVersion;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
@@ -86,7 +87,8 @@ public class MessageHandler {
         responseHeaders.putHeader(HTTPHeaders.VARY,"Accept-Encoding");
         responseHeaders.putHeader(HTTPHeaders.SERVER,"WEBSERVER/0.0.1");
 
-        if (request.getHeader(HTTPHeaders.HOST) == null){//host is mandatory
+        //http://www8.org/w8-papers/5c-protocols/key/key.html
+        if ((request.getHeader(HTTPHeaders.HOST) == null) && (request.getVersion().equals(HTTPVersion.HTTP_1_1))){//host is mandatory
             writeErrorResponse(responseHeaders, HTTPStatus.BAD_REQUEST,"missing host header",out);
             return;
         }
