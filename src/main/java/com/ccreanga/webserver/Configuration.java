@@ -8,34 +8,44 @@ import java.io.IOException;
 import java.util.Properties;
 
 
-
 public class Configuration {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+    public static final String ETAG_NONE = "none";
+    public static final String ETAG_WEAK = "weak";
+    public static final String ETAG_STRONG = "strong"; //not used yet
 
     private int serverPort = 8082;
-    private String rootFolder = "/var/www/html";
-    private int initialThreads = 128;
-    private int maxThreads = 1000;
-    private int waitQueue = 64;
-    private boolean weakEtag = true;
-    private int maxGetSize = 4096;
-    private int maxHeaders = 64;
-    private int timeoutSeconds = 10;
+    private String serverRootFolder = "/var/www/html";
 
-    private int maxGetBodySize = 64000;
-    private long maxPutBodySize = 2147483648L;
+    private int serverInitialThreads = 128;
+    private int serverMaxThreads = 1000;
 
-    private boolean verbose = false;
-    private boolean xForwardedForTag = false;
+    private int requestTimeoutSeconds = 10;
+
+    private int requestWaitingQueueSize = 64;
+
+    private String requestEtag = ETAG_WEAK;//"weak/none". in future maybe support strong too
+
+    private int requestMaxLines = 200;
+    private int requestMaxLineLength = 1024;
+    private int requestMaxHeaders = 64;
+    private int requestMaxGetBodySize = 64000;
+    private long requestMaxPutBodySize = 2147483648L;
+
+
+    private boolean verbose = true;
     private int chunkLength = 128 * 1024;
 
     private Properties properties = new Properties();
 
-    public Configuration(){};
+    public Configuration() {
+    }
+
+    ;
 
     public void loadFromProperties(Properties properties) {
-        this.properties = (Properties)properties.clone();
+        this.properties = (Properties) properties.clone();
         load();
     }
 
@@ -43,83 +53,88 @@ public class Configuration {
         try {
             properties.load(new FileReader(file));
         } catch (IOException e) {
-            serverLog.error("cannot load file "+file);
+            serverLog.error("cannot load file " + file);
             System.exit(-1);
         }
         load();
-    }
-
-    private void load() {
-        try{
-            timeoutSeconds = Integer.parseInt((String) properties.get("timeoutSeconds"));
-            rootFolder = (String) properties.get("rootFolder");
-            serverPort = Integer.parseInt((String) properties.get("serverPort"));
-            initialThreads = Integer.parseInt((String) properties.get("initialThreads"));
-            maxThreads = Integer.parseInt((String) properties.get("maxThreads"));
-            waitQueue = Integer.parseInt((String) properties.get("waitQueue"));
-            weakEtag = Boolean.getBoolean((String) properties.get("weakEtag"));
-            verbose = Boolean.getBoolean((String) properties.get("verbose"));
-            maxGetSize = Integer.parseInt((String) properties.get("maxGetSize"));
-            maxHeaders = Integer.parseInt((String) properties.get("maxHeaders"));
-            chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
-            maxGetBodySize = Integer.parseInt((String) properties.get("maxGetBodySize"));
-            maxPutBodySize = Long.parseLong((String) properties.get("maxPutBodySize"));
-            xForwardedForTag = Boolean.getBoolean((String) properties.get("xForwardedForTag"));
-
-        }catch (Exception e){
-            //todo - add more details
-            serverLog.error("properties cannot be parsed");
-            System.exit(-1);
-        }
-    }
-
-    public int getMaxGetBodySize() {
-        return maxGetBodySize;
-    }
-
-    public long getMaxPutBodySize() {
-        return maxPutBodySize;
     }
 
     public int getServerPort() {
         return serverPort;
     }
 
-    public String getRootFolder() {
-        return rootFolder;
+    public String getServerRootFolder() {
+        return serverRootFolder;
     }
 
-    public int getInitialThreads() {
-        return initialThreads;
+    public int getServerInitialThreads() {
+        return serverInitialThreads;
     }
 
-    public int getMaxThreads() {
-        return maxThreads;
+    public int getServerMaxThreads() {
+        return serverMaxThreads;
     }
 
-    public int getWaitQueue() {
-        return waitQueue;
+    public int getRequestTimeoutSeconds() {
+        return requestTimeoutSeconds;
     }
 
-    public boolean isWeakEtag() {
-        return weakEtag;
+    public int getRequestWaitingQueueSize() {
+        return requestWaitingQueueSize;
     }
 
-    public int getMaxGetSize() {
-        return maxGetSize;
+    public String getRequestEtag() {
+        return requestEtag;
     }
 
-    public int getMaxHeaders() {
-        return maxHeaders;
+    public int getRequestMaxLines() {
+        return requestMaxLines;
     }
 
-    public int getTimeoutSeconds() {
-        return timeoutSeconds;
+    public int getRequestMaxLineLength() {
+        return requestMaxLineLength;
     }
 
-    public boolean isxForwardedForTag() {
-        return xForwardedForTag;
+    public int getRequestMaxHeaders() {
+        return requestMaxHeaders;
     }
+
+    public int getRequestMaxGetBodySize() {
+        return requestMaxGetBodySize;
+    }
+
+    public long getRequestMaxPutBodySize() {
+        return requestMaxPutBodySize;
+    }
+
+    private void load() {
+        try {
+            serverPort = Integer.parseInt((String) properties.get("serverPort"));
+            serverRootFolder = (String) properties.get("serverRootFolder");
+            serverInitialThreads = Integer.parseInt((String) properties.get("serverInitialThreads"));
+            serverMaxThreads = Integer.parseInt((String) properties.get("serverMaxThreads"));
+
+            requestTimeoutSeconds = Integer.parseInt((String) properties.get("requestTimeoutSeconds"));
+            requestWaitingQueueSize = Integer.parseInt((String) properties.get("requestWaitingQueueSize"));
+            requestEtag = (String) properties.get("requestEtag");
+            if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
+                throw new IllegalArgumentException("unknown etag:"+requestEtag+"; it should be none or weak");
+            requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
+            requestMaxLineLength = Integer.parseInt((String) properties.get("requestMaxLineLength"));
+            requestMaxHeaders = Integer.parseInt((String) properties.get("requestMaxHeaders"));
+            requestMaxGetBodySize = Integer.parseInt((String) properties.get("requestMaxGetBodySize"));
+            requestMaxPutBodySize = Long.parseLong((String) properties.get("requestMaxPutBodySize"));
+
+            verbose = Boolean.getBoolean((String) properties.get("verbose"));
+            chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
+
+        } catch (Exception e) {
+            //todo - add more details
+            serverLog.error("properties cannot be parsed");
+            System.exit(-1);
+        }
+    }
+
 
     public int getChunkLength() {
         return chunkLength;

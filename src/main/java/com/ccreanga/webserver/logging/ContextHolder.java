@@ -6,7 +6,8 @@ package com.ccreanga.webserver.logging;
 public class ContextHolder {
     private static final ThreadLocal<Context> threadLocal = new ThreadLocal<>();
 
-    private ContextHolder() {}
+    private ContextHolder() {
+    }
 
     public static void put(Context context) {
         threadLocal.set(context);
@@ -16,7 +17,7 @@ public class ContextHolder {
         return threadLocal.get();
     }
 
-    public static void cleanup(){
+    public static void cleanup() {
         threadLocal.remove();
     }
 }

@@ -4,24 +4,22 @@ import com.ccreanga.webserver.InternalException;
 import com.google.common.base.Preconditions;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class FileManager {
 
     private static final FileManager manager = new FileManager();
 
-    private FileManager(){}
+    private FileManager() {
+    }
 
-    public static FileManager getInstance(){
+    public static FileManager getInstance() {
         return manager;
     }
 
-    public File getFile(String fileName){
+    public File getFile(String fileName) {
         Preconditions.checkNotNull(fileName);
         if (fileName.contains("../")) {
             throw new ForbiddenException("../ is not allowed");
@@ -29,21 +27,21 @@ public class FileManager {
         File file = new File(fileName);
         //if file is hidden/starts with . return not found. do not return forbidden! - don't allow someone to 'guess'
         if (!file.exists() || (isHidden(file)))
-            throw new NotFoundException("can't find file "+fileName);
+            throw new NotFoundException("can't find file " + fileName);
 
         if (!file.canRead())
-            throw new ForbiddenException("can't read "+fileName);
+            throw new ForbiddenException("can't read " + fileName);
 
         return file;
     }
 
-    public List<File> getFolderContent(File folder){
+    public List<File> getFolderContent(File folder) {
         Preconditions.checkNotNull(folder);
         if (!folder.isDirectory())
-            throw new InternalException("file "+folder.getName()+" is not a folder");
+            throw new InternalException("file " + folder.getName() + " is not a folder");
         File[] file = folder.listFiles();
-        if (file==null)//this should not happen unless some I/O issue
-            throw new InternalException("cannot list folder "+folder.getName());
+        if (file == null)//this should not happen unless some I/O issue
+            throw new InternalException("cannot list folder " + folder.getName());
         return Arrays.stream(file).filter(this::isNotHidden).collect(Collectors.toList());
     }
 
@@ -57,11 +55,11 @@ public class FileManager {
 //
 //    }
 
-    private boolean isHidden(File file){
-        return file.isHidden() || file.getName().charAt(0)=='.';
+    private boolean isHidden(File file) {
+        return file.isHidden() || file.getName().charAt(0) == '.';
     }
 
-    private boolean isNotHidden(File file){
+    private boolean isNotHidden(File file) {
         return !isHidden(file);
     }
 

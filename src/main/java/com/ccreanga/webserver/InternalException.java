@@ -1,6 +1,6 @@
 package com.ccreanga.webserver;
 
-public class InternalException extends RuntimeException{
+public class InternalException extends RuntimeException {
 
     public InternalException(Throwable cause) {
         super(cause);

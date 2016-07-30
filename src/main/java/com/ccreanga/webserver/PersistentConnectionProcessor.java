@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.*;
-import java.util.UUID;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class PersistentConnectionProcessor implements ConnectionProcessor {
 
@@ -22,14 +22,7 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
 
 
     public void handleConnection(Socket socket, Configuration configuration) {
-        ContextHolder.put(new Context());
         try (InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream();) {
-            //todo - move them out in the parent caller
-            UUID uuid = UUID.randomUUID();
-            ContextHolder.get().setUuid(uuid);
-            String ip = getIp(socket);
-            ContextHolder.get().setIp(ip);
-            serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
             /**
              * The connection will be kept open unless
              * a)the connection will explicitly request close (HTTPHeaders.CONNECTION)
@@ -57,7 +50,6 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     //todo - we might want to wrap the outstream into another one (zip)
                     MessageHandler messageHandler = new MessageHandler();
                     messageHandler.handleMessage(request, configuration, output);
-                    output.flush();
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //todo - chunked and keep alive dont work together for http 1.0
                     if (("close".equals(request.getHeader(HTTPHeaders.CONNECTION))) ||
@@ -69,6 +61,7 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
                     shouldCloseConnection = true;
                 }
+                output.flush();
                 accessLog.info(ContextHolder.get().generateLogEntry());
                 if (shouldCloseConnection) {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
@@ -83,16 +76,6 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
         } finally {
             ContextHolder.cleanup();
         }
-
-    }
-
-    public String getIp(Socket socket) {
-        SocketAddress socketAddress = socket.getRemoteSocketAddress();
-        if (socketAddress instanceof InetSocketAddress) {
-            InetAddress inetAddress = ((InetSocketAddress) socketAddress).getAddress();
-            return inetAddress.toString();
-        }
-        return "Not an IP socket";
 
     }
 

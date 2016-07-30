@@ -27,7 +27,7 @@ public class RequestParser {
         byte[] buf = new byte[buflen];
         int count = 0;
         int c;
-        while ((c = in.read()) != -1 && (c != '\n') ) {
+        while ((c = in.read()) != -1 && (c != '\n')) {
             if (count == buflen) { // expand buffer
                 buflen = 2 * buflen;
                 byte[] expanded = new byte[buflen];
@@ -38,7 +38,7 @@ public class RequestParser {
         }
         if (c == -1)
             return null;
-        if (count==0)
+        if (count == 0)
             return "";
         if (buf[count - 1] == '\r')
             count--;
@@ -46,42 +46,45 @@ public class RequestParser {
     }
 
 
-    public RequestMessage parseRequest(InputStream in,Configuration configuration) throws IOException, InvalidMessageFormatException {
+    public RequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
         String line;
-        HTTPMethod httpMethod = null;
-        String resource = null;
-        HTTPVersion version = null;
+        HTTPMethod httpMethod;
+        String resource;
+        HTTPVersion version;
         HTTPHeaders headers;
         try {
-            //prevent dos attack/huge strings.
-            BoundedBufferedReader reader = new BoundedBufferedReader(new InputStreamReader(in, "ISO8859_1"),100,1024);
+            //prevent large requests / out of memory errors
+            BoundedBufferedReader reader = new BoundedBufferedReader(
+                    new InputStreamReader(in, "ISO8859_1"),
+                    configuration.getRequestMaxLines(),
+                    configuration.getRequestMaxLineLength());
 
             //read the first line
-            while(((line = reader.readLine())==null) || (line.isEmpty()));
+            while (((line = reader.readLine()) == null) || (line.isEmpty())) ;
 
-                serverLog.trace("Connection "+ ContextHolder.get().getUuid()+ " : "+line);
-                ContextHolder.get().setUrl(line);
-                int index = line.indexOf(' ');
-                if (index == -1)
-                    throw new InvalidMessageFormatException("malformed url");
-                String method = line.substring(0, index).trim();
+            serverLog.trace("Connection " + ContextHolder.get().getUuid() + " : " + line);
+            ContextHolder.get().setUrl(line);
+            int index = line.indexOf(' ');
+            if (index == -1)
+                throw new InvalidMessageFormatException("malformed url");
+            String method = line.substring(0, index).trim();
 
-                try {
-                    httpMethod = HTTPMethod.valueOf(method);
-                } catch (IllegalArgumentException e) {
-                    throw new InvalidMessageFormatException("invalid http method "+method);
-                }
+            try {
+                httpMethod = HTTPMethod.valueOf(method);
+            } catch (IllegalArgumentException e) {
+                throw new InvalidMessageFormatException("invalid http method " + method);
+            }
 
-                int secondIndex = line.indexOf(' ', index + 1);
-                if (secondIndex == -1)
-                    throw new InvalidMessageFormatException("malformed url");
-                //remove the '/' in front of the resource
-                resource = line.substring(index + 1, secondIndex).trim();
-                try{
-                    version = HTTPVersion.from(line.substring(secondIndex).trim());
-                }catch (IllegalArgumentException e){
-                    throw new InvalidMessageFormatException("invalid http version "+line.substring(secondIndex).trim());
-                }
+            int secondIndex = line.indexOf(' ', index + 1);
+            if (secondIndex == -1)
+                throw new InvalidMessageFormatException("malformed url");
+            //remove the '/' in front of the resource
+            resource = line.substring(index + 1, secondIndex).trim();
+            try {
+                version = HTTPVersion.from(line.substring(secondIndex).trim());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidMessageFormatException("invalid http version " + line.substring(secondIndex).trim());
+            }
 
             headers = new HTTPHeaders();
             //read the HTTPHeaders.
@@ -114,7 +117,7 @@ public class RequestParser {
             if (len != null)
                 length = Long.parseLong(len);
         } catch (NumberFormatException e) {
-            throw new InvalidMessageFormatException("invalid content lenght value "+len);
+            throw new InvalidMessageFormatException("invalid content lenght value " + len);
         }
         //we cannot have both chunk and length
         if ((chunk) && (length != -1))

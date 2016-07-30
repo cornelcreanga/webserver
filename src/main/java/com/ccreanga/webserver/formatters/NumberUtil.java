@@ -11,7 +11,7 @@ public class NumberUtil {
         return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
     }
 
-    public static String formatMillis(long milliseconds){
+    public static String formatMillis(long milliseconds) {
         DecimalFormat df = new DecimalFormat("#########.###");
         df.setGroupingUsed(true);
         df.setGroupingSize(3);

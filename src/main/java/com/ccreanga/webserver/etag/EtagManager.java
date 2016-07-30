@@ -1,14 +1,12 @@
 package com.ccreanga.webserver.etag;
 
 
-import com.ccreanga.webserver.repository.FileManager;
 import com.google.common.base.Preconditions;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -21,13 +19,14 @@ public class EtagManager {
 
     private static final EtagManager manager = new EtagManager();
 
-    private EtagManager(){}
+    private EtagManager() {
+    }
 
-    public static EtagManager getInstance(){
+    public static EtagManager getInstance() {
         return manager;
     }
 
-    public String getFileEtag(File file, boolean weak){
+    public String getFileEtag(File file, boolean weak) {
         if (weak)
             return getFileWeakEtag(file);
         throw new IllegalArgumentException("strong etags are not yet supported");
@@ -38,23 +37,25 @@ public class EtagManager {
      * This method returns a file weak etag implementation based on file last modified time
      * It works for both files/folders - at least on the NTFS / etx* filesystems(the directory last modified time changes when a file or a subdirectory
      * (directly under this directory) is added, removed or renamed.)
+     *
      * @param file
      * @return
      */
     private String getFileWeakEtag(File file) {
         Preconditions.checkNotNull(file);
-        return "W/\"" + file.lastModified()+"\"";
+        return "W/\"" + file.lastModified() + "\"";
     }
 
     /**
      * This method returns a file strong etag implementation based on file md5. does not work (yet) for folders
+     *
      * @param file
      * @return
      */
     //Inspired from http://www.rgagnon.com/javadetails/java-0416.html
     private String getFileStrongEtag(File file) {
         Preconditions.checkNotNull(file);
-        try(InputStream in = new FileInputStream(file)){
+        try (InputStream in = new FileInputStream(file)) {
             byte[] buffer = new byte[2048];
             MessageDigest complete = MessageDigest.getInstance("MD5");
             int numRead;

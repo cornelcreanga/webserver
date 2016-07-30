@@ -102,6 +102,6 @@ public enum HTTPStatus {
 
     @Override
     public String toString() {
-        return ""+value;
+        return "" + value;
     }
 }

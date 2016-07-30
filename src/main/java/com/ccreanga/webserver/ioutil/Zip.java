@@ -11,10 +11,11 @@ public class Zip {
 
 
     public static void main(String[] args) {
-        if (args.length!=2)
+        if (args.length != 2)
             System.out.println("Usage Zip <folder> <zipname>");
-        recursiveZipFolder(args[0],args[1]);
+        recursiveZipFolder(args[0], args[1]);
     }
+
     public static void recursiveZipFolder(String dir, String zipFileName) {
         File dirObj = new File(dir);
         ZipOutputStream out;

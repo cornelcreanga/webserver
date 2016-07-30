@@ -21,13 +21,13 @@ public class Mime {
         try {
             properties.load(ClassLoader.getSystemResourceAsStream(MIME_PROPERTIES));
         } catch (Exception e) {
-            log.error("cannot load the "+MIME_PROPERTIES+" file (corrupted archive)");
+            log.error("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
             System.exit(-1);
         }
     }
 
     public static String getType(String extension) {
-        if (extension==null)
+        if (extension == null)
             return applicationStream;
         String type = (String) properties.get(extension);
         if (type == null)

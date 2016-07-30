@@ -14,7 +14,9 @@ package com.ccreanga.webserver.ioutil;
  * @version 1.1
  */
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 
 public class BoundedBufferedReader extends BufferedReader {
     private static final int DEFAULT_MAX_LINES = 1024;            //Max lines per file

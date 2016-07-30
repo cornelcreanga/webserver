@@ -3,13 +3,15 @@ package com.ccreanga.webserver;
 import ch.qos.logback.classic.Level;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.logging.Context;
+import com.ccreanga.webserver.logging.ContextHolder;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 public class Server implements Runnable {
@@ -28,50 +30,55 @@ public class Server implements Runnable {
     public Server(Configuration configuration) {
         this.configuration = configuration;
         ch.qos.logback.classic.Logger serverLog = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("serverLog");
-        serverLog.setLevel(configuration.isVerbose()? Level.TRACE:Level.INFO);
+        serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
     }
 
     public void run() {
         serverLog.info("Starting the server...");
         threadPool = new ThreadPoolExecutor(
-                configuration.getInitialThreads(),
-                configuration.getMaxThreads(),
+                configuration.getServerInitialThreads(),
+                configuration.getServerMaxThreads(),
                 60,
                 TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<>(configuration.getWaitQueue()));
+                new ArrayBlockingQueue<>(configuration.getRequestWaitingQueueSize()));
 
 
-        try(ServerSocket serverSocket = new ServerSocket(configuration.getServerPort())) {
-            serverLog.info("Server started,listening on "+configuration.getServerPort()+".");
+        try (ServerSocket serverSocket = new ServerSocket(configuration.getServerPort())) {
+            serverLog.info("Server started,listening on " + configuration.getServerPort() + ".");
             while (!isStopped()) {
                 try {
                     final Socket socket = serverSocket.accept();
                     socket.setTcpNoDelay(true);
-                    socket.setSoTimeout(configuration.getTimeoutSeconds() * 1000);
+                    socket.setSoTimeout(configuration.getRequestTimeoutSeconds() * 1000);
                     try {
                         threadPool.execute(() -> {
                             try {
-                                //always create persistent connections (support http 1.1)
+                                ContextHolder.put(new Context());
+                                UUID uuid = UUID.randomUUID();
+                                ContextHolder.get().setUuid(uuid);
+                                String ip = getIp(socket);
+                                ContextHolder.get().setIp(ip);
+                                serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
+
                                 ConnectionProcessor connectionProcessor = new PersistentConnectionProcessor();
                                 connectionProcessor.handleConnection(socket, configuration);
-                            }finally{
+                            } finally {
                                 try {
-                                    Closeables.close(socket,true);
+                                    Closeables.close(socket, true);
                                 } catch (IOException e) {/**ignore**/}
                             }
                         });
 
                     } catch (RejectedExecutionException e) {
-                        MessageWriter.writeErrorResponse(new HTTPHeaders(), HTTPStatus.SERVICE_UNAVAILABLE,"",socket.getOutputStream());
-                        //todo - new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HTTPStatus.SERVICE_UNAVAILABLE);
+                        MessageWriter.writeErrorResponse(new HTTPHeaders(), HTTPStatus.SERVICE_UNAVAILABLE, "", socket.getOutputStream());
                     }
-                }catch (IOException e){
+                } catch (IOException e) {
                     serverLog.trace(e.getMessage());
                 }
             }
 
         } catch (IOException e) {
-            serverLog.error("Fatal error: "+e.getMessage());
+            serverLog.error("Fatal error: " + e.getMessage());
         } finally {
             threadPool.shutdown();
         }
@@ -88,10 +95,21 @@ public class Server implements Runnable {
         isStopped = true;
     }
 
+    private String getIp(Socket socket) {
+        SocketAddress socketAddress = socket.getRemoteSocketAddress();
+        if (socketAddress instanceof InetSocketAddress) {
+            InetAddress inetAddress = ((InetSocketAddress) socketAddress).getAddress();
+            return inetAddress.toString();
+        }
+        return "Not an IP socket";
+
+    }
+
+
     public static void main(String[] args) {
 
         Configuration configuration = new Configuration();
-        if (args.length>0)
+        if (args.length > 0)
             configuration.loadFromFile(args[1]);
 
         Server server = new Server(configuration);

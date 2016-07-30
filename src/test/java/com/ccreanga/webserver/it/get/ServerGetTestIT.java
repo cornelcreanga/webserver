@@ -27,19 +27,25 @@ public class ServerGetTestIT {
 
     @BeforeClass
     public static void init() {
+
         Properties properties = new Properties();
         properties.put("serverPort", port);
-        properties.put("rootFolder", ClassLoader.getSystemResource("www").getPath());
-        properties.put("initialThreads", "128");
-        properties.put("maxThreads", "1000");
-        properties.put("waitQueue", "64");
-        properties.put("weakEtag", "true");
-        properties.put("maxGetSize", "4096");
-        properties.put("maxHeaders", "64");
-        properties.put("timeoutSeconds", "5000");
-        properties.put("maxGetBodySize", "64000");
-        properties.put("maxPutBodySize", "2147483648");
-        properties.put("xForwardedForTag", "false");
+        properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
+        properties.put("serverInitialThreads", "128");
+        properties.put("serverMaxThreads", "1000");
+
+        properties.put("requestTimeoutSeconds", "100");
+        properties.put("requestWaitingQueueSize", "64");
+
+        properties.put("shouldUseWeakEtag", "weak");
+
+        properties.put("requestMaxLines", "200");
+        properties.put("requestMaxLineLength", "1024");
+        properties.put("requestMaxHeaders", "64");
+        properties.put("requestMaxGetBodySize", "64000");
+        properties.put("requestMaxPutBodySize", "2147483648");
+
+        properties.put("verbose", "true");
         properties.put("chunkLength", "131072");
         configuration.loadFromProperties(properties);
 
