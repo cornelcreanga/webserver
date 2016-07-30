@@ -84,6 +84,7 @@ public class MessageHandler {
         responseHeaders.putHeader(HTTPHeaders.DATE, currentDate.replace("UTC","GMT"));
         responseHeaders.putHeader(HTTPHeaders.CONNECTION,"Keep-Alive");
         responseHeaders.putHeader(HTTPHeaders.VARY,"Accept-Encoding");
+        responseHeaders.putHeader(HTTPHeaders.SERVER,"WEBSERVER/0.0.1");
 
         if (request.getHeader(HTTPHeaders.HOST) == null){//host is mandatory
             writeErrorResponse(responseHeaders, HTTPStatus.BAD_REQUEST,"missing host header",out);

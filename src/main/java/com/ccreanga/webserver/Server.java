@@ -1,5 +1,8 @@
 package com.ccreanga.webserver;
 
+import ch.qos.logback.classic.Level;
+import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HTTPStatus;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +18,17 @@ public class Server implements Runnable {
 
     private boolean isStopped = false;
     private ExecutorService threadPool;
-    private Configuration configuration = new Configuration();
+    private Configuration configuration;
 
 
     public Server() {
+        this(new Configuration());
     }
 
     public Server(Configuration configuration) {
-        super();
         this.configuration = configuration;
+        ch.qos.logback.classic.Logger serverLog = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("serverLog");
+        serverLog.setLevel(configuration.isVerbose()? Level.TRACE:Level.INFO);
     }
 
     public void run() {
@@ -57,15 +62,16 @@ public class Server implements Runnable {
                         });
 
                     } catch (RejectedExecutionException e) {
+                        MessageWriter.writeErrorResponse(new HTTPHeaders(), HTTPStatus.SERVICE_UNAVAILABLE,"",socket.getOutputStream());
                         //todo - new ResponseMessageWriter().writeRequestError(socket.getOutputStream(), HTTPStatus.SERVICE_UNAVAILABLE);
                     }
                 }catch (IOException e){
-                    serverLog.info(e.getMessage());
+                    serverLog.trace(e.getMessage());
                 }
             }
 
         } catch (IOException e) {
-            serverLog.info("Fatal error: "+e.getMessage());
+            serverLog.error("Fatal error: "+e.getMessage());
         } finally {
             threadPool.shutdown();
         }

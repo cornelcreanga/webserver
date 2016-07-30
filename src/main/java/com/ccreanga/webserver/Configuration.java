@@ -21,12 +21,12 @@ public class Configuration {
     private boolean weakEtag = true;
     private int maxGetSize = 4096;
     private int maxHeaders = 64;
-    private int timeoutSeconds = 60;
+    private int timeoutSeconds = 10;
 
     private int maxGetBodySize = 64000;
     private long maxPutBodySize = 2147483648L;
 
-
+    private boolean verbose = false;
     private boolean xForwardedForTag = false;
     private int chunkLength = 128 * 1024;
 
@@ -43,7 +43,7 @@ public class Configuration {
         try {
             properties.load(new FileReader(file));
         } catch (IOException e) {
-            serverLog.info("cannot load file "+file);
+            serverLog.error("cannot load file "+file);
             System.exit(-1);
         }
         load();
@@ -58,6 +58,7 @@ public class Configuration {
             maxThreads = Integer.parseInt((String) properties.get("maxThreads"));
             waitQueue = Integer.parseInt((String) properties.get("waitQueue"));
             weakEtag = Boolean.getBoolean((String) properties.get("weakEtag"));
+            verbose = Boolean.getBoolean((String) properties.get("verbose"));
             maxGetSize = Integer.parseInt((String) properties.get("maxGetSize"));
             maxHeaders = Integer.parseInt((String) properties.get("maxHeaders"));
             chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
@@ -67,7 +68,7 @@ public class Configuration {
 
         }catch (Exception e){
             //todo - add more details
-            serverLog.info("properties cannot be parsed");
+            serverLog.error("properties cannot be parsed");
             System.exit(-1);
         }
     }
@@ -124,5 +125,7 @@ public class Configuration {
         return chunkLength;
     }
 
-
+    public boolean isVerbose() {
+        return verbose;
+    }
 }

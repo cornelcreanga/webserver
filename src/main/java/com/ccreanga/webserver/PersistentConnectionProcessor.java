@@ -24,12 +24,12 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
     public void handleConnection(Socket socket, Configuration configuration) {
         ContextHolder.put(new Context());
         try (InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream();) {
-
+            //todo - move them out in the parent caller
             UUID uuid = UUID.randomUUID();
             ContextHolder.get().setUuid(uuid);
             String ip = getIp(socket);
             ContextHolder.get().setIp(ip);
-            serverLog.info("Connection from ip " + ip + " started, uuid=" + uuid);
+            serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
             /**
              * The connection will be kept open unless
              * a)the connection will explicitly request close (HTTPHeaders.CONNECTION)
@@ -58,28 +58,28 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     MessageHandler messageHandler = new MessageHandler();
                     messageHandler.handleMessage(request, configuration, output);
                     output.flush();
-                    serverLog.info("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
-
+                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
+                    //todo - chunked and keep alive dont work together for http 1.0
                     if (("close".equals(request.getHeader(HTTPHeaders.CONNECTION))) ||
                             (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !"Keep-Alive".equals(request.getHeader(HTTPHeaders.CONNECTION)))
                         shouldCloseConnection = true;
                 } else { //we were not event able to parse the first request line (this is not HTTP), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
                     MessageWriter.writeResponseLine(invalidStatus, output);
-                    serverLog.info("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
+                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
                     shouldCloseConnection = true;
                 }
                 accessLog.info(ContextHolder.get().generateLogEntry());
                 if (shouldCloseConnection) {
-                    serverLog.info("Connection " + ContextHolder.get().getUuid() + " requested close");
+                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
                     break;
                 }
 
             }
         } catch (SocketTimeoutException e) {
-            serverLog.info("Connection " + ContextHolder.get().getUuid() + " was closed due to timeout");
+            serverLog.trace("Connection " + ContextHolder.get().getUuid() + " was closed due to timeout");
         } catch (IOException e) {
-            serverLog.info("Connection " + ContextHolder.get().getUuid() + " received " + e.getMessage());
+            serverLog.trace("Connection " + ContextHolder.get().getUuid() + " received " + e.getMessage());
         } finally {
             ContextHolder.cleanup();
         }

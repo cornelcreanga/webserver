@@ -59,10 +59,12 @@ public class RequestParser {
 
             //read the first line
 //            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
-            while ((line = reader.readLine()) != null) {
-                if (line.isEmpty())//empty line is allowed
-                    continue;//todo - what if you only have an empty line?
-                serverLog.info("Connection "+ ContextHolder.get().getUuid()+ " : "+line);
+            //todo - second time will read null - do something
+
+            //read the first line
+            while(((line = reader.readLine())==null) || (line.isEmpty()));
+
+                serverLog.trace("Connection "+ ContextHolder.get().getUuid()+ " : "+line);
                 ContextHolder.get().setUrl(line);
                 int index = line.indexOf(' ');
                 if (index == -1)
@@ -86,22 +88,13 @@ public class RequestParser {
                     throw new InvalidMessageFormatException("invalid http version "+version);
                 }
 
-                break;
-            }
-
-//            if (httpMethod==null){
-//
-//            }
-
             headers = new HTTPHeaders();
             //read the HTTPHeaders.
             String previousHeader = "";
-//            while ((line = readLine(reader, configuration.getRequestGetEncoding())) != null) {
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) {
                     break;
                 }
-                //System.out.println(line);
                 if (Character.isSpaceChar(line.charAt(0))) {
                     headers.appendHeader(previousHeader, line.trim());
                 } else {

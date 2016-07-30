@@ -14,6 +14,6 @@ public class ServerShutDownHook implements Runnable{
 
     public void run() {
         server.stop();
-        serverLog.info("server is shutting down.");
+        serverLog.info("Server is shutting down.");
     }
 }
