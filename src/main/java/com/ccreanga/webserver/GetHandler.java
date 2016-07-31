@@ -125,23 +125,32 @@ public class GetHandler {
 
 
         if (file.isFile()) {
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(Files.getFileExtension((resource))));
-            String length = String.valueOf(file.length());
-            ContextHolder.get().setContentLength(length);
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, length);
-            writeHeaders(responseHeaders, out);
-            ByteStreams.copy(new FileInputStream(file), out);
+            deliverFile(responseHeaders,file,configuration,out);
         } else {
-            //todo - it should not return html unless the client accepts that
-            indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));
-            ContextHolder.get().setContentLength("" + indexPage.length());
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "" + indexPage.length());
-            writeHeaders(responseHeaders, out);
-            out.write(indexPage.getBytes(Charsets.UTF_8));
+            deliverFolder(responseHeaders,file,configuration,out);
         }
     }
 
+    private void deliverFile(HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
+        responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(Files.getFileExtension((file.getName()))));
+        String length = String.valueOf(file.length());
+        ContextHolder.get().setContentLength(length);
+        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, length);
+        writeHeaders(responseHeaders, out);
+        ByteStreams.copy(new FileInputStream(file), out);
+
+    }
+
+    private void deliverFolder(HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
+        //todo - it should not return html unless the client accepts that
+        String indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
+        responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));
+        ContextHolder.get().setContentLength("" + indexPage.length());
+        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "" + indexPage.length());
+        writeHeaders(responseHeaders, out);
+        out.write(indexPage.getBytes(Charsets.UTF_8));
+
+    }
 
 }
 

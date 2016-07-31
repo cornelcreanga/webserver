@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 /**
  * This class offers methods for both weak/strong etags
  * Weak etag is computed by looking on the file last modified date
- * Strong etag is computed using md5
+ * Strong etag is computed using md5 (not yet implemented)
  */
 public class EtagManager {
 
@@ -26,24 +26,37 @@ public class EtagManager {
         return manager;
     }
 
-    public String getFileEtag(File file, boolean weak) {
-        if (weak)
-            return getFileWeakEtag(file);
-        throw new IllegalArgumentException("strong etags are not yet supported");
-    }
-
-
     /**
-     * This method returns a file weak etag implementation based on file last modified time
-     * It works for both files/folders - at least on the NTFS / etx* filesystems(the directory last modified time changes when a file or a subdirectory
-     * (directly under this directory) is added, removed or renamed.)
-     *
-     * @param file
+     * This method returns a file weak etag implementation based on the file last modified time
+     * @param file file - cannot be a folder
+     * @param extension - optional, can be empty or null
+     * @param weak - weak etag generation (based on the file last modified time) or strong (not yet implemented)
      * @return
      */
+    public String getFileEtag(File file,String extension, boolean weak) {
+        return getFileWeakEtag(file,extension);
+    }
+
+    public String getFileEtag(File file, boolean weak) {
+        return getFileEtag(file,"",weak);
+    }
+
     private String getFileWeakEtag(File file) {
+        return getFileWeakEtag(file,"");
+    }
+
+        /**
+         * This method returns a file weak etag implementation based on the file last modified time
+         *
+         * @param file
+         * @return
+         */
+    private String getFileWeakEtag(File file,String extension) {
         Preconditions.checkNotNull(file);
-        return "W/\"" + file.lastModified() + "\"";
+        Preconditions.checkArgument(file.isFile());
+        if (extension==null)
+            extension="";
+        return "W/\"" + file.lastModified() +extension+ "\"";
     }
 
     /**
