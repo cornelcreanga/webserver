@@ -1,5 +1,6 @@
 package com.ccreanga.webserver;
 
+import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
@@ -18,6 +19,7 @@ import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -119,9 +121,6 @@ public class GetHandler {
             return;
         }
 
-//        responseHeaders.putHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(fileLastModifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
-//        responseHeaders.putHeader(HTTPHeaders.ETAG, EtagManager.getDateBasedEtag(file));
-
         String indexPage = null;
 
         writeResponseLine(HTTPStatus.OK, out);
@@ -136,22 +135,29 @@ public class GetHandler {
 
     private void deliverFile(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
         responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(Files.getFileExtension((file.getName()))));
+        responseHeaders.putHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified()),DateUtil.FORMATTER_RFC822));
+        String etag = null;
+        if (configuration.getRequestEtag().equals(Configuration.ETAG_WEAK)) {
+            etag = EtagManager.getInstance().getFileEtag(file, true);
+            responseHeaders.putHeader(HTTPHeaders.ETAG, etag);
+        }
+
         if (request.getVersion().equals(HTTPVersion.HTTP_1_1)){
             responseHeaders.putHeader(HTTPHeaders.TRANSFER_ENCODING,"chunked");
 
-            if (request.getHeader("Accept-Encoding").contains("gzip")){
-                responseHeaders.putHeader("Content-Encoding","gzip");
-            }else if (request.getHeader("Accept-Encoding").contains("deflate")){
-                responseHeaders.putHeader("Content-Encoding","deflate");
+            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip")){
+                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"gzip");
+            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate")){
+                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"deflate");
             }
 
             writeHeaders(responseHeaders, out);
 
             ChunkedOutputStream chunkedOutputStream = new ChunkedOutputStream(out);
             OutputStream enclosed = chunkedOutputStream;
-            if (request.getHeader("Accept-Encoding").contains("gzip")){
+            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip")){
                 enclosed = new GZIPOutputStream(enclosed);
-            }else if (request.getHeader("Accept-Encoding").contains("deflate")){
+            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate")){
                 enclosed = new DeflaterOutputStream(enclosed);
             }
 

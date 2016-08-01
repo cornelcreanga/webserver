@@ -52,8 +52,8 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     messageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //todo - chunked and keep alive dont work together for http 1.0
-                    if (("close".equals(request.getHeader(HTTPHeaders.CONNECTION))) ||
-                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !"Keep-Alive".equals(request.getHeader(HTTPHeaders.CONNECTION)))
+                    if ((request.headerIs(HTTPHeaders.CONNECTION,"close")) ||
+                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION,"Keep-Alive"))
                         shouldCloseConnection = true;
                 } else { //we were not event able to parse the first request line (this is not HTTP), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());

@@ -31,6 +31,21 @@ public class RequestMessage {
             this.body = body;
     }
 
+    public boolean headerContains(String header,String value){
+        String headerValue = getHeader(header);
+        if (headerValue==null)
+            return false;
+        return headerValue.contains(value);
+    }
+
+    public boolean headerIs(String header,String value){
+        String headerValue = getHeader(header);
+        if (headerValue==null)
+            return false;
+        return headerValue.equals(value);
+    }
+
+
     public boolean isChunk() {
         return chunk;
     }
