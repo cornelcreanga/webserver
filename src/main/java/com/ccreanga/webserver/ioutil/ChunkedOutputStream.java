@@ -1,248 +1,213 @@
-/*
- * Copyright (c) 2004, 2007, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
- *
- * This code is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
- *
- * This code is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
- * version 2 for more details (a copy is included in the LICENSE file that
- * accompanied this code).
- *
- * You should have received a copy of the GNU General Public License version
- * 2 along with this work; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
- * or visit www.oracle.com if you need additional information or have any
- * questions.
- */
 package com.ccreanga.webserver.ioutil;
 
-import java.io.*;
+/*
+ * ====================================================================
+ *
+ *  Copyright 2002-2004 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ *
+ * [Additional notices, if required by prior licensing conditions]
+ * Modifications copyright (C) 2016 Cornel Creanga
+ */
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * OutputStream that sends the output to the underlying stream using chunked
- * encoding as specified in RFC 2068.
+ * <p>
+ * Wrapper supporting the chunked transfer encoding.
+ * </p>
  *
- * @author  Alan Bateman
+ * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
+ * @author Sean C. Sullivan
+ * @author <a href="mailto:dion@apache.org">dIon Gillard</a>
+ * @author <a href="mailto:oleg@ural.ru">Oleg Kalnichevski</a>
+ * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
+ * @version $Revision: 1.10.2.1 $ $Date: 2004/02/22 18:21:13 $
+ *
+ * @see ChunkedInputStream
+ * @since 2.0
+ *
  */
-public class ChunkedOutputStream extends PrintStream {
+public class ChunkedOutputStream extends OutputStream {
 
-    /* Default chunk size (including chunk header) if not specified */
-    static final int DEFAULT_CHUNK_SIZE = 4096;
+    // ------------------------------------------------------- Static Variables
 
-    /* internal buffer */
-    private byte buf[];
-    private int count;
+    /** <tt>"\r\n"</tt>, as bytes. */
+    private static final byte CRLF[] = new byte[] {(byte) 13, (byte) 10};
 
-    /* underlying stream */
-    private PrintStream out;
+    /** End chunk */
+    private static final byte ENDCHUNK[] = CRLF;
 
-    /* the chunk size we use */
-    private int preferredChunkSize;
+    /** 0 */
+    private static final byte ZERO[] = new byte[] {(byte) '0'};
 
-    /* if the users write buffer is bigger than this size, we
-     * write direct from the users buffer instead of copying
-     */
-    static final int MAX_BUF_SIZE = 10 * 1024;
+    /** 1 */
+    private static final byte ONE[] = new byte[] {(byte) '1'};
 
-    /* return the size of the header for a particular chunk size */
-    private int headerSize(int size) {
-        return 2 + (Integer.toHexString(size)).length();
-    }
+    /** Has this stream been closed? */
+    private boolean closed = false;
 
-    public ChunkedOutputStream(PrintStream o) {
-        this(o, DEFAULT_CHUNK_SIZE);
-    }
+    /** The underlying output stream to which we will write data */
+    private OutputStream stream = null;
 
-    public ChunkedOutputStream(PrintStream o, int size) {
-        super(o);
+    // ----------------------------------------------------------- Constructors
 
-        out = o;
-
-        if (size <= 0) {
-            size = DEFAULT_CHUNK_SIZE;
-        }
-        /* Adjust the size to cater for the chunk header - eg: if the
-         * preferred chunk size is 1k this means the chunk size should
-         * be 1019 bytes (differs by 5 from preferred size because of
-         * 3 bytes for chunk size in hex and CRLF).
-         */
-        if (size > 0) {
-            int adjusted_size = size - headerSize(size);
-            if (adjusted_size + headerSize(adjusted_size) < size) {
-                adjusted_size++;
-            }
-            size = adjusted_size;
-        }
-
-        if (size > 0) {
-            preferredChunkSize = size;
-        } else {
-            preferredChunkSize = DEFAULT_CHUNK_SIZE - headerSize(DEFAULT_CHUNK_SIZE);
-        }
-
-        /* start with an initial buffer */
-        buf = new byte[preferredChunkSize + 32];
-    }
-
-    /*
-     * If flushAll is true, then all data is flushed in one chunk.
+    /**
+     * Construct an output stream wrapping the given stream.
+     * The stream will not use chunking.
      *
-     * If false and the size of the buffer data exceeds the preferred
-     * chunk size then chunks are flushed to the output stream.
-     * If there isn't enough data to make up a complete chunk,
-     * then the method returns.
+     * @param stream wrapped output stream. Must be non-null.
      */
-    private void flush(byte[] buf, boolean flushAll) {
-        flush (buf, flushAll, 0);
+    public ChunkedOutputStream(OutputStream stream) {
+        if (stream == null) {
+            throw new NullPointerException("stream parameter is null");
+        }
+        this.stream = stream;
     }
 
-    private void flush(byte[] buf, boolean flushAll, int offset) {
-        int chunkSize;
 
-        do {
-            if (count < preferredChunkSize) {
-                if (!flushAll) {
-                    break;
-                }
-                chunkSize = count;
-            } else {
-                chunkSize = preferredChunkSize;
-            }
+    // --------------------------------------------------------- Public Methods
 
-            byte[] bytes = null;
+    /**
+     * Writes a <code>String</code> to the client, without a carriage return
+     * line feed (CRLF) character at the end. The platform default encoding is
+     * used!
+     *
+     * @param s the <code>String</code> to send to the client. Must be non-null.
+     * @throws IOException if an input or output exception occurred
+     */
+    public void print(String s) throws IOException {
+        if (s == null) {
+            s = "null";
+        }
+        write(getBytes(s));
+    }
+
+    /**
+     * Writes a carriage return-line feed (CRLF) to the client.
+     *
+     * @throws IOException   if an input or output exception occurred
+     */
+    public void println() throws IOException {
+        print("\r\n");
+    }
+
+    /**
+     * Write the specified byte to our output stream.
+     *
+     * @param b The byte to be written
+     * @throws IOException if an input/output error occurs
+     * @throws IllegalStateException if stream already closed
+     */
+    public void write (int b) throws IOException, IllegalStateException {
+        if (closed) {
+            throw new IllegalStateException("Output stream already closed");
+        }
+        //FIXME: If using chunking, the chunks are ONE byte long!
+        stream.write(ONE, 0, ONE.length);
+        stream.write(CRLF, 0, CRLF.length);
+        stream.write(b);
+        stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+    }
+
+    /**
+     * Write the specified byte array.
+     *
+     * @param b the byte array to write out
+     * @param off the offset within <code>b</code> to start writing from
+     * @param len the length of data within <code>b</code> to write
+     * @throws IOException when errors occur writing output
+     */
+    public void write (byte[] b, int off, int len) throws IOException {
+
+        if (closed) {
+            throw new IllegalStateException("Output stream already closed");
+        }
+        byte chunkHeader[] = getBytes (
+                Integer.toHexString(len) + "\r\n");
+        stream.write(chunkHeader, 0, chunkHeader.length);
+        stream.write(b, off, len);
+        stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+    }
+
+    /**
+     * Close this output stream, causing any buffered data to be flushed and
+     * any further output data to throw an IOException. The underlying stream
+     * is not closed!
+     *
+     * @throws IOException if an error occurs closing the stream
+     */
+    public void writeClosingChunk() throws IOException {
+
+        if (!closed) {
             try {
-                bytes = (Integer.toHexString(chunkSize)).getBytes("US-ASCII");
-            } catch (java.io.UnsupportedEncodingException e) {
-                //This should never happen.
-                throw new InternalError(e.getMessage());
+                // Write the final chunk.
+                stream.write(ZERO, 0, ZERO.length);
+                stream.write(CRLF, 0, CRLF.length);
+                stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+            } catch (IOException e) {
+                throw e;
+            } finally {
+                // regardless of what happens, mark the stream as closed.
+                // if there are errors closing it, there's not much we can do
+                // about it
+                closed = true;
             }
-
-            out.write(bytes, 0, bytes.length);
-            out.write((byte)'\r');
-            out.write((byte)'\n');
-            if (chunkSize > 0) {
-                out.write(buf, offset, chunkSize);
-                out.write((byte)'\r');
-                out.write((byte)'\n');
-            }
-            out.flush();
-            if (checkError()) {
-                break;
-            }
-            if (chunkSize > 0) {
-                count -= chunkSize;
-                offset += chunkSize;
-            }
-        } while (count > 0);
-
-        if (!checkError() && count > 0) {
-            System.arraycopy(buf, offset, this.buf, 0, count);
         }
     }
 
-    public boolean checkError() {
-        return out.checkError();
-    }
-
-    /*
-     * Check if we have enough data for a chunk and if so flush to the
-     * underlying output stream.
+    /**
+     * Flushes the underlying stream.
+     * @throws IOException If an IO problem occurs.
      */
-    private void checkFlush() {
-        if (count >= preferredChunkSize) {
-            flush(buf, false);
-        }
+    public void flush() throws IOException {
+        stream.flush();
     }
 
-    /* Check that the output stream is still open */
-    private void ensureOpen() {
-        if (out == null)
-            setError();
+    /**
+     * Close this output stream, causing any buffered data to be flushed and
+     * any further output data to throw an IOException. The underlying stream
+     * is not closed!
+     *
+     * @throws IOException if an error occurs closing the stream
+     */
+    public void close() throws IOException {
+        writeClosingChunk();
+        super.close();
     }
 
-    public synchronized void write(byte b[], int off, int len) {
-        ensureOpen();
-        if ((off < 0) || (off > b.length) || (len < 0) ||
-                ((off + len) > b.length) || ((off + len) < 0)) {
-            throw new IndexOutOfBoundsException();
-        } else if (len == 0) {
-            return;
-        }
-
-        if (len > MAX_BUF_SIZE) {
-            /* first finish the current chunk */
-            int l = preferredChunkSize - count;
-            if (l > 0) {
-                System.arraycopy(b, off, buf, count, l);
-                count = preferredChunkSize;
-                flush(buf, false);
-            }
-            count = len - l;
-            /* Now write the rest of the data */
-            flush (b, false, l+off);
-        } else {
-            int newcount = count + len;
-
-            if (newcount > buf.length) {
-                byte newbuf[] = new byte[Math.max(buf.length << 1, newcount)];
-                System.arraycopy(buf, 0, newbuf, 0, count);
-                buf = newbuf;
-            }
-            System.arraycopy(b, off, buf, count, len);
-            count = newcount;
-            checkFlush();
-        }
-    }
-
-    public synchronized void write(int b) {
-        ensureOpen();
-        int newcount = count + 1;
-        if (newcount > buf.length) {
-            byte newbuf[] = new byte[Math.max(buf.length << 1, newcount)];
-            System.arraycopy(buf, 0, newbuf, 0, count);
-            buf = newbuf;
-        }
-        buf[count] = (byte)b;
-        count = newcount;
-        checkFlush();
-    }
-
-    public synchronized void reset() {
-        count = 0;
-    }
-
-    public int size() {
-        return count;
-    }
-
-    public synchronized void close() {
-        ensureOpen();
-
-        /* if we have buffer a chunked send it */
-        if (count > 0) {
-            flush(buf, true);
+    private byte[] getBytes(final String data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Parameter may not be null");
         }
 
-        /* send a zero length chunk */
-        flush(buf, true);
+        try {
+            return data.getBytes("US-ASCII");
+        } catch (UnsupportedEncodingException e) {
 
-        /* don't close the underlying stream */
-        out = null;
-    }
-
-    public synchronized void flush() {
-        ensureOpen();
-        if (count > 0) {
-            flush(buf, true);
+            return data.getBytes();
         }
     }
-
 }

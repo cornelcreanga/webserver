@@ -119,9 +119,9 @@ public class RequestParser {
         } catch (NumberFormatException e) {
             throw new InvalidMessageFormatException("invalid content lenght value " + len);
         }
-        //we cannot have both chunk and length
-        if ((chunk) && (length != -1))
-            throw new InvalidMessageFormatException("chunked and Content-Length are mutually exclusive");
+        //we cannot have both chunk and length//todo
+//        if ((chunk) && (length != -1))
+//            throw new InvalidMessageFormatException("chunked and Content-Length are mutually exclusive");
         return new RequestMessage(httpMethod, headers, resource, version, in, chunk, length);
 
     }

@@ -5,6 +5,7 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
 import com.ccreanga.webserver.http.HTTPVersion;
 import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.ioutil.ChunkedOutputStream;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
@@ -12,15 +13,13 @@ import com.ccreanga.webserver.repository.NotFoundException;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static com.ccreanga.webserver.MessageWriter.*;
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
@@ -69,6 +68,9 @@ public class GetHandler {
             return;
         }
 
+
+
+
         /**
          * Check for conditionals. If-Range is not supported for the moment
          * If conditionals are used improperly return badrequest instead of ignoring them
@@ -111,6 +113,7 @@ public class GetHandler {
 
 
         //Everything is ok, we will build the headers
+        //todo - fix me
         if (!hasBody) {
             writeNoBodyResponse(responseHeaders, HTTPStatus.OK, out);
             return;
@@ -125,23 +128,47 @@ public class GetHandler {
 
 
         if (file.isFile()) {
-            deliverFile(responseHeaders,file,configuration,out);
+            deliverFile(request,responseHeaders,file,configuration,out);
         } else {
-            deliverFolder(responseHeaders,file,configuration,out);
+            deliverFolder(request,responseHeaders,file,configuration,out);
         }
     }
 
-    private void deliverFile(HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
+    private void deliverFile(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
         responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType(Files.getFileExtension((file.getName()))));
-        String length = String.valueOf(file.length());
-        ContextHolder.get().setContentLength(length);
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, length);
-        writeHeaders(responseHeaders, out);
-        ByteStreams.copy(new FileInputStream(file), out);
+        if (request.getVersion().equals(HTTPVersion.HTTP_1_1)){
+            responseHeaders.putHeader(HTTPHeaders.TRANSFER_ENCODING,"chunked");
+
+            if (request.getHeader("Accept-Encoding").contains("gzip")){
+                responseHeaders.putHeader("Content-Encoding","gzip");
+            }else if (request.getHeader("Accept-Encoding").contains("deflate")){
+                responseHeaders.putHeader("Content-Encoding","deflate");
+            }
+
+            writeHeaders(responseHeaders, out);
+
+            ChunkedOutputStream chunkedOutputStream = new ChunkedOutputStream(out);
+            OutputStream enclosed = chunkedOutputStream;
+            if (request.getHeader("Accept-Encoding").contains("gzip")){
+                enclosed = new GZIPOutputStream(enclosed);
+            }else if (request.getHeader("Accept-Encoding").contains("deflate")){
+                enclosed = new DeflaterOutputStream(enclosed);
+            }
+
+            ByteStreams.copy(new FileInputStream(file), enclosed);
+            enclosed.close();//this will not close the response stream - the chunkedoutputstream does not propagate the close method
+        }else {
+            //http 1.0 does not support chunk => we will not support gzip too - it will be too expensive
+            String length = String.valueOf(file.length());
+            ContextHolder.get().setContentLength(length);
+            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, length);
+            writeHeaders(responseHeaders, out);
+            ByteStreams.copy(new FileInputStream(file), out);
+        }
 
     }
 
-    private void deliverFolder(HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
+    private void deliverFolder(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,OutputStream out) throws IOException{
         //todo - it should not return html unless the client accepts that
         String indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
         responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));

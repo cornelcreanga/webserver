@@ -50,14 +50,4 @@ public class DateUtil {
         return formatDate(Instant.now(), formatter);
     }
 
-    public static void main(String[] args) {
-        String s = "Sun, 06 Nov 1994 08:49:37 GMT";
-        System.out.println(DateUtil.parseDate(s, FORMATTER_RFC822));
-        s = "Sunday, 06-Nov-94 08:49:37 GMT";
-        System.out.println(DateUtil.parseDate(s, FORMATTER_RFC850_YEAR_REDUCED));
-        s = "Sun Nov 6 08:49:37 1994";
-        System.out.println(DateUtil.parseDate(s, FORMATTER_C_ASCTIME_ONE_DAY_DIGIT));
-        System.out.println(formatDate(Instant.now(), FORMATTER_RFC822));
-    }
-
 }

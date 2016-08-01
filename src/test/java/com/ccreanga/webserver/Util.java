@@ -46,29 +46,4 @@ public class Util {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        String s = "சுப்ரமணிய";
-        String encoded = URLEncoder.encode(s,"UTF-8");
-        System.out.println(encoded);
-        System.out.println(URLDecoder.decode(s,"UTF-8"));
-        System.out.println(URLDecoder.decode(s,"ISO8859_1"));
-        System.out.println(URLEncoder.encode("<>","UTF-8"));
-        HtmlEscapers.htmlEscaper().escape("<>");
-
-
-        s = "/%E0%AE%9A%E0%AF%81%E0%AE%AA%E0%AF%8D%E0%AE%B0%E0%AE%AE%E0%AE%A3%E0%AE%BF%E0%AE%AF/";
-        System.out.println(URLDecoder.decode(s,"UTF-8"));
-        System.out.println(".................");
-
-        String filename = "中国 地图/? a.docx";
-        String urlEncoding = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString());
-        prettyPrint("java.net.URLEncoder", urlEncoding);
-        prettyPrint("UrlEscapers.urlFormParameterEscaper", UrlEscapers.urlFormParameterEscaper().escape(filename));
-        prettyPrint("java.net.URLEncoder then replace to %20", urlEncoding.replaceAll("\\+", "%20"));
-        prettyPrint("UrlEscapers.urlPathSegmentEscaper", UrlEscapers.urlPathSegmentEscaper().escape(filename));
-        prettyPrint("UrlEscapers.urlFragmentEscaper", UrlEscapers.urlFragmentEscaper().escape(filename));
-    }
-    static void prettyPrint(String label, String value) {
-        System.out.printf("%-40s%-10s%s\n", label, "-->", value);
-    }
 }
