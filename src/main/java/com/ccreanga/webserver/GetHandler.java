@@ -4,7 +4,6 @@ import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
-import com.ccreanga.webserver.http.HTTPVersion;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.ioutil.ChunkedOutputStream;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -16,17 +15,14 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import java.io.*;
 import java.net.URLDecoder;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Date;
+import java.time.*;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.ccreanga.webserver.MessageWriter.*;
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.http.HTTPHeaders.*;
 
 public class GetHandler {
 
@@ -43,12 +39,12 @@ public class GetHandler {
 
         String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
         ContextHolder.get().setDate(DateUtil.currentDate(FORMATTER_LOG));
-        responseHeaders.putHeader(HTTPHeaders.DATE, currentDate.replace("UTC", "GMT"));
-        responseHeaders.putHeader(HTTPHeaders.CONNECTION, "Keep-Alive");
-        responseHeaders.putHeader(HTTPHeaders.VARY, "Accept-Encoding");
+        responseHeaders.putHeader(DATE, currentDate.replace("UTC", "GMT"));
+        responseHeaders.putHeader(CONNECTION, "Keep-Alive");
+        responseHeaders.putHeader(VARY, "Accept-Encoding");
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
-        if ((request.getHeader(HTTPHeaders.HOST) == null) && (request.getVersion().equals(HTTPVersion.HTTP_1_1))) {//host is mandatory
+        if ((request.getHeader(HOST) == null) && (request.isHTTP1_1())) {//host is mandatory
             writeErrorResponse(responseHeaders, HTTPStatus.BAD_REQUEST, "missing host header", out);
             return;
         }
@@ -71,53 +67,6 @@ public class GetHandler {
             return;
         }
 
-
-
-
-        /**
-         * Check for conditionals. If-Range is not supported for the moment
-         * If conditionals are used improperly return badrequest instead of ignoring them
-         */
-        LocalDateTime fileLastModifiedDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC"));
-//        value = request.getHeader(HTTPHeaders.IF_NONE_MATCH);
-//        if (value != null) {
-//            String etag = EtagManager.getDateBasedEtag(file);//weak etag for the moment
-//            if ((value.contains(etag))) {
-//                response = new ResponseMessage(HTTPStatus.NOT_MODIFIED);
-//                response.setHeader(HTTPHeaders.ETAG, etag);
-//                return response;
-//            }
-//        }
-//
-//        value = request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
-//        if ((value != null) && (request.getHeader(HTTPHeaders.IF_NONE_MATCH) != null)) {
-//            LocalDateTime date = DateUtil.parseDate(value);
-//            if (date == null)
-//                return new ResponseMessage(HTTPStatus.BAD_REQUEST);
-//            if (date.isAfter(fileLastModifiedDate))
-//                return new ResponseMessage(HTTPStatus.NOT_MODIFIED);
-//        }
-//
-//        value = request.getHeader(HTTPHeaders.IF_MATCH);
-//        if (value != null) {
-//            String etag = EtagManager.getDateBasedEtag(file);//weak etag for the moment
-//            if (etag.equals(value))
-//                return new ResponseMessage(HTTPStatus.PRECONDITION_FAILED);
-//        }
-//
-//        value = request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
-//        if (value != null) {
-//            LocalDateTime date = DateUtil.parseDate(value);
-//            if (date == null)
-//                return new ResponseMessage(HTTPStatus.BAD_REQUEST);
-//            if (date.isBefore(fileLastModifiedDate))
-//                return new ResponseMessage(HTTPStatus.PRECONDITION_FAILED);
-//        }
-
-        //todo - not ok, it can crash (eg internal server error)
-        writeResponseLine(HTTPStatus.OK, out);
-
-
         if (file.isFile()) {
             deliverFile(request,responseHeaders,file,configuration,writeBody,out);
         } else {
@@ -125,93 +74,45 @@ public class GetHandler {
         }
     }
 
-    private HTTPStatus evaluateConditional(RequestMessage request,HTTPHeaders responseHeaders,String etag){
-        //https://tools.ietf.org/html/rfc7232#section-6
-        HTTPStatus response = HTTPStatus.OK;
-        String ifMatch = request.getHeader(HTTPHeaders.IF_MATCH);
-        String IfUnmodifiedSince =  request.getHeader(HTTPHeaders.IF_UNMODIFIED_SINCE);
-        String ifNoneMatch  =  request.getHeader(HTTPHeaders.IF_NONE_MATCH);
-        String ifModifiedSince  =  request.getHeader(HTTPHeaders.IF_MODIFIED_SINCE);
-
-        return response;
-//        String header = headers.get("If-Match");
-//        if (header != null && !match(true, splitElements(header, false), etag))
-//            return 412;
-//        // If-Unmodified-Since
-//        Date date = headers.getDate("If-Unmodified-Since");
-//        if (date != null && lastModified > date.getTime())
-//            return 412;
-//        // If-Modified-Since
-//        int status = 200;
-//        boolean force = false;
-//        date = headers.getDate("If-Modified-Since");
-//        if (date != null && date.getTime() <= System.currentTimeMillis()) {
-//            if (lastModified > date.getTime())
-//                force = true;
-//            else
-//                status = 304;
-//        }
-//        // If-None-Match
-//        header = headers.get("If-None-Match");
-//        if (header != null) {
-//            if (match(false, splitElements(header, false), etag)) // RFC7232#3.2: use weak matching
-//                status = req.getMethod().equals("GET")
-//                        || req.getMethod().equals("HEAD") ? 304 : 412;
-//            else
-//                force = true;
-//        }
-//        return force ? 200 : status;
-
-//        if (ifMatch != null) {
-//            if (!etag.equals(ifMatch)){
-//                return HTTPStatus.PRECONDITION_FAILED;
-//            }
-//            if (ifNoneMatch!=null){
-//                (!etag.equals(ifMatch)){
-//            }
-//
-//        }
-//        if (etag.equals(value))
-//        if (value != null) {
-//            String etag = EtagManager.getDateBasedEtag(file);//weak etag for the moment
-//            if (etag.equals(value))
-//                return new ResponseMessage(HTTPStatus.PRECONDITION_FAILED);
-//        }
-    }
-
-    private void deliverFile(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,boolean writeBody,OutputStream out) throws IOException{
+    private void deliverFile(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,boolean writeBody,OutputStream out) throws IOException {
 
         String etag = null;
         String mime = Mime.getType(Files.getFileExtension((file.getName())));
+        LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE,mime);
-        responseHeaders.putHeader(HTTPHeaders.LAST_MODIFIED, DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified()),DateUtil.FORMATTER_RFC822));
+        responseHeaders.putHeader(CONTENT_TYPE,mime);
+        responseHeaders.putHeader(LAST_MODIFIED, DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified()),DateUtil.FORMATTER_RFC822));
 
-        if (configuration.getRequestEtag().equals(Configuration.ETAG_WEAK) && request.getVersion().equals(HTTPVersion.HTTP_1_1)) {
-            etag = EtagManager.getInstance().getFileEtag(file, true);
-            responseHeaders.putHeader(HTTPHeaders.ETAG, etag);
-            HTTPStatus statusAfterConditionals = evaluateConditional(request,responseHeaders,etag);
+        if (request.isHTTP1_1()){
+
+            if (configuration.getRequestEtag().equals(Configuration.ETAG_WEAK)){
+                etag = EtagManager.getInstance().getFileEtag(file, true);
+                responseHeaders.putHeader(ETAG, etag);
+            }
+            HTTPStatus statusAfterConditionals = evaluateConditional(request,responseHeaders,etag,modifiedDate);
             if (!statusAfterConditionals.equals(HTTPStatus.OK)){
-
-            }
-        }
-
-
-        if (request.getVersion().equals(HTTPVersion.HTTP_1_1)){
-            responseHeaders.putHeader(HTTPHeaders.TRANSFER_ENCODING,"chunked");
-
-            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip") && shouldCompress(mime)){
-                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"gzip");
-            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate")  && shouldCompress(mime)){
-                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"deflate");
+                writeResponseLine(statusAfterConditionals, out);
+                writeHeaders(responseHeaders, out);
+                return ;
             }
 
+
+
+            ContextHolder.get().setContentLength("chunked");
+            responseHeaders.putHeader(TRANSFER_ENCODING,"chunked");
+
+            if (request.headerContains(ACCEPT_ENCODING,"gzip") && shouldCompress(mime)){
+                responseHeaders.putHeader(CONTENT_ENCODING,"gzip");
+            }else if (request.headerContains(ACCEPT_ENCODING,"deflate")  && shouldCompress(mime)){
+                responseHeaders.putHeader(CONTENT_ENCODING,"deflate");
+            }
+            writeResponseLine(HTTPStatus.OK, out);
             writeHeaders(responseHeaders, out);
 
             OutputStream enclosed = new ChunkedOutputStream(out);
-            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip") && shouldCompress(mime)){
+            if (request.headerContains(ACCEPT_ENCODING,"gzip") && shouldCompress(mime)){
                 enclosed = new GZIPOutputStream(enclosed);
-            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate") && shouldCompress(mime)){
+            }else if (request.headerContains(ACCEPT_ENCODING,"deflate") && shouldCompress(mime)){
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {
@@ -222,7 +123,8 @@ public class GetHandler {
             //http 1.0 does not support chunk => we will not support gzip - it will be too expensive
             String length = String.valueOf(file.length());
             ContextHolder.get().setContentLength(length);
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, writeBody?length:"0");
+            responseHeaders.putHeader(CONTENT_LENGTH, writeBody?length:"0");
+            writeResponseLine(HTTPStatus.OK, out);
             writeHeaders(responseHeaders, out);
             if (writeBody) {
                 ByteStreams.copy(new FileInputStream(file), out);
@@ -234,24 +136,24 @@ public class GetHandler {
     private void deliverFolder(RequestMessage request,HTTPHeaders responseHeaders,File file,Configuration configuration,boolean writeBody,OutputStream out) throws IOException{
         //todo - it should not return html unless the client accepts that
 
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_TYPE, Mime.getType("html"));
+        responseHeaders.putHeader(CONTENT_TYPE, Mime.getType("html"));
         String indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
+        writeResponseLine(HTTPStatus.OK, out);
+        if (request.isHTTP1_1()){
+            responseHeaders.putHeader(TRANSFER_ENCODING,"chunked");
 
-        if (request.getVersion().equals(HTTPVersion.HTTP_1_1)){
-            responseHeaders.putHeader(HTTPHeaders.TRANSFER_ENCODING,"chunked");
-
-            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip")){
-                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"gzip");
-            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate")){
-                responseHeaders.putHeader(HTTPHeaders.CONTENT_ENCODING,"deflate");
+            if (request.headerContains(ACCEPT_ENCODING,"gzip")){
+                responseHeaders.putHeader(CONTENT_ENCODING,"gzip");
+            }else if (request.headerContains(ACCEPT_ENCODING,"deflate")){
+                responseHeaders.putHeader(CONTENT_ENCODING,"deflate");
             }
 
             writeHeaders(responseHeaders, out);
 
             OutputStream enclosed = new ChunkedOutputStream(out);
-            if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"gzip") ){
+            if (request.headerContains(ACCEPT_ENCODING,"gzip") ){
                 enclosed = new GZIPOutputStream(enclosed);
-            }else if (request.headerContains(HTTPHeaders.ACCEPT_ENCODING,"deflate") ){
+            }else if (request.headerContains(ACCEPT_ENCODING,"deflate") ){
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {
@@ -260,7 +162,7 @@ public class GetHandler {
             enclosed.close();
         }else{
             ContextHolder.get().setContentLength("" + indexPage.length());
-            responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, writeBody?"" + indexPage.length():"0");
+            responseHeaders.putHeader(CONTENT_LENGTH, writeBody?"" + indexPage.length():"0");
             writeHeaders(responseHeaders, out);
             if (writeBody) {
                 out.write(indexPage.getBytes(Charsets.UTF_8));
@@ -280,6 +182,40 @@ public class GetHandler {
             return true;
         return false;
 
+    }
+    private HTTPStatus evaluateConditional(RequestMessage request,HTTPHeaders responseHeaders,String etag,LocalDateTime modifiedDate){
+        //https://tools.ietf.org/html/rfc7232#section-6
+        HTTPStatus response = HTTPStatus.OK;
+        String ifMatch = request.getHeader(IF_MATCH);
+        String ifUnmodifiedSince =  request.getHeader(IF_UNMODIFIED_SINCE);
+        String ifNoneMatch  =  request.getHeader(IF_NONE_MATCH);
+        String ifModifiedSince  =  request.getHeader(IF_MODIFIED_SINCE);
+
+        if ((ifMatch!=null) && (!ifMatch.equals(etag)))
+            return HTTPStatus.PRECONDITION_FAILED;
+
+        if (ifUnmodifiedSince!=null){
+            LocalDateTime date = DateUtil.parseRfc2161CompliantDate(ifUnmodifiedSince);
+            if (date==null)//unparsable date
+                return HTTPStatus.BAD_REQUEST;//todo - should we ignore it?
+            if (date.isBefore(modifiedDate))
+                return HTTPStatus.PRECONDITION_FAILED;
+        }
+
+        if (ifNoneMatch!=null){
+            if (ifNoneMatch.equals(etag))
+                return HTTPStatus.NOT_MODIFIED;//for get and head
+        }
+
+        if (ifModifiedSince!=null){
+            LocalDateTime date = DateUtil.parseRfc2161CompliantDate(ifModifiedSince);
+            if (date==null)//unparsable date
+                return HTTPStatus.BAD_REQUEST;//todo - should we ignore it?
+            if (date.isAfter(modifiedDate))
+                return HTTPStatus.NOT_MODIFIED;
+        }
+
+        return response;
     }
 
 }

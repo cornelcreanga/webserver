@@ -2,111 +2,97 @@ package com.ccreanga.webserver.it.get;
 
 
 import com.ccreanga.webserver.*;
+import com.ccreanga.webserver.etag.EtagManager;
+import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
 import com.ccreanga.webserver.http.Mime;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.fluent.Request;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Properties;
 
-public class ServerGetTestIT {
+import static com.ccreanga.webserver.http.HTTPHeaders.*;
+import static org.junit.Assert.assertEquals;
 
-    private static Server server;
-    private String host = "127.0.0.1";
-    private static Configuration configuration = new Configuration();
-    private static String port = "8999";
+public class ServerGetTestIT extends HttpTest{
 
-
-    @BeforeClass
-    public static void init() {
-
-        Properties properties = new Properties();
-        properties.put("serverPort", port);
-        properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
-        properties.put("serverInitialThreads", "128");
-        properties.put("serverMaxThreads", "1000");
-
-        properties.put("requestTimeoutSeconds", "100");
-        properties.put("requestWaitingQueueSize", "64");
-
-        properties.put("requestEtag", "weak");
-
-        properties.put("requestMaxLines", "200");
-        properties.put("requestMaxLineLength", "1024");
-        properties.put("requestMaxHeaders", "64");
-        properties.put("requestMaxGetBodySize", "64000");
-        properties.put("requestMaxPutBodySize", "2147483648");
-
-        properties.put("verbose", "true");
-        properties.put("chunkLength", "131072");
-        configuration.loadFromProperties(properties);
-
-        server = new Server(configuration);
-
-        try {
-            new Thread(server).start();
-            Thread.sleep(100);
-        } catch (InternalException e) {
-            e.printStackTrace();//todo
-            server.stop();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @AfterClass
-    public static void clean() {
-        server.stop();
-    }
 
     @Test
     public void testResourceNotFound() throws IOException {
-        Request.Get("http://" + host + ":" + port + "/notExisting.html")
-                .execute().handleResponse((ResponseHandler<Object>) response -> {
-            StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.NOT_FOUND.value());
-            Assert.assertEquals(statusLine.getReasonPhrase(), HTTPStatus.NOT_FOUND.getReasonPhrase());
-            HttpEntity entity = response.getEntity();
-            String content = Util.readAsUtfString(entity.getContent());
 
-            Assert.assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.NOT_FOUND, ""));
 
-            return entity;
-        });
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/notExisting.html");
+        request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        CloseableHttpResponse response = httpclient.execute(request);
+        StatusLine statusLine = response.getStatusLine();
+        assertEquals(statusLine.getStatusCode(), HTTPStatus.NOT_FOUND.value());
+        assertEquals(statusLine.getReasonPhrase(), HTTPStatus.NOT_FOUND.getReasonPhrase());
+        HttpEntity entity = response.getEntity();
+        String content = Util.readAsUtfString(entity.getContent());
 
+        assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.NOT_FOUND, ""));
 
     }
 
     @Test
     public void testResourceFoundInRoot() throws IOException {
         String fileName = "www/file.txt";
+        File file = new File(ClassLoader.getSystemResource("www/file.txt").getPath());
         String extension = Util.extension(fileName);
 
-        Request.Get("http://" + host + ":" + port + "/file.txt")
-                .execute().handleResponse((ResponseHandler<Object>) response -> {
-
-            String fileContent = Util.readAsUtfString(fileName);
-
-            StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "Keep-Alive");
-//            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
-            HttpEntity entity = response.getEntity();
-            String content = Util.readAsUtfString(entity.getContent());
-            Assert.assertEquals(content, Util.readAsUtfString("www/file.txt"));
-            return entity;
-        });
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/file.txt");
+        request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        request.addHeader("Connection","Keep-Alive");
+        request.addHeader("Accept-Encoding","gzip,deflate");
 
 
+        CloseableHttpResponse response = httpclient.execute(request);
+
+
+        String fileContent = Util.readAsUtfString(fileName);
+
+        StatusLine statusLine = response.getStatusLine();
+        assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+        assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
+        assertEquals(response.getFirstHeader(CONTENT_LENGTH),null);
+        assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));
+        //this header is removed in case of content decompression by the http client
+//        assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(),"gzip");
+        assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file,true));//will not return ETAG for http1.0
+//
+//        BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+//        FileTime atime = attrs.lastAccessTime();
+//        FileTime mtime = attrs.lastModifiedTime();
+
+
+        LocalDateTime date = DateUtil.parseRfc2161CompliantDate(response.getFirstHeader(LAST_MODIFIED).getValue());
+        LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
+        assertEquals(date,modifiedDate);
+
+
+        HttpEntity entity = response.getEntity();
+        String content = Util.readAsUtfString(entity.getContent());
+        assertEquals(content, Util.readAsUtfString("www/file.txt"));
     }
 
     @Test
@@ -114,40 +100,36 @@ public class ServerGetTestIT {
         String fileName = "www/folder1/a?b.txt";
         String extension = Util.extension(fileName);
 
-        Request.Get("http://" + host + ":" + port + "/folder1/a%3Fb.txt")
-                .execute().handleResponse((ResponseHandler<Object>) response -> {
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/folder1/a%3Fb.txt");
+        request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        CloseableHttpResponse response = httpclient.execute(request);
 
-            String fileContent = Util.readAsUtfString(fileName);
+        String fileContent = Util.readAsUtfString(fileName);
 
-            StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONNECTION).getValue(), "Keep-Alive");
-//            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
-            Assert.assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
-            HttpEntity entity = response.getEntity();
-            String content = Util.readAsUtfString(entity.getContent());
-            Assert.assertEquals(content, Util.readAsUtfString(fileName));
-            return entity;
-        });
+        StatusLine statusLine = response.getStatusLine();
+        assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+        assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
+        assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_LENGTH).getValue(), "" + fileContent.length());
+        assertEquals(response.getFirstHeader(HTTPHeaders.CONTENT_TYPE).getValue(), Mime.getType(extension));
+        HttpEntity entity = response.getEntity();
+        String content = Util.readAsUtfString(entity.getContent());
+        assertEquals(content, Util.readAsUtfString(fileName));
 
     }
 
     @Test
     public void testForbiddenResource() throws IOException {
 
-        Request.Get("http://" + host + ":" + port + "/../outsideWWWParent.txt")
-                .execute().handleResponse((ResponseHandler<Object>) response -> {
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/../outsideWWWParent.txt");
+        request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        CloseableHttpResponse response = httpclient.execute(request);
 
-            StatusLine statusLine = response.getStatusLine();
-            Assert.assertEquals(statusLine.getStatusCode(), HTTPStatus.FORBIDDEN.value());
-            Assert.assertEquals(statusLine.getReasonPhrase(), HTTPStatus.FORBIDDEN.getReasonPhrase());
-            HttpEntity entity = response.getEntity();
-            String content = Util.readAsUtfString(entity.getContent());
-            Assert.assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.FORBIDDEN, ""));
-
-
-            return entity;
-        });
+        StatusLine statusLine = response.getStatusLine();
+        assertEquals(statusLine.getStatusCode(), HTTPStatus.FORBIDDEN.value());
+        assertEquals(statusLine.getReasonPhrase(), HTTPStatus.FORBIDDEN.getReasonPhrase());
+        HttpEntity entity = response.getEntity();
+        String content = Util.readAsUtfString(entity.getContent());
+        assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.FORBIDDEN, ""));
 
     }
 

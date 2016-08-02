@@ -10,14 +10,14 @@ import java.time.temporal.ChronoField;
 public class DateUtil {
 
     public static DateTimeFormatter FORMATTER_RFC822 = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz");
-    public static DateTimeFormatter FORMATTER_RFC850 = DateTimeFormatter.ofPattern("EEEE, dd-MMM-yy HH:mm:ss zzz");
-    public static DateTimeFormatter FORMATTER_RFC850_YEAR_REDUCED = new DateTimeFormatterBuilder()
+    private static DateTimeFormatter FORMATTER_RFC850 = DateTimeFormatter.ofPattern("EEEE, dd-MMM-yy HH:mm:ss zzz");
+    private static DateTimeFormatter FORMATTER_RFC850_YEAR_REDUCED = new DateTimeFormatterBuilder()
             .appendPattern("EEEE, dd-MMM-")
             .appendValueReduced(ChronoField.YEAR_OF_ERA, 2, 2, LocalDate.now().minusYears(100))
             .appendPattern(" HH:mm:ss zzz")
             .toFormatter();
-    public static DateTimeFormatter FORMATTER_C_ASCTIME = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy");
-    public static DateTimeFormatter FORMATTER_C_ASCTIME_ONE_DAY_DIGIT = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy");
+    private static DateTimeFormatter FORMATTER_C_ASCTIME = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss yyyy");
+    private static DateTimeFormatter FORMATTER_C_ASCTIME_ONE_DAY_DIGIT = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy");
     public static DateTimeFormatter FORMATTER_LOG = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
     public static DateTimeFormatter FORMATTER_SHORT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 

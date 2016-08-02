@@ -17,18 +17,27 @@ public class RequestMessage {
     private String uri;
     private HTTPVersion version;
     protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
-    protected boolean chunk;//specifies if the body will be sent using chunked transmission
+    protected boolean chunked;//specifies if the body will be sent using chunked transmission
     protected long length;//body length; makes sense only when chunk=false
 
-    public RequestMessage(HTTPMethod method, HTTPHeaders headers, String uri, HTTPVersion version, InputStream body, boolean chunk, long bodyLength) {
+    public RequestMessage(HTTPMethod method, HTTPHeaders headers, String uri, HTTPVersion version, InputStream body, boolean chunked, long length) {
         this.method = method;
         this.headers = headers;
         this.uri = uri;
         this.version = version;
-        if (chunk)
+        if (chunked)//not yet implemented
             this.body = new ChunkedInputStream(body);
         else
             this.body = body;
+        this.length = length;
+    }
+
+    public boolean isHTTP1_1(){
+        return getVersion().equals(HTTPVersion.HTTP_1_1);
+    }
+
+    public boolean isHTTP1_0(){
+        return getVersion().equals(HTTPVersion.HTTP_1_0);
     }
 
     public boolean headerContains(String header,String value){
@@ -46,8 +55,8 @@ public class RequestMessage {
     }
 
 
-    public boolean isChunk() {
-        return chunk;
+    public boolean isChunked() {
+        return chunked;
     }
 
     public long getLength() {
@@ -82,7 +91,7 @@ public class RequestMessage {
                 ", uri='" + uri + '\'' +
                 ", version='" + version + '\'' +
                 ", body=" + body +
-                ", chunk=" + chunk +
+                ", chunk=" + chunked +
                 ", length=" + length +
                 '}';
     }

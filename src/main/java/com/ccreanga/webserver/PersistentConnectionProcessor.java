@@ -55,7 +55,8 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     if ((request.headerIs(HTTPHeaders.CONNECTION,"close")) ||
                             (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION,"Keep-Alive"))
                         shouldCloseConnection = true;
-                } else { //we were not event able to parse the first request line (this is not HTTP), so write an error and close the connection.
+                } else {
+                    //we were not event able to parse the first request line (not an HTTP message), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
                     MessageWriter.writeResponseLine(invalidStatus, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());

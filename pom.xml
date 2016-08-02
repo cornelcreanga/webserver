@@ -57,6 +57,7 @@
         <fluent-hc.version>4.5.2</fluent-hc.version>
         <freemarker.version>2.3.23</freemarker.version>
         <guava.version>19.0</guava.version>
+        <httpclient.version>4.5.2</httpclient.version>
     </properties>
 
     <dependencies>
@@ -108,9 +109,10 @@
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>fluent-hc</artifactId>
-            <version>${fluent-hc.version}</version>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
