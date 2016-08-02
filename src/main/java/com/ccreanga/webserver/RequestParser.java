@@ -59,7 +59,7 @@ public class RequestParser {
                     configuration.getRequestMaxLines(),
                     configuration.getRequestMaxLineLength());
 
-            //read the first line
+            //read the first line;block until timeout/exception
             while (((line = reader.readLine()) == null) || (line.isEmpty())) ;
 
             serverLog.trace("Connection " + ContextHolder.get().getUuid() + " : " + line);
@@ -105,6 +105,10 @@ public class RequestParser {
                     previousHeader = header;
                 }
             }
+
+            int headersCount = headers.getAllHeadersMap().size();
+            if (headersCount>configuration.getRequestMaxHeaders())
+                throw new InvalidMessageFormatException("too many headers " + headersCount);
 
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormatException("malformed url");

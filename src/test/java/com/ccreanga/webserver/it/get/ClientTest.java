@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import java.io.IOException;
 import java.util.Properties;
 
-public class HttpTest {
+public abstract class ClientTest {
 
     protected static Server server;
     protected String host = "127.0.0.1";
@@ -30,7 +30,7 @@ public class HttpTest {
         properties.put("serverInitialThreads", "128");
         properties.put("serverMaxThreads", "1000");
 
-        properties.put("requestTimeoutSeconds", "100");
+        properties.put("requestTimeoutSeconds", "10");
         properties.put("requestWaitingQueueSize", "64");
 
         properties.put("requestEtag", "weak");
@@ -65,6 +65,11 @@ public class HttpTest {
         httpclient.close();
         httpclientNoDecompression.close();
         server.stop();
+        try {
+            Thread.sleep(100);
+        }catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
