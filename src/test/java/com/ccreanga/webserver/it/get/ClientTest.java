@@ -51,7 +51,7 @@ public abstract class ClientTest {
 
         try {
             new Thread(server).start();
-            Thread.sleep(100);
+            Thread.sleep(1000);
         } catch (InternalException e) {
             e.printStackTrace();//todo
             server.stop();
@@ -65,11 +65,7 @@ public abstract class ClientTest {
         httpclient.close();
         httpclientNoDecompression.close();
         server.stop();
-        try {
-            Thread.sleep(100);
-        }catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        while (!server.isStopped());
     }
 
 }

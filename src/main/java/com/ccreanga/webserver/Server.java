@@ -18,6 +18,7 @@ public class Server implements Runnable {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
+    private boolean shouldStop = false;
     private boolean isStopped = false;
     private ExecutorService threadPool;
     private Configuration configuration;
@@ -45,7 +46,7 @@ public class Server implements Runnable {
 
         try (ServerSocket serverSocket = new ServerSocket(configuration.getServerPort())) {
             serverLog.info("Server started,listening on " + configuration.getServerPort() + ".");
-            while (!isStopped()) {
+            while (!shouldStop()) {
                 try {
                     final Socket socket = serverSocket.accept();
                     socket.setTcpNoDelay(true);
@@ -82,17 +83,21 @@ public class Server implements Runnable {
         } finally {
             threadPool.shutdown();
         }
-
+        isStopped = true;
         serverLog.info("Server stopped.");
     }
 
-    private synchronized boolean isStopped() {
+    public synchronized boolean isStopped() {
         return isStopped;
+    }
+
+    private synchronized boolean shouldStop() {
+        return shouldStop;
     }
 
     public synchronized void stop() {
         serverLog.info("Stopping the server...");
-        isStopped = true;
+        shouldStop = true;
     }
 
     private String getIp(Socket socket) {
