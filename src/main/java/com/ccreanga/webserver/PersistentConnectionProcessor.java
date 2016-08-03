@@ -47,11 +47,11 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                     invalidStatus = HTTPStatus.URI_TOO_LONG;
                 }
                 if (responseSyntaxCorrect) {
-                    //todo - we might want to wrap the outstream into another one (zip)
+
                     MessageHandler messageHandler = new MessageHandler();
                     messageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
-                    //todo - chunked and keep alive dont work together for http 1.0
+
                     if ((request.headerIs(HTTPHeaders.CONNECTION,"close")) ||
                             (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION,"Keep-Alive"))
                         shouldCloseConnection = true;

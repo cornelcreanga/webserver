@@ -17,33 +17,6 @@ public class RequestParser {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
     private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
-    private static final String version1_1 = "HTTP/1.1";
-
-    /**
-     * Read a line from a stream.
-     */
-    public String readLine(InputStream in, String enc) throws IOException {
-        int buflen = 256;
-        byte[] buf = new byte[buflen];
-        int count = 0;
-        int c;
-        while ((c = in.read()) != -1 && (c != '\n')) {
-            if (count == buflen) { // expand buffer
-                buflen = 2 * buflen;
-                byte[] expanded = new byte[buflen];
-                System.arraycopy(buf, 0, expanded, 0, count);
-                buf = expanded;
-            }
-            buf[count++] = (byte) c;
-        }
-        if (c == -1)
-            return null;
-        if (count == 0)
-            return "";
-        if (buf[count - 1] == '\r')
-            count--;
-        return new String(buf, 0, count, enc);
-    }
 
 
     public RequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
@@ -93,7 +66,7 @@ public class RequestParser {
                 if (line.isEmpty()) {
                     break;
                 }
-                if (Character.isSpaceChar(line.charAt(0))) {
+                if (Character.isSpaceChar(line.charAt(0))) {//multi line headers
                     headers.appendHeader(previousHeader, line.trim());
                 } else {
                     int separator = line.indexOf(':');

@@ -125,7 +125,7 @@ public class Configuration {
             requestMaxGetBodySize = Integer.parseInt((String) properties.get("requestMaxGetBodySize"));
             requestMaxPutBodySize = Long.parseLong((String) properties.get("requestMaxPutBodySize"));
 
-            verbose = Boolean.getBoolean((String) properties.get("verbose"));
+            verbose = Boolean.valueOf((String) properties.get("verbose"));
             chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
 
         } catch (Exception e) {

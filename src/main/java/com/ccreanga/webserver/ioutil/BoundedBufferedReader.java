@@ -43,7 +43,8 @@ public class BoundedBufferedReader extends BufferedReader {
 
     public String readLine() throws IOException {
         //Check readerMaxLines limit
-        if (currentLine > readerMaxLines) throw new LengthExceededException();
+        if (currentLine > readerMaxLines)
+            throw new LengthExceededException();
         currentLine++;
 
         int currentPos = 0;

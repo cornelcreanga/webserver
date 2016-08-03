@@ -51,7 +51,7 @@ public class RequestMessage {
         String headerValue = getHeader(header);
         if (headerValue==null)
             return false;
-        return headerValue.equals(value);
+        return headerValue.equalsIgnoreCase(value);
     }
 
 
