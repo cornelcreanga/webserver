@@ -1,9 +1,0 @@
-GET /resource.html?id=34&chapter=512 HTTP/1.1
-Host: text.com
-
-GET /testHtml.html HTTP/1.1
-Host: text.com
-
-GET /test.html HTTP/1.1
-Host: text.com
-

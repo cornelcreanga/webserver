@@ -1,6 +1,0 @@
-HTTP/1.1 404 Not Found
-Content-Length : 89
-Date : Sun, 30 Oct 2011 18:26:06 GMT
-Content-Type : text/html; charset=utf-8
-
-<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>

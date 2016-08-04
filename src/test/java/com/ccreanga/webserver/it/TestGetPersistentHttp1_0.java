@@ -12,7 +12,7 @@ import java.net.SocketException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestGetPersistentHttp1_0 extends ClientTest {
+public class TestGetPersistentHttp1_0 extends TestParent {
 
 
     @Test

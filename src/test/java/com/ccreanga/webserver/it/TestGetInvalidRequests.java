@@ -9,7 +9,7 @@ import java.net.SocketTimeoutException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestGetInvalidRequests extends ClientTest{
+public class TestGetInvalidRequests extends TestParent {
 
     @Test
     public void testInvalidHttpMessage1() throws Exception {

@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import java.io.IOException;
 import java.util.Properties;
 
-public abstract class ClientTest {
+public abstract class TestParent {
 
     protected static Server server;
     protected String host = "127.0.0.1";

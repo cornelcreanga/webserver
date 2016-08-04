@@ -24,7 +24,7 @@ import static com.ccreanga.webserver.http.HTTPHeaders.*;
 import static com.ccreanga.webserver.http.HTTPHeaders.LAST_MODIFIED;
 import static org.junit.Assert.assertEquals;
 
-public class TestHead extends ClientTest {
+public class TestHead extends TestParent {
 
     @Test
     public void testHeadResource() throws Exception {

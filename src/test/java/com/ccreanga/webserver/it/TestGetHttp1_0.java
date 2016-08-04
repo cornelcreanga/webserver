@@ -16,7 +16,7 @@ import static com.ccreanga.webserver.http.HTTPHeaders.*;
 import static com.ccreanga.webserver.http.HTTPHeaders.ETAG;
 import static org.junit.Assert.assertEquals;
 
-public class TestGetHttp1_0 extends ClientTest {
+public class TestGetHttp1_0 extends TestParent {
 
     @Test
     public void testResourceFoundInRoot() throws IOException {

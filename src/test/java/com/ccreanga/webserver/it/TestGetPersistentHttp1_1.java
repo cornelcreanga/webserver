@@ -11,7 +11,7 @@ import java.net.Socket;
 import static org.junit.Assert.assertEquals;
 
 
-public class TestGetPersistentHttp1_1 extends ClientTest {
+public class TestGetPersistentHttp1_1 extends TestParent {
 
     @Test
     public void testKeepAlive() throws Exception {

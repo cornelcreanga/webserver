@@ -14,7 +14,6 @@ import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.junit.Test;
 
 import java.io.File;
@@ -26,8 +25,9 @@ import java.time.ZonedDateTime;
 
 import static com.ccreanga.webserver.http.HTTPHeaders.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class TestGetHttp1_1 extends ClientTest {
+public class TestGetHttp1_1 extends TestParent {
 
 
     @Test
@@ -85,6 +85,10 @@ public class TestGetHttp1_1 extends ClientTest {
 
     }
 
+    @Test
+    public void testUnparseableDate() throws Exception{
+        assertTrue(false);
+    }
 
     @Test
     public void testForbiddenResource() throws IOException {

@@ -54,6 +54,9 @@ public class TemplateRepository {
 
 
     public void buildIndex(File folder, Writer writer, String root) throws IOException {
+
+        //todo - the accept header should be checked in order to know if we can deliver html/something else
+
         if (!folder.isDirectory())
             throw new InternalException("internal error, file:" + folder.getName() + " is not a folder");
         Map<String, Object> data = new HashMap<>(2);

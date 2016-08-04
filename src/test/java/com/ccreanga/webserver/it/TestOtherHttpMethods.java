@@ -9,10 +9,9 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static com.ccreanga.webserver.http.HTTPHeaders.ALLOW;
-import static com.ccreanga.webserver.http.HTTPHeaders.CONNECTION;
 import static org.junit.Assert.assertEquals;
 
-public class TestOtherHttpMethods extends ClientTest {
+public class TestOtherHttpMethods extends TestParent {
 
 
     @Test
