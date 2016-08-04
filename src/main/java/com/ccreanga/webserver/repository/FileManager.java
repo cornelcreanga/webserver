@@ -42,7 +42,7 @@ public class FileManager {
         File[] file = folder.listFiles();
         if (file == null)//this should not happen unless some I/O issue
             throw new InternalException("cannot list folder " + folder.getName());
-        return Arrays.stream(file).filter(this::isNotHidden).collect(Collectors.toList());
+        return Arrays.stream(file).filter(f->isNotHidden(f) && f.canRead()).collect(Collectors.toList());
     }
 
 //    public void createFile(String file, InputStream in){
@@ -56,7 +56,8 @@ public class FileManager {
 //    }
 
     private boolean isHidden(File file) {
-        return file.isHidden() || file.getName().charAt(0) == '.';
+        //file.getName().isEmpty() is true for /
+        return file.isHidden() || file.getName().isEmpty() || file.getName().charAt(0) == '.';
     }
 
     private boolean isNotHidden(File file) {

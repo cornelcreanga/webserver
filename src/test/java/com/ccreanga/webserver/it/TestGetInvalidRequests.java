@@ -1,7 +1,5 @@
-package com.ccreanga.webserver.it.get;
+package com.ccreanga.webserver.it;
 
-import com.ccreanga.webserver.http.HTTPStatus;
-import org.apache.http.config.SocketConfig;
 import org.junit.Test;
 
 import java.io.*;

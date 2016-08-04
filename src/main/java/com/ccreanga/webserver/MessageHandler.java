@@ -18,34 +18,30 @@ public class MessageHandler {
         //EXPECT header is not yet handled
         switch (request.getMethod()) {
             case GET:
-                new GetHandler().handleGetResponse(request, true, configuration, out);
+                new GetHandler(true).handleGetResponse(request, configuration, out);
                 return;
             case HEAD:
-                new GetHandler().handleGetResponse(request, false, configuration, out);
+                new GetHandler(false).handleGetResponse(request, configuration, out);
                 return;
             case POST:
-                writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
+                new NotSupportedHandler().handleGetResponse(request, configuration, out);
                 return;
             case PUT:
-                writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
+                new NotSupportedHandler().handleGetResponse(request, configuration, out);
                 return;
             case DELETE:
-                writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
+                new NotSupportedHandler().handleGetResponse(request, configuration, out);
                 return;
             case CONNECT:
                 return;
             case PATCH:
-                writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
+                new NotSupportedHandler().handleGetResponse(request, configuration, out);
                 return;
             case TRACE:
-                writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
+                new NotSupportedHandler().handleGetResponse(request, configuration, out);
                 return;
             case OPTIONS:
-                HTTPHeaders responseHeaders = new HTTPHeaders();
-                responseHeaders.putHeader(HTTPHeaders.ALLOW, "GET, HEAD, OPTIONS");
-                responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
-                writeResponseLine(HTTPStatus.OK, out);
-                writeHeaders(responseHeaders, out);
+                new OptionsHandler().handleGetResponse(request, configuration, out);
                 return;
         }
         throw new InternalException("invalid method " + request.getMethod() + ". this should never happen(internal error)");

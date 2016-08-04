@@ -3,6 +3,7 @@ package com.ccreanga.webserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -30,19 +31,13 @@ public class Configuration {
     private int requestMaxLines = 200;
     private int requestMaxLineLength = 1024;
     private int requestMaxHeaders = 64;
-    private int requestMaxGetBodySize = 64000;
-    private long requestMaxPutBodySize = 2147483648L;
-
 
     private boolean verbose = true;
-    private int chunkLength = 128 * 1024;
 
     private Properties properties = new Properties();
 
     public Configuration() {
     }
-
-    ;
 
     public void loadFromProperties(Properties properties) {
         this.properties = (Properties) properties.clone();
@@ -99,45 +94,57 @@ public class Configuration {
         return requestMaxHeaders;
     }
 
-    public int getRequestMaxGetBodySize() {
-        return requestMaxGetBodySize;
-    }
-
-    public long getRequestMaxPutBodySize() {
-        return requestMaxPutBodySize;
-    }
-
     private void load() {
-        try {
-            serverPort = Integer.parseInt((String) properties.get("serverPort"));
+            serverPort = parseInt("serverPort",1,65535);
             serverRootFolder = (String) properties.get("serverRootFolder");
-            serverInitialThreads = Integer.parseInt((String) properties.get("serverInitialThreads"));
-            serverMaxThreads = Integer.parseInt((String) properties.get("serverMaxThreads"));
+            if (serverRootFolder==null || serverRootFolder.trim().isEmpty())
+                throw new InternalException("serverRootFolder is missing or is empty");
+            File root  = new File(serverRootFolder);
+            if (!root.exists())
+                throw new InternalException(root.getAbsolutePath()+" does not exists");
+            if (root.exists() && !root.isDirectory())
+                throw new InternalException(root.getAbsolutePath()+" is not a folder");
+            if (root.exists() && root.isDirectory() && !root.canRead())
+                throw new InternalException(root.getAbsolutePath()+" can't be read (permission rights?)");
 
-            requestTimeoutSeconds = Integer.parseInt((String) properties.get("requestTimeoutSeconds"));
-            requestWaitingQueueSize = Integer.parseInt((String) properties.get("requestWaitingQueueSize"));
+            serverInitialThreads = parseInt("serverInitialThreads",8,1024);
+            serverMaxThreads = parseInt("serverMaxThreads",8,1024);
+
+            requestTimeoutSeconds = parseInt("requestTimeoutSeconds",1,3600);
+
+            requestWaitingQueueSize = parseInt("requestWaitingQueueSize",1,1000);
             requestEtag = (String) properties.get("requestEtag");
+            if (requestEtag==null)
+                throw new InternalException("missing requestEtag value");
             if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
                 throw new IllegalArgumentException("unknown etag:"+requestEtag+"; it should be none or weak");
             requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
-            requestMaxLineLength = Integer.parseInt((String) properties.get("requestMaxLineLength"));
-            requestMaxHeaders = Integer.parseInt((String) properties.get("requestMaxHeaders"));
-            requestMaxGetBodySize = Integer.parseInt((String) properties.get("requestMaxGetBodySize"));
-            requestMaxPutBodySize = Long.parseLong((String) properties.get("requestMaxPutBodySize"));
+
+            requestMaxLineLength = parseInt("requestMaxLineLength",256,65535);
+            requestMaxHeaders = parseInt("requestMaxHeaders",8,65535);
+
+            if (properties.get("verbose")==null)
+                throw new InternalException("missing verbose value");
 
             verbose = Boolean.valueOf((String) properties.get("verbose"));
-            chunkLength = Integer.parseInt((String) properties.get("chunkLength"));
 
-        } catch (Exception e) {
-            //todo - add more details
-            serverLog.error("properties cannot be parsed");
-            System.exit(-1);
-        }
+
     }
 
+    private int parseInt(String name, int min, int max){
+        String string="";
+        try{
+            string = (String) properties.get(name);
+            if (string==null)
+                throw new InternalException("Cannot find the value "+name);
 
-    public int getChunkLength() {
-        return chunkLength;
+            int value = Integer.parseInt(string);
+            if ((value<min) || (value>max))
+                throw new InternalException("Cannot configure "+name+ " - expecting a number between "+min+" and "+max+" instead of "+value);
+            return value;
+        }catch (NumberFormatException e){
+            throw new InternalException("Cannot configure "+name+ " - expecting an integer  instead of "+string);
+        }
     }
 
     public boolean isVerbose() {

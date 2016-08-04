@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.it.get;
+package com.ccreanga.webserver.it;
 
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.http.HTTPStatus;

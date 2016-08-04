@@ -16,8 +16,6 @@ import java.io.InputStreamReader;
 public class RequestParser {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
-    private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
-
 
     public RequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
         String line;

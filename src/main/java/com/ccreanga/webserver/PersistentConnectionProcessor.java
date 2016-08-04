@@ -58,6 +58,7 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
                 } else {
                     //we were not event able to parse the first request line (not an HTTP message), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
+                    ContextHolder.get().setContentLength("-");
                     MessageWriter.writeResponseLine(invalidStatus, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
                     shouldCloseConnection = true;
@@ -73,7 +74,7 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
         } catch (SocketTimeoutException e) {
             serverLog.trace("Connection " + ContextHolder.get().getUuid() + " was closed due to timeout");
         } catch (IOException e) {
-            serverLog.trace("Connection " + ContextHolder.get().getUuid() + " received " + e.getMessage());
+            serverLog.trace("Connection " + ContextHolder.get().getUuid() + " was closed because of an I/O error: " + e.getMessage());
         } finally {
             ContextHolder.cleanup();
         }

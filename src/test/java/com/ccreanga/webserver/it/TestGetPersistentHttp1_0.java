@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.it.get;
+package com.ccreanga.webserver.it;
 
 import org.junit.Test;
 
@@ -12,7 +12,7 @@ import java.net.SocketException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestGetPersistentConnectionHttp1_0 extends ClientTest {
+public class TestGetPersistentHttp1_0 extends ClientTest {
 
 
     @Test

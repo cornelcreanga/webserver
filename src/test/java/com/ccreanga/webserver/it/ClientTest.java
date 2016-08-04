@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.it.get;
+package com.ccreanga.webserver.it;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
@@ -41,8 +41,7 @@ public abstract class ClientTest {
         properties.put("requestMaxGetBodySize", "64000");
         properties.put("requestMaxPutBodySize", "2147483648");
 
-        properties.put("verbose", "true");
-        properties.put("chunkLength", "131072");
+        properties.put("verbose", "false");
         configuration.loadFromProperties(properties);
 
         server = new Server(configuration);
@@ -51,12 +50,10 @@ public abstract class ClientTest {
 
         try {
             new Thread(server).start();
-            Thread.sleep(1000);
+            while(!server.isReady());
         } catch (InternalException e) {
             e.printStackTrace();//todo
             server.stop();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -65,6 +62,7 @@ public abstract class ClientTest {
         httpclient.close();
         httpclientNoDecompression.close();
         server.stop();
+        while(!server.isStopped());
 //        while (!server.isStopped());
     }
 

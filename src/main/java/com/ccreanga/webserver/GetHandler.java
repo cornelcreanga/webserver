@@ -13,6 +13,9 @@ import com.ccreanga.webserver.repository.NotFoundException;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.net.URLDecoder;
 import java.time.*;
@@ -24,9 +27,17 @@ import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HTTPHeaders.*;
 
-public class GetHandler {
+public class GetHandler implements HttpMethodHandler{
 
-    public void handleGetResponse(RequestMessage request, boolean writeBody, Configuration configuration, OutputStream out) throws IOException {
+    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+    private boolean writeBody;
+
+
+    public GetHandler(boolean writeBody) {
+        this.writeBody = writeBody;
+    }
+
+    public void handleGetResponse(RequestMessage request, Configuration configuration, OutputStream out) throws IOException {
 
         HTTPHeaders responseHeaders = new HTTPHeaders();
         HTTPStatus responseStatus;
@@ -96,8 +107,6 @@ public class GetHandler {
                 return ;
             }
 
-
-
             ContextHolder.get().setContentLength("chunked");
             responseHeaders.putHeader(TRANSFER_ENCODING,"chunked");
 
@@ -108,7 +117,7 @@ public class GetHandler {
             }
             writeResponseLine(HTTPStatus.OK, out);
             writeHeaders(responseHeaders, out);
-
+            //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);
             if (request.headerContains(ACCEPT_ENCODING,"gzip") && shouldCompress(mime)){
                 enclosed = new GZIPOutputStream(enclosed);
@@ -116,11 +125,16 @@ public class GetHandler {
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {
-                ByteStreams.copy(new FileInputStream(file), enclosed);
+                try {
+                    ByteStreams.copy(new FileInputStream(file), enclosed);
+                }catch (IOException e){
+                    throw new IOException(e.getMessage()+"( file name was "+file.getAbsolutePath()+")");
+                }
             }
-            enclosed.close();//this will not close the response stream - the chunkedoutputstream does not propagate the close method
+            enclosed.close();//!this will not close the response stream - check ChunkedOutputStream.close
         }else {
-            //http 1.0 does not support chunk => we will not support gzip - it will be too expensive
+            //http 1.0 does not support chunk => we will not support gzip - it will be too expensive because we will
+            //have to compute the length for the gzipped data (so we'll have to write the the gzipped somewhere in ram/disk)
             String length = String.valueOf(file.length());
             ContextHolder.get().setContentLength(length);
             responseHeaders.putHeader(CONTENT_LENGTH, writeBody?length:"0");
@@ -140,7 +154,9 @@ public class GetHandler {
         String indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
         writeResponseLine(HTTPStatus.OK, out);
         if (request.isHTTP1_1()){
+
             responseHeaders.putHeader(TRANSFER_ENCODING,"chunked");
+            ContextHolder.get().setContentLength("chunked");
 
             if (request.headerContains(ACCEPT_ENCODING,"gzip")){
                 responseHeaders.putHeader(CONTENT_ENCODING,"gzip");

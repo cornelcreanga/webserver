@@ -20,8 +20,11 @@ public class Server implements Runnable {
 
     private boolean shouldStop = false;
     private boolean isStopped = false;
+    private boolean isReady = false;
+
     private ExecutorService threadPool;
     private Configuration configuration;
+    private ServerSocket serverSocket;
 
 
     public Server() {
@@ -44,9 +47,11 @@ public class Server implements Runnable {
                 new ArrayBlockingQueue<>(configuration.getRequestWaitingQueueSize()));
 
 
-        try (ServerSocket serverSocket = new ServerSocket(configuration.getServerPort())) {
-            serverLog.info("Server started,listening on " + configuration.getServerPort() + ".");
-            while (!shouldStop()) {
+        try {
+            serverSocket = new ServerSocket(configuration.getServerPort());
+            serverLog.info("Server started,listening on " + configuration.getServerPort() + ". Files will be served from "+configuration.getServerRootFolder());
+            isReady = true;
+            while (!shouldStop) {
                 try {
                     final Socket socket = serverSocket.accept();
                     socket.setTcpNoDelay(true);
@@ -81,23 +86,28 @@ public class Server implements Runnable {
         } catch (IOException e) {
             serverLog.error("Fatal error: " + e.getMessage());
         } finally {
+            try {
+                Closeables.close(serverSocket, true);
+            }catch (IOException e){}
             threadPool.shutdown();
         }
         isStopped = true;
-        serverLog.info("Server stopped.");
     }
 
     public synchronized boolean isStopped() {
         return isStopped;
     }
 
-    private synchronized boolean shouldStop() {
-        return shouldStop;
+    public synchronized boolean isReady() {
+        return isReady;
     }
 
     public synchronized void stop() {
         serverLog.info("Stopping the server...");
         shouldStop = true;
+        try {
+            Closeables.close(serverSocket, true);
+        }catch (IOException e){}
     }
 
     private String getIp(Socket socket) {
@@ -113,18 +123,21 @@ public class Server implements Runnable {
 
     public static void main(String[] args) {
 
-        Configuration configuration = new Configuration();
-        if (args.length > 0)
-            configuration.loadFromFile(args[1]);
-
-        Server server = new Server(configuration);
-        Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutDownHook(server)));
-
+        Server server = null;
         try {
+            Configuration configuration = new Configuration();
+            if (args.length > 0)
+                configuration.loadFromFile(args[0]);
+
+            server = new Server(configuration);
+            Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutDownHook(server)));
+
+
             new Thread(server).start();
         } catch (InternalException e) {
-            e.printStackTrace();//todo
-            server.stop();
+            serverLog.error(e.getMessage());
+            if (server!=null)
+                server.stop();
         }
 
     }
