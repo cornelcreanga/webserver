@@ -31,9 +31,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * <p>
  * Wrapper supporting the chunked transfer encoding.
@@ -45,31 +42,41 @@ import org.apache.commons.logging.LogFactory;
  * @author <a href="mailto:oleg@ural.ru">Oleg Kalnichevski</a>
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @version $Revision: 1.10.2.1 $ $Date: 2004/02/22 18:21:13 $
- *
  * @see ChunkedInputStream
  * @since 2.0
- *
  */
 public class ChunkedOutputStream extends OutputStream {
 
     // ------------------------------------------------------- Static Variables
 
-    /** <tt>"\r\n"</tt>, as bytes. */
-    private static final byte CRLF[] = new byte[] {(byte) 13, (byte) 10};
+    /**
+     * <tt>"\r\n"</tt>, as bytes.
+     */
+    private static final byte CRLF[] = new byte[]{(byte) 13, (byte) 10};
 
-    /** End chunk */
+    /**
+     * End chunk
+     */
     private static final byte ENDCHUNK[] = CRLF;
 
-    /** 0 */
-    private static final byte ZERO[] = new byte[] {(byte) '0'};
+    /**
+     * 0
+     */
+    private static final byte ZERO[] = new byte[]{(byte) '0'};
 
-    /** 1 */
-    private static final byte ONE[] = new byte[] {(byte) '1'};
+    /**
+     * 1
+     */
+    private static final byte ONE[] = new byte[]{(byte) '1'};
 
-    /** Has this stream been closed? */
+    /**
+     * Has this stream been closed?
+     */
     private boolean closed = false;
 
-    /** The underlying output stream to which we will write data */
+    /**
+     * The underlying output stream to which we will write data
+     */
     private OutputStream stream = null;
 
     // ----------------------------------------------------------- Constructors
@@ -108,7 +115,7 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Writes a carriage return-line feed (CRLF) to the client.
      *
-     * @throws IOException   if an input or output exception occurred
+     * @throws IOException if an input or output exception occurred
      */
     public void println() throws IOException {
         print("\r\n");
@@ -118,10 +125,10 @@ public class ChunkedOutputStream extends OutputStream {
      * Write the specified byte to our output stream.
      *
      * @param b The byte to be written
-     * @throws IOException if an input/output error occurs
+     * @throws IOException           if an input/output error occurs
      * @throws IllegalStateException if stream already closed
      */
-    public void write (int b) throws IOException, IllegalStateException {
+    public void write(int b) throws IOException, IllegalStateException {
         if (closed) {
             throw new IllegalStateException("Output stream already closed");
         }
@@ -135,17 +142,17 @@ public class ChunkedOutputStream extends OutputStream {
     /**
      * Write the specified byte array.
      *
-     * @param b the byte array to write out
+     * @param b   the byte array to write out
      * @param off the offset within <code>b</code> to start writing from
      * @param len the length of data within <code>b</code> to write
      * @throws IOException when errors occur writing output
      */
-    public void write (byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
 
         if (closed) {
             throw new IllegalStateException("Output stream already closed");
         }
-        byte chunkHeader[] = getBytes (
+        byte chunkHeader[] = getBytes(
                 Integer.toHexString(len) + "\r\n");
         stream.write(chunkHeader, 0, chunkHeader.length);
         stream.write(b, off, len);
@@ -180,6 +187,7 @@ public class ChunkedOutputStream extends OutputStream {
 
     /**
      * Flushes the underlying stream.
+     *
      * @throws IOException If an IO problem occurs.
      */
     public void flush() throws IOException {

@@ -1,8 +1,5 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPMethod;
-import com.ccreanga.webserver.http.HTTPVersion;
 import com.ccreanga.webserver.ioutil.ChunkedInputStream;
 
 import java.io.InputStream;
@@ -10,7 +7,7 @@ import java.io.InputStream;
 /**
  * Encapsulates an HTTP request.
  */
-public class RequestMessage {
+public class HttpRequestMessage {
 
     private HTTPMethod method;
     private HTTPHeaders headers;
@@ -20,7 +17,7 @@ public class RequestMessage {
     protected boolean chunked;//specifies if the body will be sent using chunked transmission
     protected long length;//body length; makes sense only when chunk=false
 
-    public RequestMessage(HTTPMethod method, HTTPHeaders headers, String uri, HTTPVersion version, InputStream body, boolean chunked, long length) {
+    public HttpRequestMessage(HTTPMethod method, HTTPHeaders headers, String uri, HTTPVersion version, InputStream body, boolean chunked, long length) {
         this.method = method;
         this.headers = headers;
         this.uri = uri;
@@ -32,24 +29,24 @@ public class RequestMessage {
         this.length = length;
     }
 
-    public boolean isHTTP1_1(){
+    public boolean isHTTP1_1() {
         return getVersion().equals(HTTPVersion.HTTP_1_1);
     }
 
-    public boolean isHTTP1_0(){
+    public boolean isHTTP1_0() {
         return getVersion().equals(HTTPVersion.HTTP_1_0);
     }
 
-    public boolean headerContains(String header,String value){
+    public boolean headerContains(String header, String value) {
         String headerValue = getHeader(header);
-        if (headerValue==null)
+        if (headerValue == null)
             return false;
         return headerValue.contains(value);
     }
 
-    public boolean headerIs(String header,String value){
+    public boolean headerIs(String header, String value) {
         String headerValue = getHeader(header);
-        if (headerValue==null)
+        if (headerValue == null)
             return false;
         return headerValue.equalsIgnoreCase(value);
     }
@@ -85,7 +82,7 @@ public class RequestMessage {
 
     @Override
     public String toString() {
-        return "RequestMessage{" +
+        return "HttpRequestMessage{" +
                 "method=" + method +
                 ", headers=" + headers +
                 ", uri='" + uri + '\'' +

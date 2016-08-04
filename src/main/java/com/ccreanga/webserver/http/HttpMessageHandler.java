@@ -1,20 +1,20 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
 
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.Configuration;
+import com.ccreanga.webserver.InternalException;
+import com.ccreanga.webserver.http.methodhandler.GetHandler;
+import com.ccreanga.webserver.http.methodhandler.NotSupportedHandler;
+import com.ccreanga.webserver.http.methodhandler.OptionsHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.ccreanga.webserver.MessageWriter.writeHeaders;
-import static com.ccreanga.webserver.MessageWriter.writeResponseLine;
+
+public class HttpMessageHandler {
 
 
-public class MessageHandler {
-
-
-    public void handleMessage(RequestMessage request, Configuration configuration, OutputStream out) throws IOException {
+    public void handleMessage(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         //EXPECT header is not yet handled
         switch (request.getMethod()) {
             case GET:

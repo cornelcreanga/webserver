@@ -5,9 +5,6 @@ package com.ccreanga.webserver;
  */
 public class InvalidMessageFormatException extends RuntimeException {
 
-    public InvalidMessageFormatException() {
-    }
-
     public InvalidMessageFormatException(String message) {
         super(message);
     }

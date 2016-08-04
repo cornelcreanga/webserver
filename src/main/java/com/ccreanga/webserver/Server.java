@@ -1,8 +1,11 @@
 package com.ccreanga.webserver;
 
 import ch.qos.logback.classic.Level;
+import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpConnectionProcessor;
+import com.ccreanga.webserver.http.HttpMessageWriter;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.google.common.io.Closeables;
@@ -14,6 +17,8 @@ import java.net.*;
 import java.util.UUID;
 import java.util.concurrent.*;
 
+import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
+
 public class Server implements Runnable {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
@@ -22,7 +27,6 @@ public class Server implements Runnable {
     private boolean isStopped = false;
     private boolean isReady = false;
 
-    private ExecutorService threadPool;
     private Configuration configuration;
     private ServerSocket serverSocket;
 
@@ -37,9 +41,16 @@ public class Server implements Runnable {
         serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
     }
 
+    private void initContext(UUID uuid,String ip){
+        ContextHolder.put(new Context());
+        ContextHolder.get().setUuid(uuid);
+        ContextHolder.get().setIp(ip);
+        ContextHolder.get().setDate(DateUtil.currentDate(FORMATTER_LOG));
+    }
+
     public void run() {
         serverLog.info("Starting the server...");
-        threadPool = new ThreadPoolExecutor(
+        ExecutorService threadPool = new ThreadPoolExecutor(
                 configuration.getServerInitialThreads(),
                 configuration.getServerMaxThreads(),
                 60,
@@ -49,7 +60,7 @@ public class Server implements Runnable {
 
         try {
             serverSocket = new ServerSocket(configuration.getServerPort());
-            serverLog.info("Server started,listening on " + configuration.getServerPort() + ". Files will be served from "+configuration.getServerRootFolder());
+            serverLog.info("Server started,listening on " + configuration.getServerPort() + ". Files will be served from " + configuration.getServerRootFolder());
             isReady = true;
             while (!shouldStop) {
                 try {
@@ -59,16 +70,16 @@ public class Server implements Runnable {
                     try {
                         threadPool.execute(() -> {
                             try {
-                                ContextHolder.put(new Context());
+
                                 UUID uuid = UUID.randomUUID();
-                                ContextHolder.get().setUuid(uuid);
                                 String ip = getIp(socket);
-                                ContextHolder.get().setIp(ip);
+                                initContext(uuid,ip);
                                 serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
 
-                                ConnectionProcessor connectionProcessor = new PersistentConnectionProcessor();
+                                ConnectionProcessor connectionProcessor = new HttpConnectionProcessor();
                                 connectionProcessor.handleConnection(socket, configuration);
                             } finally {
+                                ContextHolder.cleanup();
                                 try {
                                     Closeables.close(socket, true);
                                 } catch (IOException e) {/**ignore**/}
@@ -76,7 +87,7 @@ public class Server implements Runnable {
                         });
 
                     } catch (RejectedExecutionException e) {
-                        MessageWriter.writeErrorResponse(new HTTPHeaders(), HTTPStatus.SERVICE_UNAVAILABLE, "", socket.getOutputStream());
+                        HttpMessageWriter.writeErrorResponse(new HTTPHeaders(), HTTPStatus.SERVICE_UNAVAILABLE, "", socket.getOutputStream());
                     }
                 } catch (IOException e) {
                     serverLog.trace(e.getMessage());
@@ -88,7 +99,7 @@ public class Server implements Runnable {
         } finally {
             try {
                 Closeables.close(serverSocket, true);
-            }catch (IOException e){}
+            } catch (IOException e) {/**ignore**/}
             threadPool.shutdown();
         }
         isStopped = true;
@@ -107,7 +118,7 @@ public class Server implements Runnable {
         shouldStop = true;
         try {
             Closeables.close(serverSocket, true);
-        }catch (IOException e){}
+        } catch (IOException e) {/**ignore**/}
     }
 
     private String getIp(Socket socket) {
@@ -136,7 +147,7 @@ public class Server implements Runnable {
             new Thread(server).start();
         } catch (InternalException e) {
             serverLog.error(e.getMessage());
-            if (server!=null)
+            if (server != null)
                 server.stop();
         }
 

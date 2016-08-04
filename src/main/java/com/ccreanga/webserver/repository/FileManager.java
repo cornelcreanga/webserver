@@ -42,7 +42,7 @@ public class FileManager {
         File[] file = folder.listFiles();
         if (file == null)//this should not happen unless some I/O issue
             throw new InternalException("cannot list folder " + folder.getName());
-        return Arrays.stream(file).filter(f->isNotHidden(f) && f.canRead()).collect(Collectors.toList());
+        return Arrays.stream(file).filter(f -> isNotHidden(f) && f.canRead()).collect(Collectors.toList());
     }
 
 //    public void createFile(String file, InputStream in){

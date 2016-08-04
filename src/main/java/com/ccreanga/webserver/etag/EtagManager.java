@@ -28,35 +28,36 @@ public class EtagManager {
 
     /**
      * This method returns a file weak etag implementation based on the file last modified time
-     * @param file file - cannot be a folder
+     *
+     * @param file      file - cannot be a folder
      * @param extension - optional, can be empty or null
-     * @param weak - weak etag generation (based on the file last modified time) or strong (not yet implemented)
+     * @param weak      - weak etag generation (based on the file last modified time) or strong (not yet implemented)
      * @return
      */
-    public String getFileEtag(File file,String extension, boolean weak) {
-        return getFileWeakEtag(file,extension);
+    public String getFileEtag(File file, String extension, boolean weak) {
+        return getFileWeakEtag(file, extension);
     }
 
     public String getFileEtag(File file, boolean weak) {
-        return getFileEtag(file,"",weak);
+        return getFileEtag(file, "", weak);
     }
 
     private String getFileWeakEtag(File file) {
-        return getFileWeakEtag(file,"");
+        return getFileWeakEtag(file, "");
     }
 
-        /**
-         * This method returns a file weak etag implementation based on the file last modified time
-         *
-         * @param file
-         * @return
-         */
-    private String getFileWeakEtag(File file,String extension) {
+    /**
+     * This method returns a file weak etag implementation based on the file last modified time
+     *
+     * @param file
+     * @return
+     */
+    private String getFileWeakEtag(File file, String extension) {
         Preconditions.checkNotNull(file);
         Preconditions.checkArgument(file.isFile());
-        if (extension==null)
-            extension="";
-        return "W/\"" + file.lastModified() +extension+ "\"";
+        if (extension == null)
+            extension = "";
+        return "W/\"" + file.lastModified() + extension + "\"";
     }
 
     /**

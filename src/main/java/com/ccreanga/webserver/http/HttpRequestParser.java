@@ -1,9 +1,8 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
 
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPMethod;
-import com.ccreanga.webserver.http.HTTPVersion;
+import com.ccreanga.webserver.Configuration;
+import com.ccreanga.webserver.InvalidMessageFormatException;
 import com.ccreanga.webserver.ioutil.BoundedBufferedReader;
 import com.ccreanga.webserver.logging.ContextHolder;
 import org.slf4j.Logger;
@@ -13,11 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class RequestParser {
+public class HttpRequestParser {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
-    public RequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
+    public HttpRequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
         String line;
         HTTPMethod httpMethod;
         String resource;
@@ -78,7 +77,7 @@ public class RequestParser {
             }
 
             int headersCount = headers.getAllHeadersMap().size();
-            if (headersCount>configuration.getRequestMaxHeaders())
+            if (headersCount > configuration.getRequestMaxHeaders())
                 throw new InvalidMessageFormatException("too many headers " + headersCount);
 
         } catch (IndexOutOfBoundsException e) {
@@ -97,7 +96,7 @@ public class RequestParser {
         //we cannot have both chunk and length//todo
 //        if ((chunk) && (length != -1))
 //            throw new InvalidMessageFormatException("chunked and Content-Length are mutually exclusive");
-        return new RequestMessage(httpMethod, headers, resource, version, in, chunk, length);
+        return new HttpRequestMessage(httpMethod, headers, resource, version, in, chunk, length);
 
     }
 

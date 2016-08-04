@@ -1,10 +1,10 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
-import com.ccreanga.webserver.http.HTTPVersion;
+import com.ccreanga.webserver.Configuration;
+import com.ccreanga.webserver.ConnectionProcessor;
+import com.ccreanga.webserver.InvalidMessageFormatException;
+import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.ioutil.LengthExceededException;
-import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-public class PersistentConnectionProcessor implements ConnectionProcessor {
+public class HttpConnectionProcessor implements ConnectionProcessor {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
     private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
@@ -33,33 +33,34 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
              */
             while (true) {
                 boolean shouldCloseConnection = false;
-                RequestMessage request = null;
+                HttpRequestMessage request = null;
                 boolean responseSyntaxCorrect = true;
                 HTTPStatus invalidStatus = null;
                 try {
-                    RequestParser requestParser = new RequestParser();
-                    request = requestParser.parseRequest(input, configuration);
+                    HttpRequestParser httpRequestParser = new HttpRequestParser();
+                    request = httpRequestParser.parseRequest(input, configuration);
                 } catch (InvalidMessageFormatException e) {
                     responseSyntaxCorrect = false;
                     invalidStatus = HTTPStatus.BAD_REQUEST;
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
+                    ContextHolder.get().setUrl("url too long");
                     invalidStatus = HTTPStatus.URI_TOO_LONG;
                 }
                 if (responseSyntaxCorrect) {
 
-                    MessageHandler messageHandler = new MessageHandler();
-                    messageHandler.handleMessage(request, configuration, output);
+                    HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
+                    httpMessageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
 
-                    if ((request.headerIs(HTTPHeaders.CONNECTION,"close")) ||
-                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION,"Keep-Alive"))
+                    if ((request.headerIs(HTTPHeaders.CONNECTION, "close")) ||
+                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION, "Keep-Alive"))
                         shouldCloseConnection = true;
                 } else {
                     //we were not event able to parse the first request line (not an HTTP message), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
                     ContextHolder.get().setContentLength("-");
-                    MessageWriter.writeResponseLine(invalidStatus, output);
+                    HttpMessageWriter.writeResponseLine(invalidStatus, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
                     shouldCloseConnection = true;
                 }
@@ -75,8 +76,6 @@ public class PersistentConnectionProcessor implements ConnectionProcessor {
             serverLog.trace("Connection " + ContextHolder.get().getUuid() + " was closed due to timeout");
         } catch (IOException e) {
             serverLog.trace("Connection " + ContextHolder.get().getUuid() + " was closed because of an I/O error: " + e.getMessage());
-        } finally {
-            ContextHolder.cleanup();
         }
 
     }

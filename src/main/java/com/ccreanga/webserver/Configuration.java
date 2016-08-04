@@ -95,55 +95,57 @@ public class Configuration {
     }
 
     private void load() {
-            serverPort = parseInt("serverPort",1,65535);
-            serverRootFolder = (String) properties.get("serverRootFolder");
-            if (serverRootFolder==null || serverRootFolder.trim().isEmpty())
-                throw new InternalException("serverRootFolder is missing or is empty");
-            File root  = new File(serverRootFolder);
-            if (!root.exists())
-                throw new InternalException(root.getAbsolutePath()+" does not exists");
-            if (root.exists() && !root.isDirectory())
-                throw new InternalException(root.getAbsolutePath()+" is not a folder");
-            if (root.exists() && root.isDirectory() && !root.canRead())
-                throw new InternalException(root.getAbsolutePath()+" can't be read (permission rights?)");
+        serverPort = parseInt("serverPort", 1, 65535);
+        serverRootFolder = (String) properties.get("serverRootFolder");
+        if (serverRootFolder == null || serverRootFolder.trim().isEmpty())
+            throw new InternalException("serverRootFolder is missing or is empty");
+        File root = new File(serverRootFolder);
+        if (!root.exists())
+            throw new InternalException(root.getAbsolutePath() + " does not exists");
+        if (root.exists() && !root.isDirectory())
+            throw new InternalException(root.getAbsolutePath() + " is not a folder");
+        if (root.exists() && root.isDirectory() && !root.canRead())
+            throw new InternalException(root.getAbsolutePath() + " can't be read (permission rights?)");
+        if (serverRootFolder.equals("/"))
+            throw new InternalException("Root folder can't be /");
 
-            serverInitialThreads = parseInt("serverInitialThreads",8,1024);
-            serverMaxThreads = parseInt("serverMaxThreads",8,1024);
+        serverInitialThreads = parseInt("serverInitialThreads", 8, 1024);
+        serverMaxThreads = parseInt("serverMaxThreads", 8, 1024);
 
-            requestTimeoutSeconds = parseInt("requestTimeoutSeconds",1,3600);
+        requestTimeoutSeconds = parseInt("requestTimeoutSeconds", 1, 3600);
 
-            requestWaitingQueueSize = parseInt("requestWaitingQueueSize",1,1000);
-            requestEtag = (String) properties.get("requestEtag");
-            if (requestEtag==null)
-                throw new InternalException("missing requestEtag value");
-            if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
-                throw new IllegalArgumentException("unknown etag:"+requestEtag+"; it should be none or weak");
-            requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
+        requestWaitingQueueSize = parseInt("requestWaitingQueueSize", 1, 1000);
+        requestEtag = (String) properties.get("requestEtag");
+        if (requestEtag == null)
+            throw new InternalException("missing requestEtag value");
+        if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
+            throw new IllegalArgumentException("unknown etag:" + requestEtag + "; it should be none or weak");
+        requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
 
-            requestMaxLineLength = parseInt("requestMaxLineLength",256,65535);
-            requestMaxHeaders = parseInt("requestMaxHeaders",8,65535);
+        requestMaxLineLength = parseInt("requestMaxLineLength", 256, 65535);
+        requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
-            if (properties.get("verbose")==null)
-                throw new InternalException("missing verbose value");
+        if (properties.get("verbose") == null)
+            throw new InternalException("missing verbose value");
 
-            verbose = Boolean.valueOf((String) properties.get("verbose"));
+        verbose = Boolean.valueOf((String) properties.get("verbose"));
 
 
     }
 
-    private int parseInt(String name, int min, int max){
-        String string="";
-        try{
+    private int parseInt(String name, int min, int max) {
+        String string = "";
+        try {
             string = (String) properties.get(name);
-            if (string==null)
-                throw new InternalException("Cannot find the value "+name);
+            if (string == null)
+                throw new InternalException("Cannot find the value " + name);
 
             int value = Integer.parseInt(string);
-            if ((value<min) || (value>max))
-                throw new InternalException("Cannot configure "+name+ " - expecting a number between "+min+" and "+max+" instead of "+value);
+            if ((value < min) || (value > max))
+                throw new InternalException("Cannot configure " + name + " - expecting a number between " + min + " and " + max + " instead of " + value);
             return value;
-        }catch (NumberFormatException e){
-            throw new InternalException("Cannot configure "+name+ " - expecting an integer  instead of "+string);
+        } catch (NumberFormatException e) {
+            throw new InternalException("Cannot configure " + name + " - expecting an integer  instead of " + string);
         }
     }
 

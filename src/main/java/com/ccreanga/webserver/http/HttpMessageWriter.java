@@ -1,7 +1,6 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.TemplateRepository;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.google.common.base.Charsets;
 
@@ -9,7 +8,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-public class MessageWriter {
+public class HttpMessageWriter {
     private static final byte[] CRLF = {0x0d, 0x0a};
     private static final byte[] SP = {0x20};
     private static final byte[] HEADER_SEP = {0x3A};
