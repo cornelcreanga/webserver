@@ -12,10 +12,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * This class does the "hard work" - parsing the http request.
+ * It tries to respect all the RFC defined conditions; besides them it will also check for very large requests or too many headers (
+ * using the Configuration.getRequestMaxLines, Configuration.getRequestMaxLineLength, Configuration.getRequestMaxHeaders values)
+ *
+ */
 public class HttpRequestParser {
 
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
+    /**
+     * Parse the http request.
+     * @param in - input stream
+     * @param configuration - configuration
+     * @return The HttpRequestMessage object
+     * @throws IOException - i/o error
+     * @throws InvalidMessageFormatException - if the request cannot be parsed to a valid HttpRequestMessage object
+     */
     public HttpRequestMessage parseRequest(InputStream in, Configuration configuration) throws IOException, InvalidMessageFormatException {
         String line;
         HTTPMethod httpMethod;
@@ -77,12 +91,14 @@ public class HttpRequestParser {
             }
 
             int headersCount = headers.getAllHeadersMap().size();
-            if (headersCount > configuration.getRequestMaxHeaders())
+            if (headersCount > configuration.getRequestMaxHeaders())//todo - deal with that separately and change the status to 431?
                 throw new InvalidMessageFormatException("too many headers " + headersCount);
 
         } catch (IndexOutOfBoundsException e) {
             throw new InvalidMessageFormatException("malformed url");
         }
+
+        //todo - right now the chunked input stream is not handled as we only deal with GET methods
         boolean chunk = "chunked".equals(headers.getHeader(HTTPHeaders.TRANSFER_ENCODING));
         long length = -1;
 

@@ -26,7 +26,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
             /**
              * The connection will be kept open unless
              * a)the connection will explicitly request close (HTTPHeaders.CONNECTION)
-             * b)the request message is unparsable (not even http)
+             * b)the request message is unparsable (we can't eve build an HttpRequestMessage)
              * c)the connection will timeout (Configuration/timeoutSeconds)
              * d)the connection is using HTTP 1.0 and is not using the the keep alive header
              * e)socket error (broken pipe etc)
@@ -37,6 +37,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 boolean responseSyntaxCorrect = true;
                 HTTPStatus invalidStatus = null;
                 try {
+                    //try to parse the message and to convert it to an HttpRequestMessage. Only HTTP 1.0 and HTTP 1.1 messages are accepted
                     HttpRequestParser httpRequestParser = new HttpRequestParser();
                     request = httpRequestParser.parseRequest(input, configuration);
                 } catch (InvalidMessageFormatException e) {
@@ -48,15 +49,16 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     invalidStatus = HTTPStatus.URI_TOO_LONG;
                 }
                 if (responseSyntaxCorrect) {
-
+                    //we can handle the message now
                     HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
                     httpMessageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
+                    //after the message is handled decide if we should close the connection or not
                     if ((request.headerIs(HTTPHeaders.CONNECTION, "close")) ||
                             (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION, "Keep-Alive"))
                         shouldCloseConnection = true;
                 } else {
-                    //we were not event able to parse the first request line (not an HTTP message), so write an error and close the connection.
+                    //we were not event able to parse the first request line (this is not an HTTP message), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
                     ContextHolder.get().setContentLength("-");
                     HttpMessageWriter.writeResponseLine(invalidStatus, output);
@@ -64,6 +66,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     shouldCloseConnection = true;
                 }
                 output.flush();
+                //write into the access log
                 accessLog.info(ContextHolder.get().generateLogEntry());
                 if (shouldCloseConnection) {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");

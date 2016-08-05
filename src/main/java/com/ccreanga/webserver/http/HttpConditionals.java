@@ -6,17 +6,22 @@ import java.time.LocalDateTime;
 
 import static com.ccreanga.webserver.http.HTTPHeaders.*;
 
+/**
+ * Implements HTTP conditionals.
+ * <p>
+ * See https://tools.ietf.org/html/rfc7232#section-6 and https://tools.ietf.org/html/rfc7232#page-13
+ */
 public class HttpConditionals {
 
     /**
-     * Implements HTTP conditionals.
+     * Implements HTTP conditionals. Right now the method works only for GET methods! (todo - add put/post behaviour)
      * <p>
      * See https://tools.ietf.org/html/rfc7232#section-6 and https://tools.ietf.org/html/rfc7232#page-13
      *
      * @param request Request message
      * @param etag Resource etag
      * @param modifiedDate Resource modified date
-     * @return
+     * @return httpstatus (412, 304, 400 - in case of invalid date headers)
      */
     public static HTTPStatus evaluateConditional(HttpRequestMessage request, String etag, LocalDateTime modifiedDate) {
 

@@ -87,14 +87,14 @@ public class Configuration {
         serverPort = parseInt("serverPort", 1, 65535);
         serverRootFolder = (String) properties.get("serverRootFolder");
         if (serverRootFolder == null || serverRootFolder.trim().isEmpty())
-            throw new InternalException("serverRootFolder is missing or is empty");
+            throw new ConfigurationException("serverRootFolder is missing or is empty");
         File root = new File(serverRootFolder);
         if (root.exists() && !root.isDirectory())
-            throw new InternalException(root.getAbsolutePath() + " is not a folder");
+            throw new ConfigurationException(root.getAbsolutePath() + " is not a folder");
         if (root.exists() && root.isDirectory() && !root.canRead())
-            throw new InternalException(root.getAbsolutePath() + " can't be read (permission rights?)");
+            throw new ConfigurationException(root.getAbsolutePath() + " can't be read (permission rights?)");
         if (serverRootFolder.equals("/"))
-            throw new InternalException("Root folder can't be /");
+            throw new ConfigurationException("Root folder can't be /");
         if (!root.exists())
             serverLog.info("Warning:"+root.getAbsolutePath() + " does not exists yet");
 
@@ -102,14 +102,14 @@ public class Configuration {
         serverMaxThreads = parseInt("serverMaxThreads", 1, 1024);
 
         if (serverMaxThreads<serverInitialThreads)
-            throw new InternalException("serverMaxThreads is lower than serverInitialThreads "+serverMaxThreads+"<"+serverInitialThreads);
+            throw new ConfigurationException("serverMaxThreads is lower than serverInitialThreads "+serverMaxThreads+"<"+serverInitialThreads);
 
         requestTimeoutSeconds = parseInt("requestTimeoutSeconds", 1, 3600);
 
         requestWaitingQueueSize = parseInt("requestWaitingQueueSize", 1, 1000);
         requestEtag = (String) properties.get("requestEtag");
         if (requestEtag == null)
-            throw new InternalException("missing requestEtag value");
+            throw new ConfigurationException("missing requestEtag value");
         if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
             throw new IllegalArgumentException("unknown etag:" + requestEtag + "; it should be none or weak");
         requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
@@ -118,7 +118,7 @@ public class Configuration {
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
         if (properties.get("verbose") == null)
-            throw new InternalException("missing verbose value");
+            throw new ConfigurationException("missing verbose value");
 
         verbose = Boolean.valueOf((String) properties.get("verbose"));
 
@@ -130,14 +130,14 @@ public class Configuration {
         try {
             string = (String) properties.get(name);
             if (string == null)
-                throw new InternalException("Cannot find the value " + name);
+                throw new ConfigurationException("Cannot find the value " + name);
 
             int value = Integer.parseInt(string);
             if ((value < min) || (value > max))
-                throw new InternalException("Cannot configure " + name + " - expecting a number between " + min + " and " + max + " instead of " + value);
+                throw new ConfigurationException("Cannot configure " + name + " - expecting a number between " + min + " and " + max + " instead of " + value);
             return value;
         } catch (NumberFormatException e) {
-            throw new InternalException("Cannot configure " + name + " - expecting an integer  instead of " + string);
+            throw new ConfigurationException("Cannot configure " + name + " - expecting an integer  instead of " + string);
         }
     }
 

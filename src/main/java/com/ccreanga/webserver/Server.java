@@ -8,6 +8,7 @@ import com.ccreanga.webserver.http.HttpConnectionProcessor;
 import com.ccreanga.webserver.http.HttpMessageWriter;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
+import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +22,28 @@ import java.util.concurrent.*;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
 
+/**
+ * Main server class
+ */
 public class Server implements Runnable {
 
+    /**
+     * Used to log messages to console
+     */
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+    /**
+     * Used for building the access log
+     */
     private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
 
     private boolean shouldStop = false;
+    /**
+     * True if the server is stopped and not accepting any connection
+     */
     private boolean isStopped = false;
+    /**
+     * True is the server is up and ready to accept connections
+     */
     private boolean isReady = false;
 
     private Configuration configuration;
@@ -35,7 +51,9 @@ public class Server implements Runnable {
 
 
     public Server(Configuration configuration) {
-        this.configuration = configuration;
+
+        this.configuration = Preconditions.checkNotNull(configuration);
+        //configure log level
         ch.qos.logback.classic.Logger serverLog = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("serverLog");
         serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
     }
@@ -53,7 +71,7 @@ public class Server implements Runnable {
                 configuration.getServerInitialThreads(),
                 configuration.getServerMaxThreads(),
                 60,
-                TimeUnit.MILLISECONDS,
+                TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(configuration.getRequestWaitingQueueSize()));
 
         try {
@@ -68,7 +86,7 @@ public class Server implements Runnable {
                     try {
                         threadPool.execute(() -> {
                             try {
-
+                                //when logging the events related to a a connection will also print the connection associated UUID in order to make the debugging easier
                                 UUID uuid = UUID.randomUUID();
                                 String ip = getIp(socket);
                                 initContext(uuid,ip);
@@ -78,6 +96,7 @@ public class Server implements Runnable {
                                 connectionProcessor.handleConnection(socket, configuration);
 
                             } finally {
+                                //clear the thread local
                                 ContextHolder.cleanup();
                                 try {
                                     Closeables.close(socket, true);
@@ -86,9 +105,11 @@ public class Server implements Runnable {
                         });
 
                     } catch (RejectedExecutionException e) {
+                        //if the server will have to reject connection because there is no available thread and the
+                        //waiting queue is full it will return SERVICE_UNAVAILABLE
                         HttpMessageWriter.writeNoBodyResponse(new HTTPHeaders(),HTTPStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
                         logEntry(socket);
-                        socket.close();
+                        Closeables.close(socket, true);
 
                     }
                 } catch (IOException e) {
@@ -97,6 +118,7 @@ public class Server implements Runnable {
             }
 
         } catch (IOException e) {
+            //we cannot create the serversocket, we'll shutdown
             serverLog.error("Fatal error: " + e.getMessage());
         } finally {
             try {
@@ -130,6 +152,7 @@ public class Server implements Runnable {
         serverLog.info("Stopping the server...");
         shouldStop = true;
         try {
+            //close the socket otherwise the main loop is blocked in serverSocket.accept();
             Closeables.close(serverSocket, true);
         } catch (IOException e) {/**ignore**/}
     }
@@ -150,6 +173,7 @@ public class Server implements Runnable {
         Server server = null;
         try {
             Properties properties = null;
+            //if the properties files is not passed as a parameter will use the default values
             if (args.length > 0) {
                 try {
                     properties = new Properties();
@@ -174,14 +198,22 @@ public class Server implements Runnable {
                 properties.put("requestMaxPutBodySize", "2147483648");
                 properties.put("verbose", "true");
             }
-            Configuration configuration = new Configuration(properties);
+            Configuration configuration = null;
+            try {
+                configuration = new Configuration(properties);
+            }catch (ConfigurationException e){
+                serverLog.error("configuration error, cannot start the server");
+                serverLog.error(e.getMessage());
+                System.exit(-1);
+            }
 
             server = new Server(configuration);
             Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutDownHook(server)));
 
-
             new Thread(server).start();
         } catch (InternalException e) {
+            //internal exception should never happen unless something unexpected happens
+            // (like having a corrupted jar without templates or an internal bug etc)
             serverLog.error(e.getMessage());
             if (server != null)
                 server.stop();

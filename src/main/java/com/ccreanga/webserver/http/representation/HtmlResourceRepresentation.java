@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 import static com.ccreanga.webserver.formatters.NumberUtil.fileSizePretty;
 import static freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS;
 
+/**
+ * Used to generate an html representation for folder or in case of an error (like Apache does).
+ */
 public class HtmlResourceRepresentation implements FileResourceRepresentation {
 
     private static Template index;

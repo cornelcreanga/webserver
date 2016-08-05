@@ -13,6 +13,9 @@ import java.io.OutputStream;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
 
+/**
+ * Not supported handler (http status 501)
+ */
 public class NotSupportedHandler implements HttpMethodHandler {
     @Override
     public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {

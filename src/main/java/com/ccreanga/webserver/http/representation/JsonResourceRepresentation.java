@@ -6,6 +6,7 @@ import com.ccreanga.webserver.http.Mime;
 import java.io.File;
 import java.io.IOException;
 
+//todo - not yet immplemented
 public class JsonResourceRepresentation implements FileResourceRepresentation {
     @Override
     public String folderRepresentation(File folder, File root) throws IOException {

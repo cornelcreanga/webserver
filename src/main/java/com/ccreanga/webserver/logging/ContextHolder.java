@@ -1,7 +1,9 @@
 package com.ccreanga.webserver.logging;
 
 /**
- * This class is used for contextual logging
+ * This class is used for contextual loggingl internally it uses an thread local
+ * It acts like a global variable per thread
+ * Do not forget to clean it after the thread processing is done
  */
 public class ContextHolder {
     private static final ThreadLocal<Context> threadLocal = new ThreadLocal<>();

@@ -11,9 +11,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * This class offers methods for both weak/strong etags
+ * This class offers methods for both weak/strong etags.
  * Weak etag is computed by looking on the file last modified date
- * Strong etag is computed using md5 (not yet implemented)
+ * Strong etag can be computed using md5 (not yet implemented)
  */
 public class EtagManager {
 
@@ -32,7 +32,7 @@ public class EtagManager {
      * @param file      file - cannot be a folder
      * @param extension - optional, can be empty or null
      * @param weak      - weak etag generation (based on the file last modified time) or strong (not yet implemented)
-     * @return
+     * @return etag
      */
     public String getFileEtag(File file, String extension, boolean weak) {
         return getFileWeakEtag(file, extension);

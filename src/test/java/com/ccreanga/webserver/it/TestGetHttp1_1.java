@@ -16,6 +16,7 @@ import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -54,6 +55,8 @@ public class TestGetHttp1_1 extends TestParent {
     }
 
     @Test
+    @Ignore
+    //does not work on windows so for the moment the file a?b.txt was removed
     public void testResourceWithSpecialChars() throws Exception {
         testResourceOk("folder1/a?b.txt");
     }

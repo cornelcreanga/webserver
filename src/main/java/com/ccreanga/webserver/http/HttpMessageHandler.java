@@ -10,10 +10,19 @@ import com.ccreanga.webserver.http.methodhandler.OptionsHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
+/**
+ * Finds the proper message handler taking into account the HTTP method.
+ */
 public class HttpMessageHandler {
 
-
+    /**
+     * Handles the message (by writing the response into the output stream) taking into account the HTTP method (GET/POST/PUT etc).
+     * Not all the methods are implemented right now - for them the status will be 501
+     * @param request - valid HttpRequestMessage
+     * @param configuration - configuration
+     * @param out - outputstrem
+     * @throws IOException - in case of I/O error
+     */
     public void handleMessage(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         //EXPECT header is not yet handled
         switch (request.getMethod()) {
@@ -21,6 +30,7 @@ public class HttpMessageHandler {
                 new GetHandler(true).handleGetResponse(request, configuration, out);
                 return;
             case HEAD:
+                //head is GET without the body
                 new GetHandler(false).handleGetResponse(request, configuration, out);
                 return;
             case POST:
@@ -44,6 +54,7 @@ public class HttpMessageHandler {
                 new OptionsHandler().handleGetResponse(request, configuration, out);
                 return;
         }
+        //this should never happen unles we have a bug :)
         throw new InternalException("invalid method " + request.getMethod() + ". this should never happen(internal error)");
     }
 
