@@ -15,6 +15,9 @@ import freemarker.template.TemplateException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +50,6 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
         StringWriter writer = new StringWriter();
         Map<String, Object> data = new HashMap<>(2);
         Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
         data.put("folder", htmlEscaper.escape(folder.getName()));
         if (!root.equals(folder)) {
@@ -67,7 +69,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
                 map(file -> {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("name", htmlEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : ""));
-                    map.put("link", urlPathEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : ""));
+                    map.put("link", encodeUrl(file.getName()) + (file.isDirectory() ?  "/" : ""));
                     map.put("lastModified", "" + DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT));
                     map.put("size", file.isDirectory() ? "-" : fileSizePretty(file.length()));
                     map.put("type", file.isDirectory() ? "folder" : "file");
@@ -84,6 +86,12 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
         }
 
         return writer.toString();
+    }
+
+    private String encodeUrl(String url){
+        try {
+            return URLEncoder.encode(url,StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {throw new InternalException(e);}
     }
 
     @Override
