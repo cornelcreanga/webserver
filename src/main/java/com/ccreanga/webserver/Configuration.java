@@ -17,6 +17,7 @@ public class Configuration {
     public static final String ETAG_STRONG = "strong"; //not used yet
 
     private int serverPort = 8082;
+    //todo - check if folder can be read
     private String serverRootFolder = "/var/www/html";
 
     private int serverInitialThreads = 128;
