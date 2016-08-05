@@ -65,6 +65,7 @@ public class TemplateRepository {
         data.put("folder", htmlEscaper.escape(folder.getName()));
         if (!root.equals(folder.getAbsolutePath())) {
             data.put("allowBrowsing", "true");
+            //todo - windows
             data.put("parentFolder", folder.getParent().substring(root.length()) + "/");
         }
 
