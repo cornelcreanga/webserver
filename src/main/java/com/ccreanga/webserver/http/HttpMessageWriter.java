@@ -1,6 +1,7 @@
 package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.TemplateRepository;
+import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.google.common.base.Charsets;
 
@@ -13,9 +14,12 @@ public class HttpMessageWriter {
     private static final byte[] SP = {0x20};
     private static final byte[] HEADER_SEP = {0x3A};
 
-    public static void writeErrorResponse(HTTPHeaders responseHeaders, HTTPStatus status, String extendedStatus, OutputStream out) throws IOException {
+    public static void writeErrorResponse(String acceptHeader,HTTPHeaders responseHeaders, HTTPStatus status, String extendedStatus, OutputStream out) throws IOException {
         ContextHolder.get().setStatusCode(status.toString());
-        String errorHtml = TemplateRepository.instance().buildError(status, extendedStatus);
+        FileResourceRepresentation representation =
+                RepresentationManager.getInstance().getRepresentation(acceptHeader);
+
+        String errorHtml = representation.errorRepresentation(status, extendedStatus);
         byte[] body = errorHtml.getBytes(Charsets.UTF_8);
         ContextHolder.get().setContentLength(String.valueOf(body.length));
         responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, String.valueOf(body.length));
@@ -25,7 +29,8 @@ public class HttpMessageWriter {
     }
 
     public static void writeNoBodyResponse(HTTPHeaders responseHeaders, HTTPStatus status, OutputStream out) throws IOException {
-        ContextHolder.get().setStatusCode(status.toString());
+        if (ContextHolder.get()!=null)
+            ContextHolder.get().setStatusCode(status.toString());
         responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
         writeResponseLine(status, out);
         writeHeaders(responseHeaders, out);
@@ -44,7 +49,9 @@ public class HttpMessageWriter {
     }
 
     public static void writeResponseLine(HTTPStatus status, OutputStream out) throws IOException {
-        ContextHolder.get().setStatusCode(status.toString());
+        //we might not even have an context here in case of rejected execution exception
+        if (ContextHolder.get()!=null)
+            ContextHolder.get().setStatusCode(status.toString());
         out.write("HTTP/1.1".getBytes(Charsets.ISO_8859_1));//todo
         out.write(SP);
         out.write(status.toString().getBytes(Charsets.ISO_8859_1));

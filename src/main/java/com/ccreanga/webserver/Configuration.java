@@ -35,23 +35,11 @@ public class Configuration {
 
     private boolean verbose = true;
 
-    private Properties properties = new Properties();
+    private Properties properties ;
 
-    public Configuration() {
-    }
 
-    public void loadFromProperties(Properties properties) {
-        this.properties = (Properties) properties.clone();
-        load();
-    }
-
-    public void loadFromFile(String file) {
-        try {
-            properties.load(new FileReader(file));
-        } catch (IOException e) {
-            serverLog.error("cannot load file " + file);
-            System.exit(-1);
-        }
+    public Configuration(Properties properties) {
+        this.properties = properties;
         load();
     }
 
@@ -101,17 +89,20 @@ public class Configuration {
         if (serverRootFolder == null || serverRootFolder.trim().isEmpty())
             throw new InternalException("serverRootFolder is missing or is empty");
         File root = new File(serverRootFolder);
-        if (!root.exists())
-            throw new InternalException(root.getAbsolutePath() + " does not exists");
         if (root.exists() && !root.isDirectory())
             throw new InternalException(root.getAbsolutePath() + " is not a folder");
         if (root.exists() && root.isDirectory() && !root.canRead())
             throw new InternalException(root.getAbsolutePath() + " can't be read (permission rights?)");
         if (serverRootFolder.equals("/"))
             throw new InternalException("Root folder can't be /");
+        if (!root.exists())
+            serverLog.info("Warning:"+root.getAbsolutePath() + " does not exists yet");
 
-        serverInitialThreads = parseInt("serverInitialThreads", 8, 1024);
-        serverMaxThreads = parseInt("serverMaxThreads", 8, 1024);
+        serverInitialThreads = parseInt("serverInitialThreads", 1, 1024);
+        serverMaxThreads = parseInt("serverMaxThreads", 1, 1024);
+
+        if (serverMaxThreads<serverInitialThreads)
+            throw new InternalException("serverMaxThreads is lower than serverInitialThreads "+serverMaxThreads+"<"+serverInitialThreads);
 
         requestTimeoutSeconds = parseInt("requestTimeoutSeconds", 1, 3600);
 

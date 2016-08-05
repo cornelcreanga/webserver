@@ -1,13 +1,11 @@
 package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.TemplateRepository;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
-import com.ccreanga.webserver.http.HttpRequestMessage;
-import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.http.*;
+import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.ioutil.ChunkedOutputStream;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
@@ -31,7 +29,6 @@ import java.time.ZonedDateTime;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HTTPHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
@@ -64,7 +61,7 @@ public class GetHandler implements HttpMethodHandler {
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
         if ((request.getHeader(HOST) == null) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(responseHeaders, HTTPStatus.BAD_REQUEST, "missing host header", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.BAD_REQUEST, "missing host header", out);
             return;
         }
 
@@ -79,10 +76,10 @@ public class GetHandler implements HttpMethodHandler {
         try {
             file = FileManager.getInstance().getFile(configuration.getServerRootFolder() + resource);
         } catch (ForbiddenException e) {
-            writeErrorResponse(responseHeaders, HTTPStatus.FORBIDDEN, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.FORBIDDEN, "", out);
             return;
         } catch (NotFoundException e) {
-            writeErrorResponse(responseHeaders, HTTPStatus.NOT_FOUND, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.NOT_FOUND, "", out);
             return;
         }
 
@@ -100,7 +97,7 @@ public class GetHandler implements HttpMethodHandler {
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         responseHeaders.putHeader(CONTENT_TYPE, mime);
-        responseHeaders.putHeader(LAST_MODIFIED, DateUtil.formatDate(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_RFC822));
+        responseHeaders.putHeader(LAST_MODIFIED, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_RFC822));
 
         if (request.isHTTP1_1()) {
 
@@ -108,7 +105,7 @@ public class GetHandler implements HttpMethodHandler {
                 etag = EtagManager.getInstance().getFileEtag(file, true);//todo - etag should depend on the context encoding too!
                 responseHeaders.putHeader(ETAG, etag);
             }
-            HTTPStatus statusAfterConditionals = evaluateConditional(request, responseHeaders, etag, modifiedDate);
+            HTTPStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
             if (!statusAfterConditionals.equals(HTTPStatus.OK)) {
                 writeResponseLine(statusAfterConditionals, out);
                 writeHeaders(responseHeaders, out);
@@ -159,7 +156,13 @@ public class GetHandler implements HttpMethodHandler {
         //todo - it should not return html unless the client accepts that
 
         responseHeaders.putHeader(CONTENT_TYPE, Mime.getType("html"));
-        String indexPage = TemplateRepository.instance().buildIndex(file, configuration.getServerRootFolder());
+
+        FileResourceRepresentation representation =
+                RepresentationManager.getInstance().getRepresentation(request.getHeader(HTTPHeaders.ACCEPT));
+        responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
+
+        String folderRepresentation = representation.folderRepresentation(file,new File(configuration.getServerRootFolder()));
+
         writeResponseLine(HTTPStatus.OK, out);
         if (request.isHTTP1_1()) {
 
@@ -181,15 +184,15 @@ public class GetHandler implements HttpMethodHandler {
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {
-                enclosed.write(indexPage.getBytes(Charsets.UTF_8));
+                enclosed.write(folderRepresentation.getBytes(Charsets.UTF_8));
             }
             enclosed.close();
         } else {
-            ContextHolder.get().setContentLength("" + indexPage.length());
-            responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? "" + indexPage.length() : "0");
+            ContextHolder.get().setContentLength("" + folderRepresentation.length());
+            responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? "" + folderRepresentation.length() : "0");
             writeHeaders(responseHeaders, out);
             if (writeBody) {
-                out.write(indexPage.getBytes(Charsets.UTF_8));
+                out.write(folderRepresentation.getBytes(Charsets.UTF_8));
             }
         }
 
@@ -206,93 +209,6 @@ public class GetHandler implements HttpMethodHandler {
             return true;
         return false;
 
-    }
-
-    /**
-     * The following rules are implemented (//https://tools.ietf.org/html/rfc7232#section-6)
-     * 1.  When recipient is the origin server and If-Match is present,
-     * evaluate the If-Match precondition:
-     * <p>
-     * if true, continue to step 3
-     * if false, respond 412 (Precondition Failed) unless it can be
-     * determined that the state-changing request has already
-     * succeeded (see Section 3.1)
-     * <p>
-     * <p>
-     * 2.  When recipient is the origin server, If-Match is not present, and
-     * If-Unmodified-Since is present, evaluate the If-Unmodified-Since
-     * precondition:
-     * <p>
-     * if true, continue to step 3
-     * if false, respond 412 (Precondition Failed) unless it can be
-     * determined that the state-changing request has already
-     * succeeded (see Section 3.4)
-     * <p>
-     * 3.  When If-None-Match is present, evaluate the If-None-Match
-     * precondition:
-     * <p>
-     * if true, continue to step 5
-     * if false for GET/HEAD, respond 304 (Not Modified)
-     * if false for other methods, respond 412 (Precondition Failed)
-     * <p>
-     * 4.  When the method is GET or HEAD, If-None-Match is not present, and
-     * If-Modified-Since is present, evaluate the If-Modified-Since
-     * precondition:
-     * <p>
-     * if true, continue to step 5
-     * if false, respond 304 (Not Modified)
-     * <p>
-     * 5.  When the method is GET and both Range and If-Range are present,
-     * evaluate the If-Range precondition:
-     * <p>
-     * if the validator matches and the Range specification is
-     * applicable to the selected representation, respond 206
-     * (Partial Content) [RFC7233]
-     * <p>
-     * 6.  Otherwise,
-     * <p>
-     * all conditions are met, so perform the requested action and
-     * respond according to its success or failure.
-     *
-     * @param request
-     * @param responseHeaders
-     * @param etag
-     * @param modifiedDate
-     * @return
-     */
-    private HTTPStatus evaluateConditional(HttpRequestMessage request, HTTPHeaders responseHeaders, String etag, LocalDateTime modifiedDate) {
-
-        HTTPStatus response = HTTPStatus.OK;
-        String ifMatch = request.getHeader(IF_MATCH);
-        String ifUnmodifiedSince = request.getHeader(IF_UNMODIFIED_SINCE);
-        String ifNoneMatch = request.getHeader(IF_NONE_MATCH);
-        String ifModifiedSince = request.getHeader(IF_MODIFIED_SINCE);
-
-        if ((ifMatch != null) && (!ifMatch.equals(etag)))
-            return HTTPStatus.PRECONDITION_FAILED;
-
-        if ((ifUnmodifiedSince != null) && (ifMatch == null)) {
-            LocalDateTime date = DateUtil.parseRfc2161CompliantDate(ifUnmodifiedSince);
-            if (date == null)//unparsable date
-                return HTTPStatus.BAD_REQUEST;//todo - should we ignore it?
-            if (modifiedDate.isAfter(date))
-                return HTTPStatus.PRECONDITION_FAILED;
-        }
-
-        if (ifNoneMatch != null) {
-            if (!ifNoneMatch.equals(etag))
-                return HTTPStatus.NOT_MODIFIED;//for get and head
-        }
-
-        if ((ifModifiedSince != null) && (ifNoneMatch == null)) {
-            LocalDateTime date = DateUtil.parseRfc2161CompliantDate(ifModifiedSince);
-            if (date == null)//unparsable date
-                return HTTPStatus.BAD_REQUEST;//todo - should we ignore it?
-            if (modifiedDate.isBefore(date) || modifiedDate.equals(date))
-                return HTTPStatus.NOT_MODIFIED;
-        }
-
-        return response;
     }
 
 }

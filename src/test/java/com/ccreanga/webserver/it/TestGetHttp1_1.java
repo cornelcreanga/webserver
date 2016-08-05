@@ -1,12 +1,14 @@
 package com.ccreanga.webserver.it;
 
 
-import com.ccreanga.webserver.TemplateRepository;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HTTPStatus;
 import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.http.representation.HtmlResourceRepresentation;
+import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpEntity;
@@ -42,7 +44,7 @@ public class TestGetHttp1_1 extends TestParent {
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
 
-            assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.NOT_FOUND, ""));
+            assertEquals(content, getRepresentation(response).errorRepresentation(HTTPStatus.NOT_FOUND, ""));
         }
     }
 
@@ -80,14 +82,16 @@ public class TestGetHttp1_1 extends TestParent {
 
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
-            assertEquals(content, TemplateRepository.instance().buildIndex(file,configuration.getServerRootFolder()));
+
+            assertEquals(content, getRepresentation(response).folderRepresentation(file,new File(configuration.getServerRootFolder())));
         }
 
     }
 
-    @Test
-    public void testUnparseableDate() throws Exception{
-        assertTrue(false);
+    private FileResourceRepresentation getRepresentation(CloseableHttpResponse response){
+        if (response.getFirstHeader(ACCEPT)==null)
+            return new HtmlResourceRepresentation();
+        return RepresentationManager.getInstance().getRepresentation(response.getFirstHeader(ACCEPT).getValue());
     }
 
     @Test
@@ -102,7 +106,7 @@ public class TestGetHttp1_1 extends TestParent {
             assertEquals(statusLine.getReasonPhrase(), HTTPStatus.FORBIDDEN.getReasonPhrase());
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
-            assertEquals(content, TemplateRepository.instance().buildError(HTTPStatus.FORBIDDEN, ""));
+            assertEquals(content, getRepresentation(response).errorRepresentation(HTTPStatus.FORBIDDEN, ""));
         }
     }
 
@@ -145,7 +149,6 @@ public class TestGetHttp1_1 extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape(resource));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();

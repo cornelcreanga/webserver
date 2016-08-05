@@ -7,7 +7,9 @@ import java.io.IOException;
 
 public interface FileResourceRepresentation {
 
-    String folderRepresentation(File folder, String root) throws IOException;
+    String folderRepresentation(File folder, File root) throws IOException;
 
     String errorRepresentation(HTTPStatus status, String extendedReason) throws IOException;
+
+    String getContentType();
 }

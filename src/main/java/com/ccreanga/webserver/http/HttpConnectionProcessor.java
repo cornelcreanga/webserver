@@ -52,7 +52,6 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
                     httpMessageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
-
                     if ((request.headerIs(HTTPHeaders.CONNECTION, "close")) ||
                             (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION, "Keep-Alive"))
                         shouldCloseConnection = true;

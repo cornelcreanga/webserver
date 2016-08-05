@@ -31,23 +31,27 @@ public class DateUtil {
                 FORMATTER_C_ASCTIME_ONE_DAY_DIGIT);
     }
 
-    public static LocalDateTime parseDate(String date, DateTimeFormatter... formatters) {
+    private static LocalDateTime parseDate(String date, DateTimeFormatter... formatters) {
         for (DateTimeFormatter formatter : formatters) {
             try {
                 return LocalDateTime.parse(date, formatter);
-            } catch (DateTimeException exception) {
-            }
+            } catch (DateTimeException exception) {/**ignore**/}
         }
         return null;
     }
 
-    public static String formatDate(Instant instant, DateTimeFormatter formatter) {
+    public static String formatDateToUTC(Instant instant, DateTimeFormatter formatter) {
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("UTC"));
         return zonedDateTime.format(formatter);
     }
 
+    public static String formatDateToLocalZone(Instant instant, DateTimeFormatter formatter) {
+        ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+        return zonedDateTime.format(formatter);
+    }
+
     public static String currentDate(DateTimeFormatter formatter) {
-        return formatDate(Instant.now(), formatter);
+        return formatDateToUTC(Instant.now(), formatter);
     }
 
 }

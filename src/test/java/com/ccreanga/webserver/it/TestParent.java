@@ -15,7 +15,7 @@ public abstract class TestParent {
 
     protected static Server server;
     protected String host = "127.0.0.1";
-    protected static Configuration configuration = new Configuration();
+    protected static Configuration configuration ;
     protected static CloseableHttpClient httpclient;
     protected static CloseableHttpClient httpclientNoDecompression;
 
@@ -42,7 +42,7 @@ public abstract class TestParent {
         properties.put("requestMaxPutBodySize", "2147483648");
 
         properties.put("verbose", "false");
-        configuration.loadFromProperties(properties);
+        configuration = new Configuration(properties);
 
         server = new Server(configuration);
         httpclient = HttpClients.createDefault();

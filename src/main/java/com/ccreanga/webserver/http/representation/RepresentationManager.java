@@ -9,13 +9,11 @@ public class RepresentationManager {
     }
 
     public FileResourceRepresentation getRepresentation(String acceptHeader) {
-        if (acceptHeader.contains("*/*"))
-            return new HtmlResourceRepresentation();
-        if (acceptHeader.contains("text/html"))
+        if ((acceptHeader==null) || (acceptHeader.contains("*/*")) || acceptHeader.contains("text/html"))
             return new HtmlResourceRepresentation();
         if (acceptHeader.contains("application/json"))
             return new JsonResourceRepresentation();
-        return new HtmlResourceRepresentation();//todo - should we throw an error?
+        return new HtmlResourceRepresentation();//todo - should we throw 406 - Not Acceptable?
 
     }
 
