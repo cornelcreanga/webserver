@@ -24,6 +24,7 @@ public class HttpMessageWriter {
         byte[] body = errorHtml.getBytes(Charsets.UTF_8);
         ContextHolder.get().setContentLength(String.valueOf(body.length));
         responseHeaders.putHeader(CONTENT_LENGTH, String.valueOf(body.length));
+        responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
         writeResponseLine(status, out);
         writeHeaders(responseHeaders, out);
         out.write(body);

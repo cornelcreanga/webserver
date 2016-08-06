@@ -40,6 +40,7 @@ public class HttpRequestParser {
         HTTPVersion version;
         HTTPHeaders headers;
         try {
+            //todo - it would be nice to also prevent the "lazy" request
             //prevent large requests / out of memory errors
             BoundedBufferedReader reader = new BoundedBufferedReader(
                     new InputStreamReader(in, "ISO8859_1"),

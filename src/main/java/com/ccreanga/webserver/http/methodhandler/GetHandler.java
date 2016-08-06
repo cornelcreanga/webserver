@@ -169,7 +169,6 @@ public class GetHandler implements HttpMethodHandler {
     private void deliverFolder(HttpRequestMessage request, HTTPHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
 
 
-        responseHeaders.putHeader(CONTENT_TYPE, Mime.getType("html"));
         //obtain the resource representation taking into account the content type
         FileResourceRepresentation representation =
                 RepresentationManager.getInstance().getRepresentation(request.getHeader(ACCEPT));

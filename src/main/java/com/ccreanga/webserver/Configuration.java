@@ -16,24 +16,52 @@ public class Configuration {
     public static final String ETAG_WEAK = "weak";
     public static final String ETAG_STRONG = "strong"; //not used yet
 
-    private int serverPort = 8082;
-    //todo - check if folder can be read
-    private String serverRootFolder = "/var/www/html";
+    /**
+     * Server port
+     */
+    private int serverPort;
+    /**
+     * Server root folder
+     */
+    private String serverRootFolder;
+    /**
+     * Initial no of threads, it should belong in [1..1024]
+     */
+    private int serverInitialThreads;
+    /**
+     * Max no of threads, it should belong in [1..1024]
+     */
+    private int serverMaxThreads;
 
-    private int serverInitialThreads = 128;
-    private int serverMaxThreads = 1000;
+    /**
+     * Timeout for keepalive connections, it should belong in [1..3600]
+     */
+    private int requestTimeoutSeconds;
 
-    private int requestTimeoutSeconds = 10;
+    /**
+     * Thread pool waiting queue, it should belong in [1..3600]
+     */
+    private int requestWaitingQueueSize;
 
-    private int requestWaitingQueueSize = 64;
+    /**
+     * Should the server generate etags? Right now it only supports none/weak
+     */
+    private String requestEtag;
 
-    private String requestEtag = ETAG_WEAK;//"weak/none". in future maybe support strong too
+    /**
+     * The maximum number of lines from a request, it should belong in [256..65535]
+     */
+    private int requestMaxLines;
+    /**
+     * The maximum length of a request line, it should belong in [8..65535]
+     */
+    private int requestMaxLineLength;
+    /**
+     * The maximum amount of headers, it should belong in [8..65535]
+     */
+    private int requestMaxHeaders;
 
-    private int requestMaxLines = 200;
-    private int requestMaxLineLength = 1024;
-    private int requestMaxHeaders = 64;
-
-    private boolean verbose = true;
+    private boolean verbose;
 
     private Properties properties ;
 

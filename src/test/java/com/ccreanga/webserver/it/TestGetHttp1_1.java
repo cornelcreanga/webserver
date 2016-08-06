@@ -60,10 +60,19 @@ public class TestGetHttp1_1 extends TestParent {
     public void testResourceWithSpecialChars() throws Exception {
         testResourceOk("folder1/a?b.txt");
     }
-
+    @Test
+    public void testFolderHtmlContentType() throws Exception {
+        testFolder("html");
+    }
 
     @Test
-    public void testFolder() throws Exception {
+    public void testFolderJsonContentType() throws Exception {
+        testFolder("json");
+    }
+
+
+
+    public void testFolder(String mime) throws Exception {
         String fileName = "www/folder1";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
@@ -71,6 +80,7 @@ public class TestGetHttp1_1 extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("folder1"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        request.setHeader("Accept",Mime.getType(mime));
 
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
@@ -78,9 +88,7 @@ public class TestGetHttp1_1 extends TestParent {
             assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH), null);
-            assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType("html"));
-            //this header is removed in case of content decompression by the http client
-//        assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(),"gzip");
+            assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(mime));
             assertEquals(response.getFirstHeader(ETAG),null);
 
             HttpEntity entity = response.getEntity();
@@ -92,9 +100,7 @@ public class TestGetHttp1_1 extends TestParent {
     }
 
     private FileResourceRepresentation getRepresentation(CloseableHttpResponse response){
-        if (response.getFirstHeader(ACCEPT)==null)
-            return new HtmlResourceRepresentation();
-        return RepresentationManager.getInstance().getRepresentation(response.getFirstHeader(ACCEPT).getValue());
+        return RepresentationManager.getInstance().getRepresentation(response.getFirstHeader(CONTENT_TYPE).getValue());
     }
 
     @Test

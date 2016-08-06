@@ -51,8 +51,6 @@ public class HttpConditionals {
                 return (request.getMethod().equals(GET) || request.getMethod().equals(HEAD))?
                         HTTPStatus.NOT_MODIFIED:
                         HTTPStatus.PRECONDITION_FAILED;
-
-            return HTTPStatus.NOT_MODIFIED;//for get and head
         }
 
         if ((ifModifiedSince != null) && (request.getMethod().equals(GET) || request.getMethod().equals(HEAD))) {
