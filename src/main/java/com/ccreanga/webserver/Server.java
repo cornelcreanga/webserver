@@ -109,7 +109,7 @@ public class Server implements Runnable {
                         //if the server will have to reject connection because there is no available thread and the
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
                         HttpMessageWriter.writeNoBodyResponse(new HTTPHeaders(),HTTPStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
-                        LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-",HTTPStatus.SERVICE_UNAVAILABLE.toString(),"-");
+                        accessLog.info(LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-",HTTPStatus.SERVICE_UNAVAILABLE.toString(),"-"));
                         IOUtil.closeSilent(socket);
 
                     }
