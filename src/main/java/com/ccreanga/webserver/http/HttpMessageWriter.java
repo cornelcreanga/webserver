@@ -53,7 +53,7 @@ public class HttpMessageWriter {
         //we might not even have an context here in case of rejected execution exception
         if (ContextHolder.get()!=null)
             ContextHolder.get().setStatusCode(status.toString());
-        out.write("HTTP/1.1".getBytes(Charsets.ISO_8859_1));//todo
+        out.write("HTTP/1.1".getBytes(Charsets.ISO_8859_1));
         out.write(SP);
         out.write(status.toString().getBytes(Charsets.ISO_8859_1));
         out.write(SP);

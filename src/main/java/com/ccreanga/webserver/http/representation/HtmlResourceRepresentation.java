@@ -26,10 +26,11 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import static com.ccreanga.webserver.formatters.NumberUtil.fileSizePretty;
+import static com.ccreanga.webserver.ioutil.IOUtil.extractParentResource;
 import static freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS;
 
 /**
- * Used to generate an html representation for folder or in case of an error (like Apache does).
+ * Used to generate an html representation for a folder or in case of an error (like Apache does).
  */
 public class HtmlResourceRepresentation implements FileResourceRepresentation {
 
@@ -83,9 +84,8 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
         try {
             index.process(data, writer);
         } catch (TemplateException e) {
+            //will not appear unless a the template is invalid
             throw new InternalException(e);
-        } catch (IOException e) {
-            throw e;
         }
 
         return writer.toString();
@@ -119,20 +119,5 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
         return Mime.getType("html");
     }
 
-    private String extractParentResource(File file, File root){
-        File traverse = file.getParentFile();
-        StringBuilder sb = new StringBuilder();
-        sb.append("/");
-        Stack<String> stack = new Stack<>();
-        while(!traverse.equals(root)){
-            stack.push(traverse.getName());
-            traverse = traverse.getParentFile();
-        }
-        while(!stack.empty()){
-            String next = stack.pop();
-            sb.append(next).append("/");
-        }
-        return sb.toString();
-    }
 
 }

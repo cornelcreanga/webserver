@@ -52,8 +52,8 @@ public abstract class TestParent {
             new Thread(server).start();
             while(!server.isReady());
         } catch (InternalException e) {
-            e.printStackTrace();//todo
             server.stop();
+            throw e;
         }
     }
 
