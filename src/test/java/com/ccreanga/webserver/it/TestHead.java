@@ -20,8 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static com.ccreanga.webserver.http.HTTPHeaders.*;
-import static com.ccreanga.webserver.http.HTTPHeaders.LAST_MODIFIED;
+import static com.google.common.net.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
 
 public class TestHead extends TestParent {

@@ -8,6 +8,7 @@ import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import static com.google.common.net.HttpHeaders.*;
 
 public class HttpMessageWriter {
     private static final byte[] CRLF = {0x0d, 0x0a};
@@ -22,7 +23,7 @@ public class HttpMessageWriter {
         String errorHtml = representation.errorRepresentation(status, extendedStatus);
         byte[] body = errorHtml.getBytes(Charsets.UTF_8);
         ContextHolder.get().setContentLength(String.valueOf(body.length));
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, String.valueOf(body.length));
+        responseHeaders.putHeader(CONTENT_LENGTH, String.valueOf(body.length));
         writeResponseLine(status, out);
         writeHeaders(responseHeaders, out);
         out.write(body);
@@ -31,7 +32,7 @@ public class HttpMessageWriter {
     public static void writeNoBodyResponse(HTTPHeaders responseHeaders, HTTPStatus status, OutputStream out) throws IOException {
         if (ContextHolder.get()!=null)
             ContextHolder.get().setStatusCode(status.toString());
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
+        responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeResponseLine(status, out);
         writeHeaders(responseHeaders, out);
     }

@@ -11,7 +11,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
-
+import static com.google.common.net.HttpHeaders.*;
 import java.io.File;
 import java.time.*;
 
@@ -35,8 +35,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,"not parsable");
+        request.addHeader(IF_MATCH,etag);
+        request.addHeader(IF_MODIFIED_SINCE,"not parsable");
 
         checkForStatus(request,HTTPStatus.BAD_REQUEST);
     }
@@ -50,8 +50,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_MATCH,etag);
+        request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.NOT_MODIFIED);
 
@@ -67,8 +67,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_MATCH,etag);
+        request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.PRECONDITION_FAILED);
 
@@ -83,8 +83,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_MATCH,etag);
+        request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.OK);
 
@@ -99,8 +99,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        //request.addHeader(HTTPHeaders.IF_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        //request.addHeader(IF_MATCH,etag);
+        request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.PRECONDITION_FAILED);
 
@@ -115,8 +115,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_NONE_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_NONE_MATCH,etag);
+        request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.NOT_MODIFIED);
     }
@@ -130,8 +130,8 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_NONE_MATCH,etag);
-        request.addHeader(HTTPHeaders.IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_NONE_MATCH,etag);
+        request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.OK);
     }
@@ -145,7 +145,7 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_NONE_MATCH,etag);
+        request.addHeader(IF_NONE_MATCH,etag);
 
         checkForStatus(request,HTTPStatus.NOT_MODIFIED);
 
@@ -160,7 +160,7 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_NONE_MATCH,etag);
+        request.addHeader(IF_NONE_MATCH,etag);
 
         checkForStatus(request,HTTPStatus.OK);
 
@@ -175,7 +175,7 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.OK);
 
@@ -190,7 +190,7 @@ public class TestGetConditionals extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(HTTPHeaders.IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
         checkForStatus(request,HTTPStatus.NOT_MODIFIED);
 

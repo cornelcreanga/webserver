@@ -4,7 +4,7 @@ import com.ccreanga.webserver.formatters.DateUtil;
 
 import java.time.LocalDateTime;
 
-import static com.ccreanga.webserver.http.HTTPHeaders.*;
+import static com.google.common.net.HttpHeaders.*;
 
 /**
  * Implements HTTP conditionals.

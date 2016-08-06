@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.ccreanga.webserver.http.HTTPHeaders.ALLOW;
+import static com.google.common.net.HttpHeaders.ALLOW;
 import static org.junit.Assert.assertEquals;
 
 public class TestOtherHttpMethods extends TestParent {

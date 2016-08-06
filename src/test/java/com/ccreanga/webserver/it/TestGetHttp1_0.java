@@ -12,8 +12,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.ccreanga.webserver.http.HTTPHeaders.*;
-import static com.ccreanga.webserver.http.HTTPHeaders.ETAG;
+import static com.google.common.net.HttpHeaders.*;
+
 import static org.junit.Assert.assertEquals;
 
 public class TestGetHttp1_0 extends TestParent {

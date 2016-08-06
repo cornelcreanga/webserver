@@ -2,10 +2,9 @@ package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.ConnectionProcessor;
-import com.ccreanga.webserver.InvalidMessageFormatException;
-import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.ioutil.LengthExceededException;
 import com.ccreanga.webserver.logging.ContextHolder;
+import com.ccreanga.webserver.logging.LogEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +13,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+
+import static com.google.common.net.HttpHeaders.CONNECTION;
 
 public class HttpConnectionProcessor implements ConnectionProcessor {
 
@@ -40,9 +41,9 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     //try to parse the message and to convert it to an HttpRequestMessage. Only HTTP 1.0 and HTTP 1.1 messages are accepted
                     HttpRequestParser httpRequestParser = new HttpRequestParser();
                     request = httpRequestParser.parseRequest(input, configuration);
-                } catch (InvalidMessageFormatException e) {
+                } catch (InvalidMessageException e) {
                     responseSyntaxCorrect = false;
-                    invalidStatus = HTTPStatus.BAD_REQUEST;
+                    invalidStatus = e.getStatus();
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("url too long");
@@ -54,8 +55,8 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     httpMessageHandler.handleMessage(request, configuration, output);
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //after the message is handled decide if we should close the connection or not
-                    if ((request.headerIs(HTTPHeaders.CONNECTION, "close")) ||
-                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(HTTPHeaders.CONNECTION, "Keep-Alive"))
+                    if ((request.headerIs(CONNECTION, "close")) ||
+                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive"))
                         shouldCloseConnection = true;
                 } else {
                     //we were not event able to parse the first request line (this is not an HTTP message), so write an error and close the connection.
@@ -67,7 +68,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 }
                 output.flush();
                 //write into the access log
-                accessLog.info(ContextHolder.get().generateLogEntry());
+                accessLog.info(LogEntry.generateLogEntry(ContextHolder.get()));
                 if (shouldCloseConnection) {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
                     break;

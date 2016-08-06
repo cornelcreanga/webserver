@@ -12,6 +12,7 @@ import java.io.OutputStream;
 
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
 
 /**
  * Not supported handler (http status 501)
@@ -21,7 +22,7 @@ public class NotSupportedHandler implements HttpMethodHandler {
     public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         writeResponseLine(HTTPStatus.NOT_IMPLEMENTED, out);
         HTTPHeaders responseHeaders = new HTTPHeaders();
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
+        responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeHeaders(responseHeaders, out);
         ContextHolder.get().setContentLength("-");
     }

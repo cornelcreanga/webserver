@@ -11,13 +11,15 @@ import java.io.OutputStream;
 
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.google.common.net.HttpHeaders.ALLOW;
+import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
 
 public class OptionsHandler implements HttpMethodHandler {
     @Override
     public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         HTTPHeaders responseHeaders = new HTTPHeaders();
-        responseHeaders.putHeader(HTTPHeaders.ALLOW, "GET, HEAD, OPTIONS");
-        responseHeaders.putHeader(HTTPHeaders.CONTENT_LENGTH, "0");
+        responseHeaders.putHeader(ALLOW, "GET, HEAD, OPTIONS");
+        responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeResponseLine(HTTPStatus.OK, out);
         writeHeaders(responseHeaders, out);
         ContextHolder.get().setContentLength("-");

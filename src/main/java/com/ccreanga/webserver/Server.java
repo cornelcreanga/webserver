@@ -6,13 +6,16 @@ import com.ccreanga.webserver.http.HTTPHeaders;
 import com.ccreanga.webserver.http.HTTPStatus;
 import com.ccreanga.webserver.http.HttpConnectionProcessor;
 import com.ccreanga.webserver.http.HttpMessageWriter;
+import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
+import com.ccreanga.webserver.logging.LogEntry;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.*;
@@ -88,7 +91,7 @@ public class Server implements Runnable {
                             try {
                                 //when logging the events related to a a connection will also print the connection associated UUID in order to make the debugging easier
                                 UUID uuid = UUID.randomUUID();
-                                String ip = getIp(socket);
+                                String ip = IOUtil.getIp(socket);
                                 initContext(uuid,ip);
                                 serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
 
@@ -98,9 +101,7 @@ public class Server implements Runnable {
                             } finally {
                                 //clear the thread local
                                 ContextHolder.cleanup();
-                                try {
-                                    Closeables.close(socket, true);
-                                } catch (IOException e) {/**ignore**/}
+                                IOUtil.closeSilent(socket);
                             }
                         });
 
@@ -108,8 +109,8 @@ public class Server implements Runnable {
                         //if the server will have to reject connection because there is no available thread and the
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
                         HttpMessageWriter.writeNoBodyResponse(new HTTPHeaders(),HTTPStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
-                        logEntry(socket);
-                        Closeables.close(socket, true);
+                        LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-",HTTPStatus.SERVICE_UNAVAILABLE.toString(),"-");
+                        IOUtil.closeSilent(socket);
 
                     }
                 } catch (IOException e) {
@@ -121,24 +122,12 @@ public class Server implements Runnable {
             //we cannot create the serversocket, we'll shutdown
             serverLog.error("Fatal error: " + e.getMessage());
         } finally {
-            try {
-                Closeables.close(serverSocket, true);
-            } catch (IOException e) {/**ignore**/}
+            IOUtil.closeSilent(serverSocket);
             threadPool.shutdown();
         }
         isStopped = true;
     }
 
-    private void logEntry(Socket socket){
-        StringBuilder sb = new StringBuilder(128);
-        sb.append(getIp(socket)).append('\t');
-        sb.append('-').append('\t');
-        sb.append(DateUtil.currentDate(FORMATTER_LOG)).append('\t');
-        sb.append('-').append('\t');
-        sb.append(HTTPStatus.SERVICE_UNAVAILABLE).append('\t');
-        sb.append('-').append('\r');
-        accessLog.info(sb.toString());
-    }
 
     public synchronized boolean isStopped() {
         return isStopped;
@@ -157,15 +146,6 @@ public class Server implements Runnable {
         } catch (IOException e) {/**ignore**/}
     }
 
-    private String getIp(Socket socket) {
-        SocketAddress socketAddress = socket.getRemoteSocketAddress();
-        if (socketAddress instanceof InetSocketAddress) {
-            InetAddress inetAddress = ((InetSocketAddress) socketAddress).getAddress();
-            return inetAddress.toString();
-        }
-        return "Not an IP socket";
-
-    }
 
 
     public static void main(String[] args) {

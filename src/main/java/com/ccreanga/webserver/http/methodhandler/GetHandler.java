@@ -30,7 +30,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
-import static com.ccreanga.webserver.http.HTTPHeaders.*;
+import static com.google.common.net.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
 /**
@@ -172,7 +172,7 @@ public class GetHandler implements HttpMethodHandler {
         responseHeaders.putHeader(CONTENT_TYPE, Mime.getType("html"));
         //obtain the resource representation taking into account the content type
         FileResourceRepresentation representation =
-                RepresentationManager.getInstance().getRepresentation(request.getHeader(HTTPHeaders.ACCEPT));
+                RepresentationManager.getInstance().getRepresentation(request.getHeader(ACCEPT));
         responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
 
         String folderRepresentation = representation.folderRepresentation(file,new File(configuration.getServerRootFolder()));

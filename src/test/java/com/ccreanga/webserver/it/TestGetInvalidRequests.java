@@ -174,12 +174,9 @@ public class TestGetInvalidRequests extends TestParent {
             sb.append("\n");
             out.write(sb.toString().getBytes());
             out.flush();
-            //the long line will be truncated to Configuration.requestMaxLineLength and the request will be unparsable
+
             String  line = reader.readLine();
-            assertEquals(line, "HTTP/1.1 400 Bad Request");
-            //do not write anything else. the server will wait for headers until it will throw SocketTimeoutException and
-            //it will close the connection
-            //
+            assertEquals(line, "HTTP/1.1 431 Request Header Fields Too Large");
             boolean socketClosed = true;
             try {
                 while (in.read() != -1) ;
