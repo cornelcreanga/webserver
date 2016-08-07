@@ -175,7 +175,7 @@ public class Server implements Runnable {
                 properties.put("requestMaxLines", "200");
                 properties.put("requestMaxLineLength", "1024");
                 properties.put("requestMaxHeaders", "64");
-                properties.put("verbose", "true");
+                properties.put("verbose", "false");
             }
             Configuration configuration = null;
             try {
