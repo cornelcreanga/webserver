@@ -172,11 +172,15 @@ public class GetHandler implements HttpMethodHandler {
 
     private void deliverFolder(HttpRequestMessage request, HTTPHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
 
-
         //obtain the resource representation taking into account the content type
         FileResourceRepresentation representation =
                 RepresentationManager.getInstance().getRepresentation(request.getHeader(ACCEPT));
         responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
+
+
+        //todo - do some tests in order to see if we can generate an weak etag also for folders
+        //theoretically the folder modification is updated each time when it's content it's updated so we can use the folder lastmodified date
+        //however more tests should be done (windows etc)
 
         String folderRepresentation = representation.folderRepresentation(file,new File(configuration.getServerRootFolder()));
 

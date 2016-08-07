@@ -41,10 +41,9 @@ Features
 |Robust request parsing |  yes  | It should handle properly legacy request/invalid requests |
 |Scalability|average |1 thread per socket|
 |Keep alive connection|yes|Both HTTP 1.0 and HTTP 1.1|
-|Chunked streaming|yes|for the moment only for writing the response|
+|Chunked streaming|yes|for writing the HTTP 1.1 response|
 |HTTP conditionals|yes||
 |Etag generation|partial|only weak etags|
-|HTTP conditionals|yes||
 |Access log|yes|Will be generated in the main folder, location can't be customized for the moment|
 |Compressed content|yes|only for HTTP 1.1 and only gzip and deflate|
 |Directory indexing|yes|HTML or JSON depending on the ACCEPT header|
