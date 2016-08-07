@@ -17,19 +17,20 @@ if you don't provide a property file the default values from the Configuration s
 Configuration
 =======
 The following properties can be configured
+
 | Property   |      Description      |  Default value |
 |----------|:-------------:|------:|
-| serverPort |  server port  | 8082 |
-| serverRootFolder |    document root folder   |    /var/www/html |
-| serverInitialThreads | Initial no of threads, it should belong in [1..1024] |    128 |
-| serverMaxThreads |Max no of threads, it should belong in [1..1024]  |    1000 |
-| requestTimeoutSeconds |Timeout for keep-alive connections, it should belong in [1..3600]    |5  |
-| requestWaitingQueueSize | Thread pool waiting queue, it should belong in [1..3600]   |64  |
-| requestEtag | Indicates if the server should generate etags - Right now it only supports two values: none/weak (strong is not yet implemented)   | weak |
-| requestMaxLines | The maximum amount of headers, it should belong in [8..65535]   |200  |
-| requestMaxLineLength | The maximum number of lines from a request, it should belong in [256..65535]   |1024  |
+|serverPort |  server port  | 8082 |
+|serverRootFolder |    document root folder   |    /var/www/html |
+|serverInitialThreads | Initial no of threads, it should belong in [1..1024] |    128 |
+|serverMaxThreads |Max no of threads, it should belong in [1..1024]  |    1000 |
+|requestTimeoutSeconds |Timeout for keep-alive connections, it should belong in [1..3600]    |5  |
+|requestWaitingQueueSize | Thread pool waiting queue, it should belong in [1..3600]   |64  |
+|requestEtag | Indicates if the server should generate etags - Right now it only supports two values: none/weak (strong is not yet implemented)   | weak |
+|requestMaxLines | The maximum amount of headers, it should belong in [8..65535]   |200  |
+|requestMaxLineLength | The maximum number of lines from a request, it should belong in [256..65535]   |1024  |
 |requestMaxHeaders  | The maximum amount of headers, it should belong in [8..65535]   | 64 |
-|verbose  | If true the server will display debug informations   | false |
+|verbose  | If true the server will display debug information   | false |
 
 
 Features
@@ -37,7 +38,7 @@ Features
 | Name   |      Implemented      |  Notes
 |----------|:-------------:|------:|
 |Supported methods|GET, HEAD, OPTIONS||
-| Robust request parsing |  yes  | It should handle properly legacy request/invalid requests |
+|Robust request parsing |  yes  | It should handle properly legacy request/invalid requests |
 |Scalability|average |1 thread per socket|
 |Keep alive connection|yes|Both HTTP 1.0 and HTTP 1.1|
 |Chunked streaming|yes|for the moment only for writing the response|
