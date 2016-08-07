@@ -54,8 +54,5 @@ Features
 |Rate limiting|no|planned|
 |Authentication/Authorization|no|planned|
 |Multipart support|no|planned|
-
-|Virtual hosting|no|planned|
-|Virtual hosting|no|planned|
 <!--[![Build Status](https://travis-ci.org/cornelcreanga/webserver.svg)](https://travis-ci.org/cornelcreanga/webserver)-->
 
