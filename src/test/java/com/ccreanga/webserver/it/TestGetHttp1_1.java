@@ -56,7 +56,7 @@ public class TestGetHttp1_1 extends TestParent {
 
     @Test
     @Ignore
-    //does not work on windows so for the moment the file a?b.txt was removed
+    //the file name is not supported on windows so the file a?b.txt was removed
     public void testResourceWithSpecialChars() throws Exception {
         testResourceOk("folder1/a?b.txt");
     }

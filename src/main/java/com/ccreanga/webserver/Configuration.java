@@ -61,6 +61,9 @@ public class Configuration {
      */
     private int requestMaxHeaders;
 
+    /**
+     * If true the server will display debug informations
+     */
     private boolean verbose;
 
     private Properties properties ;

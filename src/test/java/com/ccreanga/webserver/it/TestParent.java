@@ -30,7 +30,7 @@ public abstract class TestParent {
         properties.put("serverInitialThreads", "128");
         properties.put("serverMaxThreads", "1000");
 
-        properties.put("requestTimeoutSeconds", "5");
+        properties.put("requestTimeoutSeconds", "3");
         properties.put("requestWaitingQueueSize", "64");
 
         properties.put("requestEtag", "weak");

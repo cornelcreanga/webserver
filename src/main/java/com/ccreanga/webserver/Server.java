@@ -163,6 +163,7 @@ public class Server implements Runnable {
                     System.exit(-1);
                 }
             }else{
+                serverLog.info("No configuration file was passed as parameter, will use the default values.");
                 properties = new Properties();
                 properties.put("serverPort", "8082");
                 properties.put("serverRootFolder", "/var/www/html");
@@ -174,8 +175,6 @@ public class Server implements Runnable {
                 properties.put("requestMaxLines", "200");
                 properties.put("requestMaxLineLength", "1024");
                 properties.put("requestMaxHeaders", "64");
-                properties.put("requestMaxGetBodySize", "64000");
-                properties.put("requestMaxPutBodySize", "2147483648");
                 properties.put("verbose", "true");
             }
             Configuration configuration = null;

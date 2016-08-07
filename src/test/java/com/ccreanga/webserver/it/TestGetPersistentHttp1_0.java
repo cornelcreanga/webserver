@@ -69,7 +69,6 @@ public class TestGetPersistentHttp1_0 extends TestParent {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
             String line;
             while((line=reader.readLine())!=null){
-                System.out.println(line);
                 if (line.contains("HTTP/1.1 200 OK"))
                     count++;
             }

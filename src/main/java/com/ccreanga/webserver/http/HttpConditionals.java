@@ -47,7 +47,7 @@ public class HttpConditionals {
         }
 
         if (ifNoneMatch != null) {
-            if (!ifNoneMatch.equals(etag))
+            if (ifNoneMatch.equals(etag))
                 return (request.getMethod().equals(GET) || request.getMethod().equals(HEAD))?
                         HTTPStatus.NOT_MODIFIED:
                         HTTPStatus.PRECONDITION_FAILED;

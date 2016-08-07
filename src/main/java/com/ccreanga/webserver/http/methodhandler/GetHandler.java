@@ -116,6 +116,7 @@ public class GetHandler implements HttpMethodHandler {
             //evaluate the conditionals. RANGE requests are not yet handled
             HTTPStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
             if (!statusAfterConditionals.equals(HTTPStatus.OK)) {
+                ContextHolder.get().setContentLength("0");
                 writeResponseLine(statusAfterConditionals, out);
                 writeHeaders(responseHeaders, out);
                 return;
@@ -125,10 +126,13 @@ public class GetHandler implements HttpMethodHandler {
             ContextHolder.get().setContentLength("chunked");
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");
 
+            boolean shouldGzip = request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime);
+            boolean shouldDeflate = request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime);
+
             //should we compress?
-            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)) {
+            if (shouldGzip) {
                 responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
-            } else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)) {
+            } else if (shouldDeflate) {
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
             }
             //write status+headers
@@ -137,9 +141,9 @@ public class GetHandler implements HttpMethodHandler {
             //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);
             //if compressing is accepted we'll enclose the chunked stream with a compressing stream
-            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)) {
+            if (shouldGzip) {
                 enclosed = new GZIPOutputStream(enclosed);
-            } else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)) {
+            } else if (shouldDeflate) {
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             //for HEAD requests will actually skip the body
@@ -191,10 +195,14 @@ public class GetHandler implements HttpMethodHandler {
             writeHeaders(responseHeaders, out);
 
             OutputStream enclosed = new ChunkedOutputStream(out);
+
+            boolean shouldGzip = request.headerContains(ACCEPT_ENCODING, "gzip");
+            boolean shouldDeflate = request.headerContains(ACCEPT_ENCODING, "deflate");
+
             //if compression is accepted than use it
-            if (request.headerContains(ACCEPT_ENCODING, "gzip")) {
+            if (shouldGzip) {
                 enclosed = new GZIPOutputStream(enclosed);
-            } else if (request.headerContains(ACCEPT_ENCODING, "deflate")) {
+            } else if (shouldDeflate) {
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {

@@ -75,35 +75,44 @@ public class TestUnavailableServer {
             throw e;
         }
 
-        final AtomicInteger counter = new AtomicInteger(0);
-        List<HttpGet> requests = new ArrayList<>();
-        final CountDownLatch latch = new CountDownLatch(10);
-        for(int i=0;i<10;i++){
-            HttpGet request = new HttpGet("http://" + host + ":" + port + "/folder1/bigFile.txt");
-            request.setProtocolVersion(HttpVersion.HTTP_1_1);
-            request.addHeader("Connection", "Close");
-            request.addHeader("Accept-Encoding", "gzip,deflate");
-            requests.add(request);
+        try {
+
+
+            final AtomicInteger counter = new AtomicInteger(0);
+            List<HttpGet> requests = new ArrayList<>();
+            final CountDownLatch latch = new CountDownLatch(10);
+            for (int i = 0; i < 10; i++) {
+                HttpGet request = new HttpGet("http://" + host + ":" + port + "/folder1/bigFile.txt");
+                request.setProtocolVersion(HttpVersion.HTTP_1_1);
+                request.addHeader("Connection", "Close");
+                request.addHeader("Accept-Encoding", "gzip,deflate");
+                requests.add(request);
+            }
+            for (int i = 0; i < 10; i++) {
+                httpclient.execute(requests.get(i), new FutureCallback<HttpResponse>() {
+                    public void completed(final HttpResponse response) {
+                        if (response.getStatusLine().getStatusCode() == HTTPStatus.SERVICE_UNAVAILABLE.value())
+                            counter.incrementAndGet();
+                        latch.countDown();
+                    }
+
+                    public void failed(final Exception ex) {
+                        latch.countDown();
+                    }
+
+                    public void cancelled() {
+                        latch.countDown();
+                    }
+                });
+            }
+
+            latch.await();
+            assertTrue(counter.get() > 1);
+
+        }finally {
+            httpclient.close();
+            server.stop();
+            while(!server.isStopped());
         }
-        for(int i=0;i<10;i++){
-            httpclient.execute(requests.get(i), new FutureCallback<HttpResponse>(){
-                public void completed(final HttpResponse response) {
-                    if (response.getStatusLine().getStatusCode()==HTTPStatus.SERVICE_UNAVAILABLE.value())
-                        counter.incrementAndGet();
-                    latch.countDown();
-                }
-
-                public void failed(final Exception ex) {
-                    latch.countDown();
-                }
-
-                public void cancelled() {
-                    latch.countDown();
-                }
-            });
-        }
-
-        latch.await();
-        assertTrue(counter.get()>1);
     }
 }
