@@ -7,7 +7,6 @@ import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
-import com.google.common.net.UrlEscapers;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -22,7 +21,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import static com.ccreanga.webserver.formatters.NumberUtil.fileSizePretty;

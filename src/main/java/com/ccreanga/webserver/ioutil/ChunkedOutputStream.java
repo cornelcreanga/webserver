@@ -27,9 +27,11 @@ package com.ccreanga.webserver.ioutil;
  * Modifications copyright (C) 2016 Cornel Creanga
  */
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 /**
  * <p>
@@ -88,38 +90,11 @@ public class ChunkedOutputStream extends OutputStream {
      * @param stream wrapped output stream. Must be non-null.
      */
     public ChunkedOutputStream(OutputStream stream) {
-        if (stream == null) {
-            throw new NullPointerException("stream parameter is null");
-        }
-        this.stream = stream;
+        this.stream = Preconditions.checkNotNull(stream);
     }
 
 
     // --------------------------------------------------------- Public Methods
-
-    /**
-     * Writes a <code>String</code> to the client, without a carriage return
-     * line feed (CRLF) character at the end. The platform default encoding is
-     * used!
-     *
-     * @param s the <code>String</code> to send to the client. Must be non-null.
-     * @throws IOException if an input or output exception occurred
-     */
-    public void print(String s) throws IOException {
-        if (s == null) {
-            s = "null";
-        }
-        write(getBytes(s));
-    }
-
-    /**
-     * Writes a carriage return-line feed (CRLF) to the client.
-     *
-     * @throws IOException if an input or output exception occurred
-     */
-    public void println() throws IOException {
-        print("\r\n");
-    }
 
     /**
      * Write the specified byte to our output stream.
@@ -129,14 +104,7 @@ public class ChunkedOutputStream extends OutputStream {
      * @throws IllegalStateException if stream already closed
      */
     public void write(int b) throws IOException, IllegalStateException {
-        if (closed) {
-            throw new IllegalStateException("Output stream already closed");
-        }
-        //FIXME: If using chunking, the chunks are ONE byte long!
-        stream.write(ONE, 0, ONE.length);
-        stream.write(CRLF, 0, CRLF.length);
-        stream.write(b);
-        stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+        throw new UnsupportedOperationException("write (int b) is not implemented, use write(byte[] b, int off, int len)");
     }
 
     /**
@@ -152,8 +120,7 @@ public class ChunkedOutputStream extends OutputStream {
         if (closed) {
             throw new IllegalStateException("Output stream already closed");
         }
-        byte chunkHeader[] = getBytes(
-                Integer.toHexString(len) + "\r\n");
+        byte chunkHeader[] = (Integer.toHexString(len)+ "\r\n").getBytes(Charsets.ISO_8859_1);
         stream.write(chunkHeader, 0, chunkHeader.length);
         stream.write(b, off, len);
         stream.write(ENDCHUNK, 0, ENDCHUNK.length);
@@ -206,16 +173,4 @@ public class ChunkedOutputStream extends OutputStream {
         super.close();
     }
 
-    private byte[] getBytes(final String data) {
-        if (data == null) {
-            throw new IllegalArgumentException("Parameter may not be null");
-        }
-
-        try {
-            return data.getBytes("US-ASCII");
-        } catch (UnsupportedEncodingException e) {
-
-            return data.getBytes();
-        }
-    }
 }

@@ -9,6 +9,8 @@ import java.io.InputStream;
  */
 public class HttpRequestMessage {
 
+
+
     private HTTPMethod method;
     private HTTPHeaders headers;
     private String uri;
@@ -17,11 +19,11 @@ public class HttpRequestMessage {
     protected boolean chunked;//specifies if the body will be sent using chunked transmission
     protected long length;//body length; makes sense only when chunk=false
 
-    public HttpRequestMessage(HTTPMethod method, HTTPHeaders headers, String uri, HTTPVersion version, InputStream body, boolean chunked, long length) {
-        this.method = method;
+    public HttpRequestMessage(HttpRequestLine line,HTTPHeaders headers, InputStream body, boolean chunked, long length) {
+        this.method = line.getMethod();
         this.headers = headers;
-        this.uri = uri;
-        this.version = version;
+        this.uri = line.getUri();
+        this.version = line.getVersion();
         if (chunked)//not yet implemented
             this.body = new ChunkedInputStream(body);
         else

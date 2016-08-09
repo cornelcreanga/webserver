@@ -3,6 +3,7 @@ package com.ccreanga.webserver.http;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.ConnectionProcessor;
 import com.ccreanga.webserver.ioutil.LengthExceededException;
+import com.ccreanga.webserver.ioutil.LineTooLongException;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.logging.LogEntry;
 import org.slf4j.Logger;
@@ -45,6 +46,10 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     responseSyntaxCorrect = false;
                     invalidStatus = e.getStatus();
                 } catch (LengthExceededException e) {
+                    responseSyntaxCorrect = false;
+                    ContextHolder.get().setUrl("url too long");
+                    invalidStatus = HTTPStatus.URI_TOO_LONG;
+                }catch (LineTooLongException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("url too long");
                     invalidStatus = HTTPStatus.URI_TOO_LONG;

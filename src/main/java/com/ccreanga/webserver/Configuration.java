@@ -59,6 +59,11 @@ public class Configuration {
     /**
      * The maximum amount of headers, it should belong in [8..65535]
      */
+
+    private int requestMessageMaxSize;
+
+    private int requestURIMaxSize;
+
     private int requestMaxHeaders;
 
     /**
