@@ -45,14 +45,18 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 } catch (InvalidMessageException e) {
                     responseSyntaxCorrect = false;
                     invalidStatus = e.getStatus();
+                } catch (UriTooLongException e) {
+                    responseSyntaxCorrect = false;
+                    ContextHolder.get().setUrl("uri is too long");
+                    invalidStatus = HTTPStatus.URI_TOO_LONG;
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
-                    ContextHolder.get().setUrl("url too long");
-                    invalidStatus = HTTPStatus.URI_TOO_LONG;
+                    ContextHolder.get().setUrl("request is too long");
+                    invalidStatus = HTTPStatus.BAD_REQUEST;
                 }catch (LineTooLongException e) {
                     responseSyntaxCorrect = false;
-                    ContextHolder.get().setUrl("url too long");
-                    invalidStatus = HTTPStatus.URI_TOO_LONG;
+                    ContextHolder.get().setUrl("request line too long");
+                    invalidStatus = HTTPStatus.BAD_REQUEST;
                 }
                 if (responseSyntaxCorrect) {
                     //we can handle the message now

@@ -49,10 +49,6 @@ public class Configuration {
     private String requestEtag;
 
     /**
-     * The maximum number of lines from a request, it should belong in [256..65535]
-     */
-    private int requestMaxLines;
-    /**
      * The maximum length of a request line, it should belong in [8..65535]
      */
     private int requestMaxLineLength;
@@ -107,12 +103,16 @@ public class Configuration {
         return requestEtag;
     }
 
-    public int getRequestMaxLines() {
-        return requestMaxLines;
-    }
-
     public int getRequestMaxLineLength() {
         return requestMaxLineLength;
+    }
+
+    public int getRequestMessageMaxSize() {
+        return requestMessageMaxSize;
+    }
+
+    public int getRequestURIMaxSize() {
+        return requestURIMaxSize;
     }
 
     public int getRequestMaxHeaders() {
@@ -148,9 +148,12 @@ public class Configuration {
             throw new ConfigurationException("missing requestEtag value");
         if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
             throw new IllegalArgumentException("unknown etag:" + requestEtag + "; it should be none or weak");
-        requestMaxLines = Integer.parseInt((String) properties.get("requestMaxLines"));
 
-        requestMaxLineLength = parseInt("requestMaxLineLength", 256, 65535);
+
+        requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8*1204);
+
+        requestMessageMaxSize = parseInt("requestMessageMaxSize", 256, 1073741824);
+        requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10*1024);
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
         if (properties.get("verbose") == null)

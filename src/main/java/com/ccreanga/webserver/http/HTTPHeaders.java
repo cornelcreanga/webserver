@@ -34,6 +34,14 @@ public class HTTPHeaders {
         return this;
     }
 
+    public boolean headerContains(String header,String value){
+        String headerValue = headers.get(header);
+        if (headerValue==null)
+            return false;
+        return headerValue.contains(value);
+    }
+
+
     @Override
     public String toString() {
         return "HTTPHeaders{" +

@@ -66,6 +66,11 @@ public class IOUtil {
             throw new EOFException("unexpected end of stream");
         return new String(buf, 0, count, enc);
     }
+
+    public static String readLine(InputStream in) throws IOException {
+        return readLine(in,Integer.MAX_VALUE);
+    }
+
     public static String readLine(InputStream in,int maxLength) throws IOException {
         String s = readToken(in, '\n', "ISO8859_1", maxLength);
         return s.length() > 0 && s.charAt(s.length() - 1) == '\r'

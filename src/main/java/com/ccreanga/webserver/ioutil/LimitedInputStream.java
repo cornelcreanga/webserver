@@ -1,18 +1,19 @@
 package com.ccreanga.webserver.ioutil;
 
+import com.google.common.base.Preconditions;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class LimitedInputStream extends FilterInputStream {
 
-    protected long limit; // decremented when read, until it reaches zero
+    protected long limit;
     protected boolean prematureEndException;
 
     public LimitedInputStream(InputStream in, long limit, boolean prematureEndException) {
         super(in);
-        if (in == null)
-            throw new NullPointerException("input stream is null");
+        Preconditions.checkNotNull(in);
         this.limit = limit < 0 ? 0 : limit;
         this.prematureEndException = prematureEndException;
     }

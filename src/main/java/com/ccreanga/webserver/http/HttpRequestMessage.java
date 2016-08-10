@@ -16,18 +16,14 @@ public class HttpRequestMessage {
     private String uri;
     private HTTPVersion version;
     protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
-    protected boolean chunked;//specifies if the body will be sent using chunked transmission
-    protected long length;//body length; makes sense only when chunk=false
+    protected long length;//body length; makes sense only when chunk=false; -1 otherwise
 
-    public HttpRequestMessage(HttpRequestLine line,HTTPHeaders headers, InputStream body, boolean chunked, long length) {
+    public HttpRequestMessage(HttpRequestLine line,HTTPHeaders headers, InputStream body, long length) {
         this.method = line.getMethod();
         this.headers = headers;
         this.uri = line.getUri();
         this.version = line.getVersion();
-        if (chunked)//not yet implemented
-            this.body = new ChunkedInputStream(body);
-        else
-            this.body = body;
+        this.body = body;
         this.length = length;
     }
 
@@ -51,11 +47,6 @@ public class HttpRequestMessage {
         if (headerValue == null)
             return false;
         return headerValue.equalsIgnoreCase(value);
-    }
-
-
-    public boolean isChunked() {
-        return chunked;
     }
 
     public long getLength() {
@@ -82,16 +73,4 @@ public class HttpRequestMessage {
         return uri;
     }
 
-    @Override
-    public String toString() {
-        return "HttpRequestMessage{" +
-                "method=" + method +
-                ", headers=" + headers +
-                ", uri='" + uri + '\'' +
-                ", version='" + version + '\'' +
-                ", body=" + body +
-                ", chunk=" + chunked +
-                ", length=" + length +
-                '}';
-    }
 }
