@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.ccreanga.webserver.http.HTTPStatus.BAD_REQUEST;
-import static com.ccreanga.webserver.http.HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
+import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
+import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
 import static com.google.common.net.HttpHeaders.*;
 
 /**
@@ -27,9 +27,9 @@ public class HttpRequestParser {
 
     public static HttpRequestLine consumeRequestMethod(InputStream in, int lineMaxLength,int uriMaxLength) throws IOException, InvalidMessageException {
         String line;
-        HTTPMethod httpMethod;
+        HttpMethod httpMethod;
         String uri;
-        HTTPVersion version;
+        HttpVersion version;
 
         //read the first line;block until timeout/exception
         int counter=0;
@@ -50,7 +50,7 @@ public class HttpRequestParser {
         String method = line.substring(0, index).trim();
 
         try {
-            httpMethod = HTTPMethod.valueOf(method);
+            httpMethod = HttpMethod.valueOf(method);
         } catch (IllegalArgumentException e) {
             throw new InvalidMessageException("invalid http method " + method, BAD_REQUEST);
         }
@@ -63,16 +63,16 @@ public class HttpRequestParser {
         if (uri.length()>uriMaxLength)
             throw new UriTooLongException("uri too long "+uri.length());
         try {
-            version = HTTPVersion.from(line.substring(secondIndex).trim());
+            version = HttpVersion.from(line.substring(secondIndex).trim());
         } catch (IllegalArgumentException e) {
             throw new InvalidMessageException("invalid http version " + line.substring(secondIndex).trim(), BAD_REQUEST);
         }
         return new HttpRequestLine(httpMethod, uri, version);
     }
 
-    public static HTTPHeaders consumeHeaders(InputStream in, int lineMaxLength, int headerMaxNo) throws IOException, InvalidMessageException {
-        HTTPHeaders headers = new HTTPHeaders();
-        //read the HTTPHeaders.
+    public static HttpHeaders consumeHeaders(InputStream in, int lineMaxLength, int headerMaxNo) throws IOException, InvalidMessageException {
+        HttpHeaders headers = new HttpHeaders();
+        //read the HttpHeaders.
         String previousHeader = "";
         String line;
         while ((line = IOUtil.readLine(in, lineMaxLength)) != null) {
@@ -114,7 +114,7 @@ public class HttpRequestParser {
         int maxLineLength = cfg.getRequestMaxLineLength();
         int maxHeaders = cfg.getRequestMaxHeaders();
         HttpRequestLine httpRequestLine = HttpRequestParser.consumeRequestMethod(in, maxLineLength,cfg.getRequestURIMaxSize());
-        HTTPHeaders httpHeaders = HttpRequestParser.consumeHeaders(in, maxLineLength, maxHeaders);
+        HttpHeaders httpHeaders = HttpRequestParser.consumeHeaders(in, maxLineLength, maxHeaders);
 
         boolean chunk = false;
         String encoding = httpHeaders.getHeader(TRANSFER_ENCODING);
@@ -122,7 +122,7 @@ public class HttpRequestParser {
             //todo - check for gzip/deflate in transfer encoding
             chunk = encoding.contains("chunked");
             if ((chunk) && (encoding.lastIndexOf("chunked")!=(encoding.length()-7)))//chunked is not the last encoding
-                throw new InvalidMessageException("invalid encoding header",HTTPStatus.BAD_REQUEST);
+                throw new InvalidMessageException("invalid encoding header", HttpStatus.BAD_REQUEST);
 
         }
 

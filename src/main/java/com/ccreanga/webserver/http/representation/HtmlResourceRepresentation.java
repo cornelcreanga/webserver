@@ -2,7 +2,7 @@ package com.ccreanga.webserver.http.representation;
 
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;
 import com.google.common.escape.Escaper;
@@ -96,7 +96,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
     }
 
     @Override
-    public String errorRepresentation(HTTPStatus status, String extendedReason) throws IOException {
+    public String errorRepresentation(HttpStatus status, String extendedReason) throws IOException {
         Map<String, Object> data = new HashMap<>(3);
         StringWriter writer = new StringWriter();
         data.put("statusCode", status.value());

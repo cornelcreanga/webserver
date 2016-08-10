@@ -1,7 +1,5 @@
 package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.ioutil.ChunkedInputStream;
-
 import java.io.InputStream;
 
 /**
@@ -11,14 +9,14 @@ public class HttpRequestMessage {
 
 
 
-    private HTTPMethod method;
-    private HTTPHeaders headers;
+    private HttpMethod method;
+    private HttpHeaders headers;
     private String uri;
-    private HTTPVersion version;
+    private HttpVersion version;
     protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
     protected long length;//body length; makes sense only when chunk=false; -1 otherwise
 
-    public HttpRequestMessage(HttpRequestLine line,HTTPHeaders headers, InputStream body, long length) {
+    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, InputStream body, long length) {
         this.method = line.getMethod();
         this.headers = headers;
         this.uri = line.getUri();
@@ -28,11 +26,11 @@ public class HttpRequestMessage {
     }
 
     public boolean isHTTP1_1() {
-        return getVersion().equals(HTTPVersion.HTTP_1_1);
+        return getVersion().equals(HttpVersion.HTTP_1_1);
     }
 
     public boolean isHTTP1_0() {
-        return getVersion().equals(HTTPVersion.HTTP_1_0);
+        return getVersion().equals(HttpVersion.HTTP_1_0);
     }
 
     public boolean headerContains(String header, String value) {
@@ -57,11 +55,11 @@ public class HttpRequestMessage {
         return body;
     }
 
-    public HTTPVersion getVersion() {
+    public HttpVersion getVersion() {
         return version;
     }
 
-    public HTTPMethod getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 

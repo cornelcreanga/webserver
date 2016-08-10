@@ -2,8 +2,8 @@ package com.ccreanga.webserver;
 
 import ch.qos.logback.classic.Level;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpHeaders;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.HttpConnectionProcessor;
 import com.ccreanga.webserver.http.HttpMessageWriter;
 import com.ccreanga.webserver.ioutil.IOUtil;
@@ -15,7 +15,6 @@ import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.*;
@@ -108,8 +107,8 @@ public class Server implements Runnable {
                     } catch (RejectedExecutionException e) {
                         //if the server will have to reject connection because there is no available thread and the
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
-                        HttpMessageWriter.writeNoBodyResponse(new HTTPHeaders(),HTTPStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
-                        accessLog.info(LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-",HTTPStatus.SERVICE_UNAVAILABLE.toString(),"-"));
+                        HttpMessageWriter.writeNoBodyResponse(new HttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
+                        accessLog.info(LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-", HttpStatus.SERVICE_UNAVAILABLE.toString(),"-"));
                         IOUtil.closeSilent(socket);
 
                     }

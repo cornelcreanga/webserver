@@ -2,17 +2,17 @@ package com.ccreanga.webserver.http;
 
 public class HttpRequestLine {
 
-    private HTTPMethod method;
+    private HttpMethod method;
     private String uri;
-    private HTTPVersion version;
+    private HttpVersion version;
 
-    public HttpRequestLine(HTTPMethod method, String uri, HTTPVersion version) {
+    public HttpRequestLine(HttpMethod method, String uri, HttpVersion version) {
         this.method = method;
         this.uri = uri;
         this.version = version;
     }
 
-    public HTTPMethod getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
@@ -20,7 +20,7 @@ public class HttpRequestLine {
         return uri;
     }
 
-    public HTTPVersion getVersion() {
+    public HttpVersion getVersion() {
         return version;
     }
 }

@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HTTPHeaders {
+public class HttpHeaders {
 
     private HashMap<String, String> headers = new HashMap<>(8);
 
@@ -18,7 +18,7 @@ public class HTTPHeaders {
         return ImmutableMap.copyOf(headers);
     }
 
-    public HTTPHeaders appendHeader(String header, String value) {
+    public HttpHeaders appendHeader(String header, String value) {
         String previousValue = headers.get(header);
         if (previousValue == null) {
             headers.put(header, value);
@@ -29,7 +29,7 @@ public class HTTPHeaders {
         return this;
     }
 
-    public HTTPHeaders putHeader(String header, String value) {
+    public HttpHeaders putHeader(String header, String value) {
         headers.put(header, value);
         return this;
     }
@@ -41,10 +41,12 @@ public class HTTPHeaders {
         return headerValue.contains(value);
     }
 
+    public int size(){return headers.size();}
+
 
     @Override
     public String toString() {
-        return "HTTPHeaders{" +
+        return "HttpHeaders{" +
                 "headers=" + headers +
                 '}';
     }

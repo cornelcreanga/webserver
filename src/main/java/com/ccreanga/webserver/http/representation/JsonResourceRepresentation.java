@@ -2,11 +2,9 @@ package com.ccreanga.webserver.http.representation;
 
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;
-import com.google.common.escape.Escaper;
-import com.google.common.html.HtmlEscapers;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -18,11 +16,8 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static com.ccreanga.webserver.formatters.NumberUtil.fileSizePretty;
-import static com.ccreanga.webserver.ioutil.IOUtil.extractParentResource;
 import static freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS;
 
 /**
@@ -76,7 +71,7 @@ public class JsonResourceRepresentation implements FileResourceRepresentation {
     }
 
     @Override
-    public String errorRepresentation(HTTPStatus status, String extendedReason) throws IOException {
+    public String errorRepresentation(HttpStatus status, String extendedReason) throws IOException {
         return "{\"extendedReason\":\""+extendedReason+"\"}";
     }
 

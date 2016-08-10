@@ -1,18 +1,18 @@
 package com.ccreanga.webserver.http;
 
-public enum HTTPVersion {
+public enum HttpVersion {
 
     HTTP_1_0("HTTP/1.0"),
     HTTP_1_1("HTTP/1.1");
 
     private final String version;
 
-    HTTPVersion(String version) {
+    HttpVersion(String version) {
         this.version = version;
     }
 
-    public static HTTPVersion from(String version) {
-        for (HTTPVersion status : values()) {
+    public static HttpVersion from(String version) {
+        for (HttpVersion status : values()) {
             if (status.version.equals(version)) {
                 return status;
             }

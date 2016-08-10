@@ -5,14 +5,14 @@ package com.ccreanga.webserver.http;
  */
 public class InvalidMessageException extends RuntimeException {
 
-    private HTTPStatus status;
+    private HttpStatus status;
 
-    public InvalidMessageException(String message,HTTPStatus status) {
+    public InvalidMessageException(String message,HttpStatus status) {
         super(message);
         this.status = status;
     }
 
-    public HTTPStatus getStatus() {
+    public HttpStatus getStatus() {
         return status;
     }
 }

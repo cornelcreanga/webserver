@@ -3,7 +3,7 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
@@ -39,7 +39,7 @@ public class TestHead extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH), null);
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));

@@ -1,5 +1,5 @@
 package com.ccreanga.webserver.http;
 
-public enum HTTPMethod {
+public enum HttpMethod {
     CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE
 }

@@ -48,7 +48,7 @@ public class GetHandler implements HttpMethodHandler {
 
     public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
 
-        HTTPHeaders responseHeaders = new HTTPHeaders();
+        HttpHeaders responseHeaders = new HttpHeaders();
         //ignore body for a GET request and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
         //if the body is larger than the declared header the following request will be broken and the persistent connection will be closed
@@ -62,7 +62,7 @@ public class GetHandler implements HttpMethodHandler {
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
         if ((request.getHeader(HOST) == null) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.BAD_REQUEST, "missing host header", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
             return;
         }
 
@@ -77,10 +77,10 @@ public class GetHandler implements HttpMethodHandler {
         try {
             file = FileManager.getInstance().getFile(configuration.getServerRootFolder() + resource);
         } catch (ForbiddenException e) {
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.FORBIDDEN, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.FORBIDDEN, "", out);
             return;
         } catch (NotFoundException e) {
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HTTPStatus.NOT_FOUND, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.NOT_FOUND, "", out);
             return;
         }
 
@@ -96,7 +96,7 @@ public class GetHandler implements HttpMethodHandler {
         }
     }
 
-    private void deliverFile(HttpRequestMessage request, HTTPHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
+    private void deliverFile(HttpRequestMessage request, HttpHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
 
         String etag = null;
         String mime = Mime.getType(Files.getFileExtension((file.getName())));
@@ -114,8 +114,8 @@ public class GetHandler implements HttpMethodHandler {
                 responseHeaders.putHeader(ETAG, etag);
             }
             //evaluate the conditionals. RANGE requests are not yet handled
-            HTTPStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
-            if (!statusAfterConditionals.equals(HTTPStatus.OK)) {
+            HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
+            if (!statusAfterConditionals.equals(HttpStatus.OK)) {
                 ContextHolder.get().setContentLength("0");
                 writeResponseLine(statusAfterConditionals, out);
                 writeHeaders(responseHeaders, out);
@@ -136,7 +136,7 @@ public class GetHandler implements HttpMethodHandler {
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
             }
             //write status+headers
-            writeResponseLine(HTTPStatus.OK, out);
+            writeResponseLine(HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);
             //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);
@@ -161,7 +161,7 @@ public class GetHandler implements HttpMethodHandler {
             String length = String.valueOf(file.length());
             ContextHolder.get().setContentLength(length);
             responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? length : "0");
-            writeResponseLine(HTTPStatus.OK, out);
+            writeResponseLine(HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);
             if (writeBody) {
                 ByteStreams.copy(new FileInputStream(file), out);
@@ -170,7 +170,7 @@ public class GetHandler implements HttpMethodHandler {
 
     }
 
-    private void deliverFolder(HttpRequestMessage request, HTTPHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
+    private void deliverFolder(HttpRequestMessage request, HttpHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
 
         //obtain the resource representation taking into account the content type
         FileResourceRepresentation representation =
@@ -184,7 +184,7 @@ public class GetHandler implements HttpMethodHandler {
 
         String folderRepresentation = representation.folderRepresentation(file,new File(configuration.getServerRootFolder()));
 
-        writeResponseLine(HTTPStatus.OK, out);
+        writeResponseLine(HttpStatus.OK, out);
         if (request.isHTTP1_1()) {
             //for http1 write chunked
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");

@@ -1,6 +1,6 @@
 package com.ccreanga.webserver.ioutil;
 
-import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestParser;
 
 import java.io.IOException;
@@ -8,12 +8,11 @@ import java.io.InputStream;
 import java.util.Map;
 
 import static com.ccreanga.webserver.ioutil.IOUtil.readLine;
-import static com.google.common.net.HttpHeaders.TE;
 import static com.google.common.net.HttpHeaders.TRAILER;
 
 public class ChunkedInputStream extends LimitedInputStream {
 
-    protected HTTPHeaders headers;
+    protected HttpHeaders headers;
     protected boolean initialized;
     private int headerMaxNo;
     private int lineMaxNo;
@@ -28,7 +27,7 @@ public class ChunkedInputStream extends LimitedInputStream {
      *        headers will be added, or null if they are to be discarded
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedInputStream(InputStream in, HTTPHeaders headers,int lineMaxNo, int headerMaxNo) {
+    public ChunkedInputStream(InputStream in, HttpHeaders headers, int lineMaxNo, int headerMaxNo) {
         super(in, 0, true);
         this.headers = headers;
         this.headerMaxNo = headerMaxNo;
@@ -65,7 +64,7 @@ public class ChunkedInputStream extends LimitedInputStream {
             if (limit == 0) { // last chunk has size 0
                 limit = -1; // mark end of stream
                 // read trailing headers, if any
-                HTTPHeaders trailingHeaders = HttpRequestParser.consumeHeaders(in,lineMaxNo,headerMaxNo);
+                HttpHeaders trailingHeaders = HttpRequestParser.consumeHeaders(in,lineMaxNo,headerMaxNo);
                 if (headers != null){
                     Map<String,String> headerMap = trailingHeaders.getAllHeadersMap();
                     String trailer = headers.getHeader(TRAILER);

@@ -1,6 +1,6 @@
 package com.ccreanga.webserver.http;
 
-public enum HTTPStatus {
+public enum HttpStatus {
 
     //1xx: Informational - Request received, continuing process
     CONTINUE(100, "Continue"),
@@ -78,7 +78,7 @@ public enum HTTPStatus {
     private final String reasonPhrase;
 
 
-    HTTPStatus(int value, String reasonPhrase) {
+    HttpStatus(int value, String reasonPhrase) {
         this.value = value;
         this.reasonPhrase = reasonPhrase;
     }
@@ -91,8 +91,8 @@ public enum HTTPStatus {
         return this.reasonPhrase;
     }
 
-    public static HTTPStatus from(int statusCode) {
-        for (HTTPStatus status : values()) {
+    public static HttpStatus from(int statusCode) {
+        for (HttpStatus status : values()) {
             if (status.value == statusCode) {
                 return status;
             }

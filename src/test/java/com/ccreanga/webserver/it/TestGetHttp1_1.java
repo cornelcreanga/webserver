@@ -4,10 +4,9 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
-import com.ccreanga.webserver.http.representation.HtmlResourceRepresentation;
 import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
@@ -40,12 +39,12 @@ public class TestGetHttp1_1 extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.NOT_FOUND.value());
-            assertEquals(statusLine.getReasonPhrase(), HTTPStatus.NOT_FOUND.getReasonPhrase());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.NOT_FOUND.value());
+            assertEquals(statusLine.getReasonPhrase(), HttpStatus.NOT_FOUND.getReasonPhrase());
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
 
-            assertEquals(content, getRepresentation(response).errorRepresentation(HTTPStatus.NOT_FOUND, ""));
+            assertEquals(content, getRepresentation(response).errorRepresentation(HttpStatus.NOT_FOUND, ""));
         }
     }
 
@@ -85,7 +84,7 @@ public class TestGetHttp1_1 extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH), null);
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(mime));
@@ -111,11 +110,11 @@ public class TestGetHttp1_1 extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.FORBIDDEN.value());
-            assertEquals(statusLine.getReasonPhrase(), HTTPStatus.FORBIDDEN.getReasonPhrase());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.FORBIDDEN.value());
+            assertEquals(statusLine.getReasonPhrase(), HttpStatus.FORBIDDEN.getReasonPhrase());
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
-            assertEquals(content, getRepresentation(response).errorRepresentation(HTTPStatus.FORBIDDEN, ""));
+            assertEquals(content, getRepresentation(response).errorRepresentation(HttpStatus.FORBIDDEN, ""));
         }
     }
 
@@ -129,7 +128,7 @@ public class TestGetHttp1_1 extends TestParent {
 
         try (CloseableHttpResponse response = httpclientNoDecompression.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(), "gzip");
         }
         request = new HttpGet("http://" + host + ":" + port + "/folder1/jsse.dat");
@@ -139,7 +138,7 @@ public class TestGetHttp1_1 extends TestParent {
 
         try (CloseableHttpResponse response = httpclientNoDecompression.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONTENT_ENCODING), null);
         }
     }
@@ -161,7 +160,7 @@ public class TestGetHttp1_1 extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH), null);
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));

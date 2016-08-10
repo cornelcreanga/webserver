@@ -3,28 +3,19 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
-import com.ccreanga.webserver.Util;
-import com.ccreanga.webserver.http.HTTPStatus;
-import org.apache.http.HttpEntity;
+import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -39,7 +30,6 @@ public class TestUnavailableServer {
     @Test
     public void serverUnavailableProperResponse() throws Exception {
 
-
         Properties properties = new Properties();
         properties.put("serverPort",port);
         properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
@@ -51,11 +41,10 @@ public class TestUnavailableServer {
 
         properties.put("requestEtag", "weak");
 
-        properties.put("requestMaxLines", "200");
-        properties.put("requestMaxLineLength", "1024");
+        properties.put("requestURIMaxSize", "8000");
+        properties.put("requestMessageMaxSize", "15000");
+        properties.put("requestMaxLineLength", "10000");
         properties.put("requestMaxHeaders", "64");
-        properties.put("requestMaxGetBodySize", "64000");
-        properties.put("requestMaxPutBodySize", "2147483648");
 
         properties.put("verbose", "false");
 
@@ -91,7 +80,7 @@ public class TestUnavailableServer {
             for (int i = 0; i < 10; i++) {
                 httpclient.execute(requests.get(i), new FutureCallback<HttpResponse>() {
                     public void completed(final HttpResponse response) {
-                        if (response.getStatusLine().getStatusCode() == HTTPStatus.SERVICE_UNAVAILABLE.value())
+                        if (response.getStatusLine().getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE.value())
                             counter.incrementAndGet();
                         latch.countDown();
                     }

@@ -27,7 +27,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
         try (InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream();) {
             /**
              * The connection will be kept open unless
-             * a)the connection will explicitly request close (HTTPHeaders.CONNECTION)
+             * a)the connection will explicitly request close (HttpHeaders.CONNECTION)
              * b)the request message is unparsable (we can't eve build an HttpRequestMessage)
              * c)the connection will timeout (Configuration/timeoutSeconds)
              * d)the connection is using HTTP 1.0 and is not using the the keep alive header
@@ -37,7 +37,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 boolean shouldCloseConnection = false;
                 HttpRequestMessage request = null;
                 boolean responseSyntaxCorrect = true;
-                HTTPStatus invalidStatus = null;
+                HttpStatus invalidStatus = null;
                 try {
                     //try to parse the message and to convert it to an HttpRequestMessage. Only HTTP 1.0 and HTTP 1.1 messages are accepted
                     HttpRequestParser httpRequestParser = new HttpRequestParser();
@@ -48,15 +48,15 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 } catch (UriTooLongException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("uri is too long");
-                    invalidStatus = HTTPStatus.URI_TOO_LONG;
+                    invalidStatus = HttpStatus.URI_TOO_LONG;
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("request is too long");
-                    invalidStatus = HTTPStatus.BAD_REQUEST;
+                    invalidStatus = HttpStatus.BAD_REQUEST;
                 }catch (LineTooLongException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("request line too long");
-                    invalidStatus = HTTPStatus.BAD_REQUEST;
+                    invalidStatus = HttpStatus.BAD_REQUEST;
                 }
                 if (responseSyntaxCorrect) {
                     //we can handle the message now
@@ -65,7 +65,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //after the message is handled decide if we should close the connection or not
                     if ((request.headerIs(CONNECTION, "close")) ||
-                            (request.getVersion().equals(HTTPVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive"))
+                            (request.getVersion().equals(HttpVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive"))
                         shouldCloseConnection = true;
                 } else {
                     //we were not event able to parse the first request line (this is not an HTTP message), so write an error and close the connection.

@@ -15,7 +15,7 @@ public class HttpMessageWriter {
     private static final byte[] SP = {0x20};
     private static final byte[] HEADER_SEP = {0x3A};
 
-    public static void writeErrorResponse(String acceptHeader,HTTPHeaders responseHeaders, HTTPStatus status, String extendedStatus, OutputStream out) throws IOException {
+    public static void writeErrorResponse(String acceptHeader, HttpHeaders responseHeaders, HttpStatus status, String extendedStatus, OutputStream out) throws IOException {
         ContextHolder.get().setStatusCode(status.toString());
         FileResourceRepresentation representation =
                 RepresentationManager.getInstance().getRepresentation(acceptHeader);
@@ -30,7 +30,7 @@ public class HttpMessageWriter {
         out.write(body);
     }
 
-    public static void writeNoBodyResponse(HTTPHeaders responseHeaders, HTTPStatus status, OutputStream out) throws IOException {
+    public static void writeNoBodyResponse(HttpHeaders responseHeaders, HttpStatus status, OutputStream out) throws IOException {
         if (ContextHolder.get()!=null)
             ContextHolder.get().setStatusCode(status.toString());
         responseHeaders.putHeader(CONTENT_LENGTH, "0");
@@ -39,7 +39,7 @@ public class HttpMessageWriter {
     }
 
 
-    public static void writeHeaders(HTTPHeaders headers, OutputStream out) throws IOException {
+    public static void writeHeaders(HttpHeaders headers, OutputStream out) throws IOException {
         Map<String, String> headerMap = headers.getAllHeadersMap();
         for (Map.Entry<String, String> e : headerMap.entrySet()) {
             out.write(e.getKey().getBytes(Charsets.ISO_8859_1));
@@ -50,7 +50,7 @@ public class HttpMessageWriter {
         out.write(CRLF);
     }
 
-    public static void writeResponseLine(HTTPStatus status, OutputStream out) throws IOException {
+    public static void writeResponseLine(HttpStatus status, OutputStream out) throws IOException {
         //we might not even have an context here in case of rejected execution exception
         if (ContextHolder.get()!=null)
             ContextHolder.get().setStatusCode(status.toString());

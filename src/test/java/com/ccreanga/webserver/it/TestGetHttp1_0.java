@@ -1,7 +1,7 @@
 package com.ccreanga.webserver.it;
 
 import com.ccreanga.webserver.Util;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
@@ -33,7 +33,7 @@ public class TestGetHttp1_0 extends TestParent {
             String fileContent = Util.readAsUtfString(fileName);
 
             StatusLine statusLine = response.getStatusLine();
-            assertEquals(statusLine.getStatusCode(), HTTPStatus.OK.value());
+            assertEquals(statusLine.getStatusCode(), HttpStatus.OK.value());
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH).getValue(), "" + fileContent.length());
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));

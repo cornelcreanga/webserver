@@ -2,8 +2,7 @@ package com.ccreanga.webserver.it;
 
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HTTPHeaders;
-import com.ccreanga.webserver.http.HTTPStatus;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpVersion;
@@ -20,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class TestGetConditionals extends TestParent {
 
 
-    private void checkForStatus(HttpGet request,HTTPStatus status) throws Exception{
+    private void checkForStatus(HttpGet request,HttpStatus status) throws Exception{
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
             assertEquals(statusLine.getStatusCode(), status.value());
@@ -38,7 +37,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,"not parsable");
 
-        checkForStatus(request,HTTPStatus.BAD_REQUEST);
+        checkForStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -53,7 +52,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.NOT_MODIFIED);
+        checkForStatus(request, HttpStatus.NOT_MODIFIED);
 
 
     }
@@ -70,7 +69,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.PRECONDITION_FAILED);
+        checkForStatus(request, HttpStatus.PRECONDITION_FAILED);
 
     }
 
@@ -86,7 +85,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.OK);
+        checkForStatus(request, HttpStatus.OK);
 
     }
 
@@ -100,7 +99,7 @@ public class TestGetConditionals extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.PRECONDITION_FAILED);
+        checkForStatus(request, HttpStatus.PRECONDITION_FAILED);
 
     }
 
@@ -116,7 +115,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_NONE_MATCH,etag);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.OK);
+        checkForStatus(request, HttpStatus.OK);
     }
 
     @Test
@@ -131,7 +130,7 @@ public class TestGetConditionals extends TestParent {
         request.addHeader(IF_NONE_MATCH,etag);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.NOT_MODIFIED);
+        checkForStatus(request, HttpStatus.NOT_MODIFIED);
     }
 
     @Test
@@ -144,7 +143,7 @@ public class TestGetConditionals extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
 
-        checkForStatus(request,HTTPStatus.OK);
+        checkForStatus(request, HttpStatus.OK);
 
     }
 
@@ -158,7 +157,7 @@ public class TestGetConditionals extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
 
-        checkForStatus(request,HTTPStatus.NOT_MODIFIED);
+        checkForStatus(request, HttpStatus.NOT_MODIFIED);
 
     }
 
@@ -172,7 +171,7 @@ public class TestGetConditionals extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.OK);
+        checkForStatus(request, HttpStatus.OK);
 
     }
 
@@ -186,7 +185,7 @@ public class TestGetConditionals extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
 
-        checkForStatus(request,HTTPStatus.NOT_MODIFIED);
+        checkForStatus(request, HttpStatus.NOT_MODIFIED);
 
     }
 

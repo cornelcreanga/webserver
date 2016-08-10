@@ -1,6 +1,6 @@
 package com.ccreanga.webserver.it;
 
-import com.ccreanga.webserver.http.HTTPHeaders;
+import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.ioutil.ChunkedInputStream;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ public class TestChunkedInputStream extends TestParent {
                 "another-footer: another-value\n\n\r";
 
         InputStream in = new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8));
-        HTTPHeaders headers = new HTTPHeaders();
+        HttpHeaders headers = new HttpHeaders();
         headers.appendHeader("Trailer","some-footer");
         ChunkedInputStream stream = new ChunkedInputStream(in,headers,100,10);
         int i;
