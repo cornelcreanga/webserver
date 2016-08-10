@@ -10,7 +10,7 @@ import java.util.Map;
 import static com.ccreanga.webserver.ioutil.IOUtil.readLine;
 import static com.google.common.net.HttpHeaders.TRAILER;
 
-public class ChunkedInputStream extends LimitedInputStream {
+public class ChunkedInputStream extends FixedLengthInputStream {
 
     protected HttpHeaders headers;
     protected boolean initialized;
@@ -27,8 +27,8 @@ public class ChunkedInputStream extends LimitedInputStream {
      *        headers will be added, or null if they are to be discarded
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedInputStream(InputStream in, HttpHeaders headers, int lineMaxNo, int headerMaxNo) {
-        super(in, 0, true);
+    public ChunkedInputStream(InputStream in, HttpHeaders headers,int maxBodySize, int lineMaxNo, int headerMaxNo) {
+        super(new LimitedInputStream(in,maxBodySize),0,true);
         this.headers = headers;
         this.headerMaxNo = headerMaxNo;
         this.lineMaxNo = lineMaxNo;

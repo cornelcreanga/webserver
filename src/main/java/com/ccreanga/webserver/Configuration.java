@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Properties;
 
 
@@ -56,7 +54,7 @@ public class Configuration {
      * The maximum amount of headers, it should belong in [8..65535]
      */
 
-    private int requestMessageMaxSize;
+    private int requestMessageBodyMaxSize;
 
     private int requestURIMaxSize;
 
@@ -107,8 +105,8 @@ public class Configuration {
         return requestMaxLineLength;
     }
 
-    public int getRequestMessageMaxSize() {
-        return requestMessageMaxSize;
+    public int getRequestMessageBodyMaxSize() {
+        return requestMessageBodyMaxSize;
     }
 
     public int getRequestURIMaxSize() {
@@ -152,7 +150,7 @@ public class Configuration {
 
         requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8*1204);
 
-        requestMessageMaxSize = parseInt("requestMessageMaxSize", 256, 1073741824);
+        requestMessageBodyMaxSize = parseInt("requestMessageBodyMaxSize", 256, 1073741824);
         requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10*1024);
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 

@@ -1,62 +1,62 @@
 package com.ccreanga.webserver.ioutil;
 
-import com.google.common.base.Preconditions;
-
+import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LimitedInputStream extends FilterInputStream {
+public class LimitedInputStream
+        extends FilterInputStream implements Closeable {
+    /**
+     * The maximum size of an item, in bytes.
+     */
+    private long sizeMax;
+    /**
+     * The current number of bytes.
+     */
+    private long count;
+    /**
+     * Whether this stream is already closed.
+     */
+    private boolean closed;
 
-    protected long limit;
-    protected boolean prematureEndException;
 
-    public LimitedInputStream(InputStream in, long limit, boolean prematureEndException) {
-        super(in);
-        Preconditions.checkNotNull(in);
-        this.limit = limit < 0 ? 0 : limit;
-        this.prematureEndException = prematureEndException;
+    public LimitedInputStream(InputStream pIn, long pSizeMax) {
+        super(pIn);
+        sizeMax = pSizeMax;
     }
 
-    @Override
+    private void checkLimit() throws IOException {
+        if (count > sizeMax) {
+            throw new LengthExceededException();
+            //raiseError(sizeMax, count);
+        }
+    }
+
     public int read() throws IOException {
-        int res = limit == 0 ? -1 : in.read();
-        if (res == -1 && limit > 0 && prematureEndException)
-            throw new LengthExceededException();
-        limit = res == -1 ? 0 : limit - 1;
+        int res = super.read();
+        if (res != -1) {
+            count++;
+            checkLimit();
+        }
         return res;
     }
 
-    @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int res = limit == 0 ? -1 : in.read(b, off, len > limit ? (int)limit : len);
-        if (res == -1 && limit > 0 && prematureEndException)
-            throw new LengthExceededException();
-        limit = res == -1 ? 0 : limit - res;
+        int res = super.read(b, off, len);
+        if (res > 0) {
+            count += res;
+            checkLimit();
+        }
         return res;
     }
 
-    @Override
-    public long skip(long n) throws IOException {
-        long res = in.skip(n > limit ? limit : n);
-        limit -= res;
-        return res;
+    public boolean isClosed() throws IOException {
+        return closed;
     }
 
-    @Override
-    public int available() throws IOException {
-        int res = in.available();
-        return res > limit ? (int)limit : res;
-    }
-
-    @Override
-    public boolean markSupported() {
-        return false;
-    }
-
-    @Override
-    public void close() {
-        limit = 0; // end this stream, but don't close the underlying stream
+    public void close() throws IOException {
+        closed = true;
+        super.close();
     }
 }
-

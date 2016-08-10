@@ -171,10 +171,13 @@ public class Server implements Runnable {
                 properties.put("requestTimeoutSeconds", "5");
                 properties.put("requestWaitingQueueSize", "64");
                 properties.put("requestEtag", "weak");
-                properties.put("requestMaxLines", "200");
+
+                properties.put("requestURIMaxSize", "8000");
+                properties.put("requestMessageBodyMaxSize", "1073741824");
                 properties.put("requestMaxLineLength", "1024");
                 properties.put("requestMaxHeaders", "64");
                 properties.put("verbose", "false");
+
             }
             Configuration configuration = null;
             try {
