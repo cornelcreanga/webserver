@@ -1,12 +1,10 @@
 package com.ccreanga.webserver.ioutil;
 
-import java.io.Closeable;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LimitedInputStream
-        extends FilterInputStream implements Closeable {
+public class LimitedInputStream extends FilterInputStream{
     /**
      * The maximum size of an item, in bytes.
      */
@@ -15,9 +13,6 @@ public class LimitedInputStream
      * The current number of bytes.
      */
     private long count;
-    /**
-     * Whether this stream is already closed.
-     */
     private boolean closed;
 
 
@@ -29,7 +24,6 @@ public class LimitedInputStream
     private void checkLimit() throws IOException {
         if (count > sizeMax) {
             throw new LengthExceededException();
-            //raiseError(sizeMax, count);
         }
     }
 

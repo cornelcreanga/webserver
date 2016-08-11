@@ -1,7 +1,9 @@
-package com.ccreanga.webserver.ioutil;
+package com.ccreanga.webserver.http.chunked;
 
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestParser;
+import com.ccreanga.webserver.ioutil.FixedLengthInputStream;
+import com.ccreanga.webserver.ioutil.LimitedInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +59,7 @@ public class ChunkedInputStream extends FixedLengthInputStream {
             // read chunk-terminating CRLF if it's not the first chunk
             if (initialized) {
                 if (readLine(in).length() > 0)
-                    throw new IOException("chunk data must end with CRLF");
+                    throw new ChunkedParseException("invalid chunked stream");
             }
             initialized = true;
             limit = parseChunkSize(readLine(in)); // read next chunk size
@@ -88,7 +90,7 @@ public class ChunkedInputStream extends FixedLengthInputStream {
     protected static long parseChunkSize(String line) throws IllegalArgumentException {
         int pos = line.indexOf(';');
         if (pos > -1)
-            line = line.substring(0, pos); // ignore params, if any
+            line = line.substring(0, pos); // ignore chunk extensions, if any
         try {
             return Long.parseLong(line, 16); // throws NFE
         } catch (NumberFormatException nfe) {

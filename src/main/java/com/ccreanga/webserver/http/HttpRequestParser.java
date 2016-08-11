@@ -2,7 +2,7 @@ package com.ccreanga.webserver.http;
 
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.ioutil.ChunkedInputStream;
+import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 import org.slf4j.Logger;

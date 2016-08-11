@@ -6,7 +6,7 @@ import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.*;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
 import com.ccreanga.webserver.http.representation.RepresentationManager;
-import com.ccreanga.webserver.ioutil.ChunkedOutputStream;
+import com.ccreanga.webserver.http.chunked.ChunkedOutputStream;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
