@@ -51,9 +51,18 @@ public class GetHandler implements HttpMethodHandler {
         HttpHeaders responseHeaders = new HttpHeaders();
         //ignore body for a GET request and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
-        //if the body is larger than the declared header the following request will be broken and the persistent connection will be closed
-        if (request.getLength() != 0)
-            request.getBody().skip(request.getLength());
+        //if the body is larger than the declared header write an response error and the persistent connection will be closed
+        if (request.getLength() > 0){
+            long skipped = request.getBody().skip(request.getLength());
+            if (request.getLength()!=skipped){//invalid http request
+                writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.BAD_REQUEST, "body longer than the content lenght header", out);
+                return;
+            }
+        }else if (request.isChunked()) {//chunkedstream
+            //consume all the body
+            while(request.getBody().read()>0);
+        }
+
 
         String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
         responseHeaders.putHeader(DATE, currentDate.replace("UTC", "GMT"));
@@ -107,16 +116,29 @@ public class GetHandler implements HttpMethodHandler {
 
         if (request.isHTTP1_1()) {
 
+            //should we compress?
+            boolean shouldGzip = false,shouldDeflate=false;
+            String etagExtension = "";
+            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)){
+                shouldGzip = true;
+                responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
+                etagExtension = "gz";
+            }else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)){
+                shouldDeflate = true;
+                responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
+                etagExtension = "df";
+            }
+
             //should we generate an etag?
             if (configuration.getRequestEtag().equals(Configuration.ETAG_WEAK)) {
-                //todo - etag should depend on the context encoding too (etag for a gzip resource is different than the one for the uncompressed resource)!
-                etag = EtagManager.getInstance().getFileEtag(file, true);
+                etag = EtagManager.getInstance().getFileEtag(file,etagExtension, true);
                 responseHeaders.putHeader(ETAG, etag);
             }
             //evaluate the conditionals. RANGE requests are not yet handled
             HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
             if (!statusAfterConditionals.equals(HttpStatus.OK)) {
                 ContextHolder.get().setContentLength("0");
+                responseHeaders.removeHeader(CONTENT_ENCODING);
                 writeResponseLine(statusAfterConditionals, out);
                 writeHeaders(responseHeaders, out);
                 return;
@@ -126,15 +148,6 @@ public class GetHandler implements HttpMethodHandler {
             ContextHolder.get().setContentLength("chunked");
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");
 
-            boolean shouldGzip = request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime);
-            boolean shouldDeflate = request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime);
-
-            //should we compress?
-            if (shouldGzip) {
-                responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
-            } else if (shouldDeflate) {
-                responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
-            }
             //write status+headers
             writeResponseLine(HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);

@@ -138,9 +138,9 @@ public class HttpRequestParser {
         if ((chunk) && (length != -1))
             throw new InvalidMessageException("chunked and Content-Length are mutually exclusive", BAD_REQUEST);
         if (chunk) {
-            return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders,cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1);
+            return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders,cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1,true);
         }
-        return new HttpRequestMessage(httpRequestLine, httpHeaders, in, length);
+        return new HttpRequestMessage(httpRequestLine, httpHeaders, in, length,false);
 
     }
 

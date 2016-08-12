@@ -124,29 +124,6 @@ public class TestGetInvalidRequests extends TestParent {
     }
 
     @Test
-    @Ignore//todo
-    public void testHttpMessageTooLong() throws Exception {
-        try(Socket socket = new Socket(host,Integer.parseInt(port))) {
-            socket.setSoTimeout(30000);
-            InputStream in = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-            OutputStream out = socket.getOutputStream();
-            out.write("GET /file.txt HTTP/1.1\n".getBytes());
-            out.write("Host: test.com\n".getBytes());
-            out.write("Content-length: 20000\n\n".getBytes());
-            StringBuilder sb = new StringBuilder(20000);
-            for (int i = 0; i < 20000; i++) {
-                sb.append("x");
-            }
-            out.write(sb.toString().getBytes());
-            out.flush();
-            String  line = reader.readLine();
-            assertEquals(line, "HTTP/1.1 400 Bad Request");
-        }
-
-    }
-
-    @Test
     public void testHttpMessageTooManyHeaders() throws Exception {
         try(Socket socket = new Socket(host,Integer.parseInt(port))) {
             socket.setSoTimeout(30000);

@@ -30,12 +30,13 @@ public class TestGetConditionals extends TestParent {
     public void testConditionalsWithInvalidDate() throws Exception{
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true);
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true);
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,"not parsable");
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.BAD_REQUEST);
     }
@@ -44,13 +45,14 @@ public class TestGetConditionals extends TestParent {
     public void testIfMatchNotModified() throws Exception{
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true);
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true);
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.NOT_MODIFIED);
 
@@ -61,13 +63,14 @@ public class TestGetConditionals extends TestParent {
     public void testIfMatchPrecondFailed() throws Exception{
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true)+"_not_match";
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true)+"_not_match";
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.PRECONDITION_FAILED);
 
@@ -77,13 +80,14 @@ public class TestGetConditionals extends TestParent {
     public void testIfMatchOk() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true);
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true);
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MATCH,etag);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.OK);
 
@@ -98,6 +102,7 @@ public class TestGetConditionals extends TestParent {
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.PRECONDITION_FAILED);
 
@@ -107,13 +112,14 @@ public class TestGetConditionals extends TestParent {
     public void testIfUnmodifiedSinceOk() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true)+"_not_match";
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true)+"_not_match";
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.OK);
     }
@@ -122,13 +128,14 @@ public class TestGetConditionals extends TestParent {
     public void testIfUnmodifiedNotModified() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true);
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true);
         LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
         request.addHeader(IF_UNMODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.NOT_MODIFIED);
     }
@@ -137,11 +144,12 @@ public class TestGetConditionals extends TestParent {
     public void testIfNoneMatchOk() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true)+"_not_match";
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true)+"_not_match";
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.OK);
 
@@ -151,11 +159,12 @@ public class TestGetConditionals extends TestParent {
     public void testIfNoneMatchNotModified() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
-        String etag = EtagManager.getInstance().getFileEtag(file, true);
+        String etag = EtagManager.getInstance().getFileEtag(file,"gz", true);
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_NONE_MATCH,etag);
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.NOT_MODIFIED);
 
@@ -170,6 +179,7 @@ public class TestGetConditionals extends TestParent {
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.minusDays(1).toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.OK);
 
@@ -184,6 +194,7 @@ public class TestGetConditionals extends TestParent {
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_MODIFIED_SINCE,DateUtil.formatDateToUTC(modifiedDate.toInstant(ZoneOffset.UTC),DateUtil.FORMATTER_RFC822));
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         checkForStatus(request, HttpStatus.NOT_MODIFIED);
 

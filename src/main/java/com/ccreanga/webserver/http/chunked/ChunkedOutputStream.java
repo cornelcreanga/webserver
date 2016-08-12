@@ -16,10 +16,6 @@ import java.util.function.Function;
  */
 public class ChunkedOutputStream extends OutputStream {
 
-    private static final byte CRLF[] = new byte[]{(byte) 13, (byte) 10};
-
-    private static final byte ENDCHUNK[] = CRLF;
-
     private boolean closed = false;
 
     private OutputStream stream = null;
@@ -56,15 +52,15 @@ public class ChunkedOutputStream extends OutputStream {
             }
         }
         stream.write(b, off, len);
-        stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+        writeCRLF(stream);
     }
 
     public void writeClosingChunk() throws IOException {
         if (!closed) {
             try {
                 stream.write(0);
-                stream.write(CRLF, 0, CRLF.length);
-                stream.write(ENDCHUNK, 0, ENDCHUNK.length);
+                writeCRLF(stream);
+                writeCRLF(stream);
             } finally {
                 closed = true;
             }
@@ -83,6 +79,11 @@ public class ChunkedOutputStream extends OutputStream {
     public void close() throws IOException {
         writeClosingChunk();
         super.close();
+    }
+
+    private void writeCRLF(OutputStream out) throws IOException{
+        out.write(13);
+        out.write(10);
     }
 
 }

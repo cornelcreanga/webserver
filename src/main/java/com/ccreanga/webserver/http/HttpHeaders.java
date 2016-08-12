@@ -34,6 +34,11 @@ public class HttpHeaders {
         return this;
     }
 
+    public void removeHeader(String header) {
+        headers.remove(header);
+    }
+
+
     public boolean headerContains(String header,String value){
         String headerValue = headers.get(header);
         if (headerValue==null)

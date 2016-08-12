@@ -13,16 +13,22 @@ public class HttpRequestMessage {
     private HttpHeaders headers;
     private String uri;
     private HttpVersion version;
-    protected InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
-    protected long length;//body length; makes sense only when chunk=false; -1 otherwise
+    private InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
+    private long length;//body length; makes sense only when chunk=false; -1 otherwise
+    private boolean chunked;
 
-    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, InputStream body, long length) {
+    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, InputStream body, long length,boolean chunked) {
         this.method = line.getMethod();
         this.headers = headers;
         this.uri = line.getUri();
         this.version = line.getVersion();
         this.body = body;
         this.length = length;
+        this.chunked = chunked;
+    }
+
+    public boolean isChunked() {
+        return chunked;
     }
 
     public boolean isHTTP1_1() {
