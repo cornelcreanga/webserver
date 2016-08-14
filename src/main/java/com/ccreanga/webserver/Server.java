@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -108,7 +109,13 @@ public class Server implements Runnable {
                         //if the server will have to reject connection because there is no available thread and the
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
                         HttpMessageWriter.writeNoBodyResponse(new HttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
-                        accessLog.info(LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-", HttpStatus.SERVICE_UNAVAILABLE.toString(),"-"));
+                        accessLog.info(LogEntry.generateLogEntry(
+                                IOUtil.getIp(socket),
+                                "-",
+                                DateUtil.currentDate(DateUtil.FORMATTER_LOG),
+                                "-",
+                                HttpStatus.SERVICE_UNAVAILABLE.toString(),
+                                "-"));
                         IOUtil.closeSocketPreventingReset(socket);
 
                     }

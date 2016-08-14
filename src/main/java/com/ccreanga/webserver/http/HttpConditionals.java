@@ -64,5 +64,15 @@ public class HttpConditionals {
         return response;
     }
 
+    public static HttpStatus evaluateIfRange(HttpRequestMessage request, String etag, LocalDateTime modifiedDate) {
+        String ifRange  = request.getHeader(IF_RANGE);
+        LocalDateTime localDateTime = DateUtil.parseRfc2161CompliantDate(ifRange);
+        if (localDateTime!=null){
+            return modifiedDate.isAfter(localDateTime)?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
+        }else{
+            return ifRange.equals(etag)?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
+        }
+
+    }
 
 }

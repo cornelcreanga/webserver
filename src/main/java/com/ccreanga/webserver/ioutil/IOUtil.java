@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Stack;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class IOUtil {
 
     /**
@@ -42,6 +44,43 @@ public class IOUtil {
         }
         return "Not an IP socket";
 
+    }
+
+//    public static long copy(InputStream from, OutputStream to) throws IOException {
+//        return copy(from,to,8*1024,0,-1);
+//    }
+
+    public static long copy(InputStream input, OutputStream output,
+                                 long inputOffset, long length) throws IOException {
+
+        byte[] buffer = new byte[8*1024];
+
+        if (inputOffset > 0) {
+            long skipped = input.skip(inputOffset);
+            if (skipped != inputOffset) {
+                throw new EOFException("Bytes to skip: " + inputOffset + " actual: " + skipped);
+            }
+
+        }
+        if (length == 0) {
+            return 0;
+        }
+        final int bufferLength = buffer.length;
+        int bytesToRead = bufferLength;
+        if (length > 0 && length < bufferLength) {
+            bytesToRead = (int) length;
+        }
+        int read;
+        long totalRead = 0;
+        while (bytesToRead > 0 && -1 != (read = input.read(buffer, 0, bytesToRead))) {
+            output.write(buffer, 0, read);
+            totalRead += read;
+            if (length > 0) { // only adjust length if not reading to the end
+                // Note the cast must work because buffer.length is an integer
+                bytesToRead = (int) Math.min(length - totalRead, bufferLength);
+            }
+        }
+        return totalRead;
     }
 
     public static String extractParentResource(File file, File root){

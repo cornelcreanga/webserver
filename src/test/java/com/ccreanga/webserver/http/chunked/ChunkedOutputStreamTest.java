@@ -21,13 +21,6 @@ public class ChunkedOutputStreamTest {
         out.writeClosingChunk();
         byte[] result = baos.toByteArray();
         Assert.assertArrayEquals(result,toCompare);
-        System.out.println(new String(result));
-        for (int i = 0; i < result.length; i++) {
-            byte b = result[i];
-            System.out.print(b);
-            System.out.print(',');
-
-        }
 
     }
 }

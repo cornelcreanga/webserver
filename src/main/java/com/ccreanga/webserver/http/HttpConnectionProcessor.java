@@ -30,7 +30,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
             /**
              * The connection will be kept open unless
              * a)the connection will explicitly request close (HttpHeaders.CONNECTION)
-             * b)the request message is unparsable (we can't eve build an HttpRequestMessage)
+             * b)the request message is unparsable (we can't even build an HttpRequestMessage)
              * c)the connection will timeout (Configuration/timeoutSeconds)
              * d)the connection is using HTTP 1.0 and is not using the the keep alive header
              * e)socket error (broken pipe etc)
