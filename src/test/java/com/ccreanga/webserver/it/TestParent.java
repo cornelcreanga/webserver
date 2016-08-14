@@ -40,7 +40,7 @@ public abstract class TestParent {
         properties.put("requestMaxLineLength", "10000");
         properties.put("requestMaxHeaders", "64");
 
-        properties.put("verbose", "false");
+        properties.put("verbose", "true");
         configuration = new Configuration(properties);
 
         server = new Server(configuration);

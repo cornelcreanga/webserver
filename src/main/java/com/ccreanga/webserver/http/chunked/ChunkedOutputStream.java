@@ -9,11 +9,22 @@ import java.io.OutputStream;
 import java.util.function.Function;
 
 /**
- * <p>
- * Wrapper supporting the chunked transfer encoding.
- * </p>
- *
- */
+ * todo - format me
+ Chunked streaming enables content streams of unknown size to be transferred as a sequence of length-delimited buffers, which enables the sender to
+ retain connection persistence and the recipient to know when it has received the entire message.
+ Structure
+ chunked-body = *chunk
+ last-chunk
+ trailer-part
+ CRLF
+ chunk chunk-size
+ last-chunk = chunk-size [ chunk-ext ] CRLF
+ chunk-data CRLF
+ = 1*HEXDIG
+ = 1*("0") [ chunk-ext ] CRLF
+ chunk-data = 1*OCTET ; a sequence of chunk-size octets
+ The chunk-size field is a string of hex digits indicating the size of the chunk-data in octets. The chunked transfer coding is complete
+ when a chunk with a chunk-size of zero is received, possibly followed by a trailer, and finally terminated by an empty line. */
 public class ChunkedOutputStream extends OutputStream {
 
     private boolean closed = false;
@@ -33,7 +44,7 @@ public class ChunkedOutputStream extends OutputStream {
         this.extensionBuilder = extensionBuilder;
     }
 
-    public void write(int b) throws IOException, IllegalStateException {
+    public void write(int b) throws IOException {
         throw new UnsupportedOperationException("write (int b) is not implemented, use write(byte[] b, int off, int len)");
     }
 
@@ -58,8 +69,9 @@ public class ChunkedOutputStream extends OutputStream {
     public void writeClosingChunk() throws IOException {
         if (!closed) {
             try {
-                stream.write(0);
+                stream.write('0');
                 writeCRLF(stream);
+                //todo - add support for trailing headers
                 writeCRLF(stream);
             } finally {
                 closed = true;

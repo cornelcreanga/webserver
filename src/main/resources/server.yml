@@ -1,0 +1,32 @@
+---
+general:
+  #Server port
+  serverPort: 8082
+  #Initial no of threads, it should belong in [1..1024]
+  serverInitialThreads: 128
+  #Max no of threads, it should belong in [1..1024]
+  serverMaxThreads: 1000
+  #Timeout for keepalive connections, it should belong in [1..3600]
+  requestTimeoutSeconds: 5
+  #Thread pool waiting queue, it should belong in [1..3600]
+  requestWaitingQueueSize: 64
+  #Indicates if the server should generate etags - Right now it only supports two values: none/weak (strong is not yet implemented)
+  requestEtag: weak
+  #The maximum number of lines from a request, it should belong in [256..65535]
+  requestMaxLines: 200
+  #The maximum length of a request line, it should belong in [8..65535]
+  requestMaxLineLength: 1024
+  #The maximum amount of headers, it should belong in [8..65535]
+  requestMaxHeaders: 64
+  #If true the server will display debug informations
+  verbose: false
+hosts:
+  host1:
+    name: www.host1.com
+    rootFolder: /var/www/html/host1
+    methods: GET,HEAD,OPTIONS
+  host2:
+    name: www.host2.com
+    rootFolder: /var/www/html/host2
+    methods: GET,HEAD,OPTIONS
+...

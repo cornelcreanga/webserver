@@ -13,6 +13,21 @@ import java.util.Stack;
 
 public class IOUtil {
 
+    /**
+     * RFC 7320 - 6.6. Tear-down
+     * @param socket
+     */
+    public static void closeSocketPreventingReset(Socket socket){
+        try {
+            socket.shutdownOutput();
+            InputStream in = socket.getInputStream();
+            int counter = 16000;//todo - try to guess the best value
+            while ((in.read() != -1) && (counter-- > 0)) ;
+            socket.close();
+        }catch (IOException e) {/**ignore**/}
+
+    }
+
     public static void closeSilent(Closeable closeable){
         try {
             Closeables.close(closeable, true);

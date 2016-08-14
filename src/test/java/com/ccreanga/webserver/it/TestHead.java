@@ -35,6 +35,7 @@ public class TestHead extends TestParent {
 
         HttpHead request = new HttpHead("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
 
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
@@ -45,7 +46,7 @@ public class TestHead extends TestParent {
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));
             //this header is removed in case of content decompression by the http client
 //        assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(),"gzip");
-            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file, true));
+            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file,"gz", true));
 
             LocalDateTime date = DateUtil.parseRfc2161CompliantDate(response.getFirstHeader(LAST_MODIFIED).getValue());
             LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();

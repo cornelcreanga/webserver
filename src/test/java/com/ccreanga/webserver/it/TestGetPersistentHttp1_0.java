@@ -39,32 +39,24 @@ public class TestGetPersistentHttp1_0 extends TestParent {
             out.write("\n".getBytes());
             out.flush();
 
-            Thread.sleep(2000);
 
-            boolean brokenConnection = false;
-            try {
-                out.write("GET /folder2/test.txt HTTP/1.0\n".getBytes());
-                out.flush();
-                out.write("Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\n".getBytes());
-                out.flush();
-                out.write("Host:localhost:8082\n".getBytes());
-                out.flush();
-                out.write("Accept-Encoding:gzip, deflate, sdch\n".getBytes());
-                out.flush();
-                if (keepAlive)
-                    out.write("Connection:keep-alive\n".getBytes());
-                out.flush();
-                out.write("\n".getBytes());
-                out.flush();
-            }catch (SocketException e){
-                brokenConnection = true;
-            }
-            if (!keepAlive)
-                assertTrue(brokenConnection);
+            out.write("GET /folder2/test.txt HTTP/1.0\n".getBytes());
+            out.flush();
+            out.write("Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\n".getBytes());
+            out.flush();
+            out.write("Host:localhost:8082\n".getBytes());
+            out.flush();
+            out.write("Accept-Encoding:gzip, deflate, sdch\n".getBytes());
+            out.flush();
+            if (keepAlive)
+                out.write("Connection:keep-alive\n".getBytes());
+            out.flush();
+            out.write("\n".getBytes());
+            out.flush();
 
             Thread.sleep(2000);
 
-            //we should be able to read both responses using the same socket
+            //we should recieve 2 responses for a persistent connection and 1 for a non persistent,
             int count = 0;
             BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
             String line;

@@ -24,7 +24,9 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
 
 
     public void handleConnection(Socket socket, Configuration configuration) {
-        try (InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream();) {
+        try {
+            InputStream input = socket.getInputStream();
+            OutputStream output = socket.getOutputStream();
             /**
              * The connection will be kept open unless
              * a)the connection will explicitly request close (HttpHeaders.CONNECTION)
@@ -33,8 +35,8 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
              * d)the connection is using HTTP 1.0 and is not using the the keep alive header
              * e)socket error (broken pipe etc)
              */
-            while (true) {
-                boolean shouldCloseConnection = false;
+            boolean shouldKeepConnectionOpen = true;
+            while (shouldKeepConnectionOpen) {
                 HttpRequestMessage request = null;
                 boolean responseSyntaxCorrect = true;
                 HttpStatus invalidStatus = null;
@@ -51,8 +53,8 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     invalidStatus = HttpStatus.URI_TOO_LONG;
                 } catch (LengthExceededException e) {
                     responseSyntaxCorrect = false;
-                    ContextHolder.get().setUrl("request is too long");
-                    invalidStatus = HttpStatus.BAD_REQUEST;
+                    ContextHolder.get().setUrl("request message is too long");
+                    invalidStatus = HttpStatus.PAYLOAD_TOO_LARGE;
                 }catch (LineTooLongException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("request line too long");
@@ -65,23 +67,22 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //after the message is handled decide if we should close the connection or not
                     if ((request.headerIs(CONNECTION, "close")) ||
-                            (request.getVersion().equals(HttpVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive"))
-                        shouldCloseConnection = true;
+                            (request.getVersion().equals(HttpVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive")){
+                        shouldKeepConnectionOpen = false;
+                        serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
+                    }
+
                 } else {
                     //we were not event able to parse the first request line (this is not an HTTP message), so write an error and close the connection.
                     ContextHolder.get().setStatusCode(invalidStatus.toString());
                     ContextHolder.get().setContentLength("-");
                     HttpMessageWriter.writeResponseLine(invalidStatus, output);
-                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable, responded with " + ContextHolder.get().getStatusCode());
-                    shouldCloseConnection = true;
+                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " request was unparsable and will be closed, responded with " + ContextHolder.get().getStatusCode());
+                    shouldKeepConnectionOpen = false;
                 }
                 output.flush();
                 //write into the access log
                 accessLog.info(LogEntry.generateLogEntry(ContextHolder.get()));
-                if (shouldCloseConnection) {
-                    serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
-                    break;
-                }
 
             }
         } catch (SocketTimeoutException e) {

@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.ioutil;
+package com.ccreanga.webserver.http.chunked;
 
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;

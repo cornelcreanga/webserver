@@ -100,7 +100,7 @@ public class Server implements Runnable {
                             } finally {
                                 //clear the thread local
                                 ContextHolder.cleanup();
-                                IOUtil.closeSilent(socket);
+                                IOUtil.closeSocketPreventingReset(socket);
                             }
                         });
 
@@ -109,7 +109,7 @@ public class Server implements Runnable {
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
                         HttpMessageWriter.writeNoBodyResponse(new HttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
                         accessLog.info(LogEntry.generateLogEntry(IOUtil.getIp(socket),"-","","-", HttpStatus.SERVICE_UNAVAILABLE.toString(),"-"));
-                        IOUtil.closeSilent(socket);
+                        IOUtil.closeSocketPreventingReset(socket);
 
                     }
                 } catch (IOException e) {

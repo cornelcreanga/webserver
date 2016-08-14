@@ -116,9 +116,24 @@ public class HttpRequestParser {
         HttpRequestLine httpRequestLine = HttpRequestParser.consumeRequestMethod(in, maxLineLength,cfg.getRequestURIMaxSize());
         HttpHeaders httpHeaders = HttpRequestParser.consumeHeaders(in, maxLineLength, maxHeaders);
 
+
+        long length = -1;
+        String len = httpHeaders.getHeader(CONTENT_LENGTH);
+        try {
+            if (len != null) {
+                length = Long.parseLong(len);
+                if (length < 0)
+                    throw new InvalidMessageException("invalid content length value " + length, BAD_REQUEST);
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidMessageException("invalid content length value " + len, BAD_REQUEST);
+        }
+
         boolean chunk = false;
         String encoding = httpHeaders.getHeader(TRANSFER_ENCODING);
         if (encoding!=null){
+            if (length!=-1)
+                throw new InvalidMessageException("Transfer-Encoding and Content-Length are mutually exclusive", BAD_REQUEST);
             //todo - check for gzip/deflate in transfer encoding
             chunk = encoding.contains("chunked");
             if ((chunk) && (encoding.lastIndexOf("chunked")!=(encoding.length()-7)))//chunked is not the last encoding
@@ -126,17 +141,6 @@ public class HttpRequestParser {
 
         }
 
-        long length = -1;
-        String len = httpHeaders.getHeader(CONTENT_LENGTH);
-        try {
-            if (len != null)
-                length = Long.parseLong(len);
-        } catch (NumberFormatException e) {
-            throw new InvalidMessageException("invalid content length value " + len, BAD_REQUEST);
-        }
-        //we cannot have both chunk and length//
-        if ((chunk) && (length != -1))
-            throw new InvalidMessageException("chunked and Content-Length are mutually exclusive", BAD_REQUEST);
         if (chunk) {
             return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders,cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1,true);
         }
