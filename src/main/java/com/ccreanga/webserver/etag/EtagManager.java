@@ -17,6 +17,8 @@ import java.security.NoSuchAlgorithmException;
  */
 public class EtagManager {
 
+    public static final String GZIP_EXT = "gz";
+    public static final String DF_EXT = "df";
     private static final EtagManager manager = new EtagManager();
 
     private EtagManager() {

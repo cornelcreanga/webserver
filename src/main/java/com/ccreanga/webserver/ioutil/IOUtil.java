@@ -9,6 +9,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Stack;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,11 +27,10 @@ public class IOUtil {
         try {
             socket.shutdownOutput();
             InputStream in = socket.getInputStream();
-            int counter = 16000;//todo - try to guess the best value
+            int counter = 16000;//todo - try to find the best value
             while ((in.read() != -1) && (counter-- > 0)) ;
             socket.close();
         }catch (IOException e) {/**ignore**/}
-
     }
 
     public static void closeSilent(Closeable closeable){
@@ -45,10 +48,6 @@ public class IOUtil {
         return "Not an IP socket";
 
     }
-
-//    public static long copy(InputStream from, OutputStream to) throws IOException {
-//        return copy(from,to,8*1024,0,-1);
-//    }
 
     public static long copy(InputStream input, OutputStream output,
                                  long inputOffset, long length) throws IOException {
@@ -75,12 +74,15 @@ public class IOUtil {
         while (bytesToRead > 0 && -1 != (read = input.read(buffer, 0, bytesToRead))) {
             output.write(buffer, 0, read);
             totalRead += read;
-            if (length > 0) { // only adjust length if not reading to the end
-                // Note the cast must work because buffer.length is an integer
+            if (length > 0) {
                 bytesToRead = (int) Math.min(length - totalRead, bufferLength);
             }
         }
         return totalRead;
+    }
+
+    public static LocalDateTime modifiedDateAsUTC(File file){
+        return ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
     }
 
     public static String extractParentResource(File file, File root){
@@ -127,8 +129,9 @@ public class IOUtil {
 
     public static String readLine(InputStream in,int maxLength) throws IOException {
         String s = readToken(in, '\n', "ISO8859_1", maxLength);
-        return s.length() > 0 && s.charAt(s.length() - 1) == '\r'
-                ? s.substring(0, s.length() - 1) : s;
+        return s.length() > 0 && s.charAt(s.length() - 1) == '\r' ?
+                s.substring(0, s.length() - 1) :
+                s;
     }
 
 

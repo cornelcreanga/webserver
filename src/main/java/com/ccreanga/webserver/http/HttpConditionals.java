@@ -67,10 +67,10 @@ public class HttpConditionals {
     public static HttpStatus evaluateIfRange(HttpRequestMessage request, String etag, LocalDateTime modifiedDate) {
         String ifRange  = request.getHeader(IF_RANGE);
         LocalDateTime localDateTime = DateUtil.parseRfc2161CompliantDate(ifRange);
-        if (localDateTime!=null){
+        if (localDateTime!=null){//if resource was modified after the ifrange date return the full resource
             return modifiedDate.isAfter(localDateTime)?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
-        }else{
-            return ifRange.equals(etag)?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
+        }else{//if the etag are not equal return the full resource; todo - we should use strong etags
+            return (!ifRange.equals(etag))?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
         }
 
     }

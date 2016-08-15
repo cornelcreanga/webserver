@@ -22,8 +22,6 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -109,7 +107,7 @@ public class GetHandler implements HttpMethodHandler {
 
         String etag = null;
         String mime = Mime.getType(Files.getFileExtension((file.getName())));
-        LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
+        LocalDateTime modifiedDate = IOUtil.modifiedDateAsUTC(file);
 
         responseHeaders.putHeader(CONTENT_TYPE, mime);
         responseHeaders.putHeader(LAST_MODIFIED, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_RFC822));
@@ -122,11 +120,11 @@ public class GetHandler implements HttpMethodHandler {
             if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)){
                 shouldGzip = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
-                etagExtension = "gz";
+                etagExtension = EtagManager.GZIP_EXT;
             }else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)){
                 shouldDeflate = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
-                etagExtension = "df";
+                etagExtension = EtagManager.DF_EXT;
             }
 
             //should we generate an etag?
@@ -143,7 +141,6 @@ public class GetHandler implements HttpMethodHandler {
                 HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
                 if (!statusAfterConditionals.equals(HttpStatus.OK)) {
                     ContextHolder.get().setContentLength("0");
-                    responseHeaders.removeHeader(CONTENT_ENCODING);
                     writeResponseLine(statusAfterConditionals, out);
                     writeHeaders(responseHeaders, out);
                     return;
@@ -159,6 +156,8 @@ public class GetHandler implements HttpMethodHandler {
                 }
             }catch (RangeException e){
                 writeResponseLine(REQUESTED_RANGE_NOT_SATISFIABLE, out);
+                ContextHolder.get().setContentLength("0");
+                responseHeaders.removeHeader(CONTENT_ENCODING);
                 responseHeaders.putHeader(CONTENT_RANGE,"bytes */"+file.length());
                 writeHeaders(responseHeaders, out);
                 return;
@@ -178,7 +177,7 @@ public class GetHandler implements HttpMethodHandler {
 
 
             //write status+headers
-            writeResponseLine(HttpStatus.OK, out);
+            writeResponseLine(shouldSendRange?HttpStatus.PARTIAL_CONTENT:HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);
             //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);

@@ -5,6 +5,7 @@ import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.ioutil.IOUtil;
 import com.google.common.escape.Escaper;
 import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpEntity;
@@ -46,10 +47,11 @@ public class TestHead extends TestParent {
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));
             //this header is removed in case of content decompression by the http client
 //        assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(),"gzip");
-            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file,"gz", true));
+            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file,EtagManager.GZIP_EXT, true));
 
             LocalDateTime date = DateUtil.parseRfc2161CompliantDate(response.getFirstHeader(LAST_MODIFIED).getValue());
-            LocalDateTime modifiedDate = ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
+
+            LocalDateTime modifiedDate = IOUtil.modifiedDateAsUTC(file);
             assertEquals(date, modifiedDate);
 
             HttpEntity entity = response.getEntity();
