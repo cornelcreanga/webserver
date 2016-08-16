@@ -55,7 +55,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("request message is too long");
                     invalidStatus = HttpStatus.PAYLOAD_TOO_LARGE;
-                }catch (LineTooLongException e) {
+                } catch (LineTooLongException e) {
                     responseSyntaxCorrect = false;
                     ContextHolder.get().setUrl("request line too long");
                     invalidStatus = HttpStatus.BAD_REQUEST;
@@ -67,7 +67,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                     serverLog.trace("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //after the message is handled decide if we should close the connection or not
                     if ((request.headerIs(CONNECTION, "close")) ||
-                            (request.getVersion().equals(HttpVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive")){
+                            (request.getVersion().equals(HttpVersion.HTTP_1_0)) && !request.headerIs(CONNECTION, "Keep-Alive")) {
                         shouldKeepConnectionOpen = false;
                         serverLog.trace("Connection " + ContextHolder.get().getUuid() + " requested close");
                     }

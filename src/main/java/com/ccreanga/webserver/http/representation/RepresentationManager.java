@@ -9,7 +9,7 @@ public class RepresentationManager {
     }
 
     public FileResourceRepresentation getRepresentation(String acceptHeader) {
-        if ((acceptHeader==null) || (acceptHeader.contains("*/*")) || acceptHeader.contains("text/html"))
+        if ((acceptHeader == null) || (acceptHeader.contains("*/*")) || acceptHeader.contains("text/html"))
             return new HtmlResourceRepresentation();
         if (acceptHeader.contains("application/json"))
             return new JsonResourceRepresentation();

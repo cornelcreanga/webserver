@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- *  Read a fixed amount of bytes from the underlying stream. If the underlying stream will return end of stream before the fixed
- *  amount of data is read it will throw an exception if prematureEndException is true
+ * Read a fixed amount of bytes from the underlying stream. If the underlying stream will return end of stream before the fixed
+ * amount of data is read it will throw an exception if prematureEndException is true
  */
 public class FixedLengthInputStream extends FilterInputStream {
 
@@ -33,7 +33,7 @@ public class FixedLengthInputStream extends FilterInputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int res = limit == 0 ? -1 : in.read(b, off, len > limit ? (int)limit : len);
+        int res = limit == 0 ? -1 : in.read(b, off, len > limit ? (int) limit : len);
         if (res == -1 && limit > 0 && prematureEndException)
             throw new StreamExhaustedException("unexpected end of stream");
         limit = res == -1 ? 0 : limit - res;
@@ -50,7 +50,7 @@ public class FixedLengthInputStream extends FilterInputStream {
     @Override
     public int available() throws IOException {
         int res = in.available();
-        return res > limit ? (int)limit : res;
+        return res > limit ? (int) limit : res;
     }
 
     @Override

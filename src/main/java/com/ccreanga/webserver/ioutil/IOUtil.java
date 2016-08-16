@@ -4,7 +4,6 @@ import com.ccreanga.webserver.InternalException;
 import com.google.common.io.Closeables;
 import com.google.common.net.InetAddresses;
 
-import javax.naming.LimitExceededException;
 import java.io.*;
 import java.net.*;
 import java.time.Instant;
@@ -13,33 +12,32 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Stack;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class IOUtil {
 
     /**
      * RFC 7320 - 6.6. Tear-down
+     *
      * @param socket
      */
-    public static void closeSocketPreventingReset(Socket socket){
+    public static void closeSocketPreventingReset(Socket socket) {
         try {
             socket.shutdownOutput();
             InputStream in = socket.getInputStream();
             int counter = 16000;//todo - try to find the best value
             while ((in.read() != -1) && (counter-- > 0)) ;
             socket.close();
-        }catch (IOException e) {/**ignore**/}
+        } catch (IOException e) {/**ignore**/}
     }
 
-    public static void closeSilent(Closeable closeable){
+    public static void closeSilent(Closeable closeable) {
         try {
             Closeables.close(closeable, true);
         } catch (IOException e) {/**ignore**/}
     }
 
-    public static String decodeUTF8(String s){
+    public static String decodeUTF8(String s) {
         try {
-            return URLDecoder.decode(s,"UTF-8");
+            return URLDecoder.decode(s, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new InternalException("unknown encoding, this should never happen");
         }
@@ -56,9 +54,9 @@ public class IOUtil {
     }
 
     public static long copy(InputStream input, OutputStream output,
-                                 long inputOffset, long length) throws IOException {
+                            long inputOffset, long length) throws IOException {
 
-        byte[] buffer = new byte[8*1024];
+        byte[] buffer = new byte[8 * 1024];
 
         if (inputOffset > 0) {
             long skipped = input.skip(inputOffset);
@@ -87,20 +85,20 @@ public class IOUtil {
         return totalRead;
     }
 
-    public static LocalDateTime modifiedDateAsUTC(File file){
+    public static LocalDateTime modifiedDateAsUTC(File file) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.of("UTC")).toLocalDateTime();
     }
 
-    public static String extractParentResource(File file, File root){
+    public static String extractParentResource(File file, File root) {
         File traverse = file.getParentFile();
         StringBuilder sb = new StringBuilder();
         sb.append("/");
         Stack<String> stack = new Stack<>();
-        while(!traverse.equals(root)){
+        while (!traverse.equals(root)) {
             stack.push(traverse.getName());
             traverse = traverse.getParentFile();
         }
-        while(!stack.empty()){
+        while (!stack.empty()) {
             String next = stack.pop();
             sb.append(next).append("/");
         }
@@ -122,7 +120,7 @@ public class IOUtil {
                 System.arraycopy(buf, 0, expanded, 0, count);
                 buf = expanded;
             }
-            buf[count++] = (byte)c;
+            buf[count++] = (byte) c;
         }
         if (c == -1 && delim != -1)
             throw new EOFException("unexpected end of stream");
@@ -130,10 +128,10 @@ public class IOUtil {
     }
 
     public static String readLine(InputStream in) throws IOException {
-        return readLine(in,Integer.MAX_VALUE);
+        return readLine(in, Integer.MAX_VALUE);
     }
 
-    public static String readLine(InputStream in,int maxLength) throws IOException {
+    public static String readLine(InputStream in, int maxLength) throws IOException {
         String s = readToken(in, '\n', "ISO8859_1", maxLength);
         return s.length() > 0 && s.charAt(s.length() - 1) == '\r' ?
                 s.substring(0, s.length() - 1) :

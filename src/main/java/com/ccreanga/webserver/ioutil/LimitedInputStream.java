@@ -4,7 +4,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class LimitedInputStream extends FilterInputStream{
+public class LimitedInputStream extends FilterInputStream {
     /**
      * The maximum size of an item, in bytes.
      */

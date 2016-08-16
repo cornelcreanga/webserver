@@ -9,7 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LimitedInputStreamTest {
 
@@ -17,12 +18,12 @@ public class LimitedInputStreamTest {
     public void testStreamTooLong() throws IOException {
         String chunkedData = "aaaaaaaaaaaaaaaaaaaa";
         InputStream in = new ByteArrayInputStream(chunkedData.getBytes(StandardCharsets.UTF_8));
-        LimitedInputStream stream = new LimitedInputStream(in,10);
+        LimitedInputStream stream = new LimitedInputStream(in, 10);
 
         boolean error = false;
-        try{
-            CharStreams.toString( new InputStreamReader( stream, "UTF-8" ) );
-        }catch (LengthExceededException e){
+        try {
+            CharStreams.toString(new InputStreamReader(stream, "UTF-8"));
+        } catch (LengthExceededException e) {
             error = true;
         }
         assertTrue(error);
@@ -33,10 +34,10 @@ public class LimitedInputStreamTest {
     public void testStreamOk() throws IOException {
         String chunkedData = "aaaaaaaaaaaaaaaaaaaa";
         InputStream in = new ByteArrayInputStream(chunkedData.getBytes(StandardCharsets.UTF_8));
-        LimitedInputStream stream = new LimitedInputStream(in,100);
+        LimitedInputStream stream = new LimitedInputStream(in, 100);
 
-        String result = CharStreams.toString( new InputStreamReader( stream, "UTF-8" ) );
-        assertEquals(chunkedData,result);
+        String result = CharStreams.toString(new InputStreamReader(stream, "UTF-8"));
+        assertEquals(chunkedData, result);
 
     }
 

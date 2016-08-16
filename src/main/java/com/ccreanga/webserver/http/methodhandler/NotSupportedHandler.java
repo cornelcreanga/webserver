@@ -2,8 +2,8 @@ package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.http.HttpHeaders;
-import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.HttpRequestMessage;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.IOException;

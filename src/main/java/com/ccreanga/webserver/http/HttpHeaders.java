@@ -38,18 +38,20 @@ public class HttpHeaders {
         headers.remove(header);
     }
 
-    public boolean hasHeader(String header){
+    public boolean hasHeader(String header) {
         return headers.containsKey(header);
     }
 
-    public boolean headerContains(String header,String value){
+    public boolean headerContains(String header, String value) {
         String headerValue = headers.get(header);
-        if (headerValue==null)
+        if (headerValue == null)
             return false;
         return headerValue.contains(value);
     }
 
-    public int size(){return headers.size();}
+    public int size() {
+        return headers.size();
+    }
 
 
     @Override

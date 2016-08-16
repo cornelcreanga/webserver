@@ -31,9 +31,9 @@ public class EtagManager {
     /**
      * This method returns a file weak etag implementation based on the file last modified time
      *
-     * @param file      file - cannot be a folder
+     * @param file     file - cannot be a folder
      * @param encoding - http encoding - the etag for a zipped resource is different than the etag for the uncompressed one. itcan be empty or null
-     * @param weak      - weak etag generation (based on the file last modified time) or strong (not yet implemented)
+     * @param weak     - weak etag generation (based on the file last modified time) or strong (not yet implemented)
      * @return etag
      */
     public String getFileEtag(File file, String encoding, boolean weak) {

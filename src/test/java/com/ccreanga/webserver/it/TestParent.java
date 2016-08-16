@@ -15,7 +15,7 @@ public abstract class TestParent {
 
     protected static Server server;
     protected String host = "127.0.0.1";
-    protected static Configuration configuration ;
+    protected static Configuration configuration;
     protected static CloseableHttpClient httpclient;
     protected static CloseableHttpClient httpclientNoDecompression;
 
@@ -49,7 +49,7 @@ public abstract class TestParent {
 
         try {
             new Thread(server).start();
-            while(!server.isReady());
+            while (!server.isReady()) ;
         } catch (InternalException e) {
             server.stop();
             throw e;
@@ -61,7 +61,7 @@ public abstract class TestParent {
         httpclient.close();
         httpclientNoDecompression.close();
         server.stop();
-        while(!server.isStopped());
+        while (!server.isStopped()) ;
 //        while (!server.isStopped());
     }
 

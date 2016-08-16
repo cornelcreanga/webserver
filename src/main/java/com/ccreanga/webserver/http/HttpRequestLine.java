@@ -8,7 +8,7 @@ public class HttpRequestLine {
 
     private HttpMethod method;
     private String uri;
-    private Map<String,String> uriParams;
+    private Map<String, String> uriParams;
     private HttpVersion version;
 
     public HttpRequestLine(HttpMethod method, String uri, HttpVersion version) {
@@ -17,7 +17,7 @@ public class HttpRequestLine {
         this.version = version;
     }
 
-    public HttpRequestLine(HttpMethod method, String uri,Map<String,String> uriParams, HttpVersion version) {
+    public HttpRequestLine(HttpMethod method, String uri, Map<String, String> uriParams, HttpVersion version) {
         this.method = method;
         this.uri = uri;
         this.version = version;

@@ -18,9 +18,10 @@ public class HttpMessageHandler {
     /**
      * Handles the message (by writing the response into the output stream) taking into account the HTTP method (GET/POST/PUT etc).
      * Not all the methods are implemented right now - for them the status will be 501
-     * @param request - valid HttpRequestMessage
+     *
+     * @param request       - valid HttpRequestMessage
      * @param configuration - configuration
-     * @param out - outputstrem
+     * @param out           - outputstrem
      * @throws IOException - in case of I/O error
      */
     public void handleMessage(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {

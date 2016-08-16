@@ -35,7 +35,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
     private static Template index;
     private static Template error;
 
-    static{
+    static {
         Configuration cfg = new Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         cfg.setClassLoaderForTemplateLoading(ClassLoader.getSystemClassLoader(), "templates");
         try {
@@ -71,7 +71,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
                 map(file -> {
                     Map<String, String> map = new HashMap<>(4);
                     map.put("name", htmlEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : ""));
-                    map.put("link", encodeUrl(file.getName()) + (file.isDirectory() ?  "/" : ""));
+                    map.put("link", encodeUrl(file.getName()) + (file.isDirectory() ? "/" : ""));
                     map.put("lastModified", "" + DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT));
                     map.put("size", file.isDirectory() ? "-" : fileSizePretty(file.length()));
                     map.put("type", file.isDirectory() ? "folder" : "file");
@@ -89,10 +89,12 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
         return writer.toString();
     }
 
-    private String encodeUrl(String url){
+    private String encodeUrl(String url) {
         try {
-            return URLEncoder.encode(url,StandardCharsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {throw new InternalException(e);}
+            return URLEncoder.encode(url, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalException(e);
+        }
     }
 
     @Override

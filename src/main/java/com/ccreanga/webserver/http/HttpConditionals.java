@@ -20,8 +20,8 @@ public class HttpConditionals {
      * <p>
      * See https://tools.ietf.org/html/rfc7232#section-6 and https://tools.ietf.org/html/rfc7232#page-13
      *
-     * @param request Request message
-     * @param etag Resource etag
+     * @param request      Request message
+     * @param etag         Resource etag
      * @param modifiedDate Resource modified date
      * @return httpstatus (412, 304, 400 - in case of invalid date headers)
      */
@@ -48,8 +48,8 @@ public class HttpConditionals {
 
         if (ifNoneMatch != null) {
             if (ifNoneMatch.equals(etag))
-                return (request.getMethod().equals(GET) || request.getMethod().equals(HEAD))?
-                        HttpStatus.NOT_MODIFIED:
+                return (request.getMethod().equals(GET) || request.getMethod().equals(HEAD)) ?
+                        HttpStatus.NOT_MODIFIED :
                         HttpStatus.PRECONDITION_FAILED;
         }
 
@@ -65,12 +65,12 @@ public class HttpConditionals {
     }
 
     public static HttpStatus evaluateIfRange(HttpRequestMessage request, String etag, LocalDateTime modifiedDate) {
-        String ifRange  = request.getHeader(IF_RANGE);
+        String ifRange = request.getHeader(IF_RANGE);
         LocalDateTime localDateTime = DateUtil.parseRfc2161CompliantDate(ifRange);
-        if (localDateTime!=null){//if resource was modified after the ifrange date return the full resource
-            return modifiedDate.isAfter(localDateTime)?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
-        }else{//if the etag are not equal return the full resource; todo - we should use strong etags
-            return (!ifRange.equals(etag))?HttpStatus.OK:HttpStatus.PARTIAL_CONTENT;
+        if (localDateTime != null) {//if resource was modified after the ifrange date return the full resource
+            return modifiedDate.isAfter(localDateTime) ? HttpStatus.OK : HttpStatus.PARTIAL_CONTENT;
+        } else {//if the etag are not equal return the full resource; todo - we should use strong etags
+            return (!ifRange.equals(etag)) ? HttpStatus.OK : HttpStatus.PARTIAL_CONTENT;
         }
 
     }

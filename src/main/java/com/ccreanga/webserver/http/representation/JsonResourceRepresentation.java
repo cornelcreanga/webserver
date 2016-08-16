@@ -27,7 +27,7 @@ public class JsonResourceRepresentation implements FileResourceRepresentation {
 
     private static Template index;
 
-    static{
+    static {
         Configuration cfg = new Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         cfg.setClassLoaderForTemplateLoading(ClassLoader.getSystemClassLoader(), "templates");
         try {
@@ -54,7 +54,7 @@ public class JsonResourceRepresentation implements FileResourceRepresentation {
                     String relative = root.toURI().relativize(file.toURI()).getPath();
                     map.put("link", relative);
                     map.put("lastModified", "" + DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT));
-                    map.put("size", file.isDirectory()?"":""+file.length());
+                    map.put("size", file.isDirectory() ? "" : "" + file.length());
                     map.put("type", file.isDirectory() ? "folder" : "file");
                     return map;
                 }).collect(Collectors.toList());
@@ -72,7 +72,7 @@ public class JsonResourceRepresentation implements FileResourceRepresentation {
 
     @Override
     public String errorRepresentation(HttpStatus status, String extendedReason) throws IOException {
-        return "{\"extendedReason\":\""+extendedReason+"\"}";
+        return "{\"extendedReason\":\"" + extendedReason + "\"}";
     }
 
     @Override

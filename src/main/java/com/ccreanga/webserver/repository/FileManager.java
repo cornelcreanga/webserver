@@ -25,10 +25,11 @@ public class FileManager {
 
     /**
      * Returns a file. The file name cannot contain two dots. It will
+     *
      * @param fileName - filename, cannot be null
-     * @throws ForbiddenException - it the file name contains two dots
-     * @throws NotFoundException - if the file does not exists/it is hidden/it starts with a dot/does not have read permissions
      * @return file
+     * @throws ForbiddenException - it the file name contains two dots
+     * @throws NotFoundException  - if the file does not exists/it is hidden/it starts with a dot/does not have read permissions
      */
     public File getFile(String fileName) {
         Preconditions.checkNotNull(fileName);
@@ -48,11 +49,12 @@ public class FileManager {
 
     /**
      * Get a folder content.
+     *
      * @param folder - folder, cannot be null
      * @return - all the folder content except the hidden files/files without read permission
      * @throws IOException - i/o exception
      */
-    public List<File> getFolderContent(File folder) throws IOException{
+    public List<File> getFolderContent(File folder) throws IOException {
         Preconditions.checkNotNull(folder);
         if (!folder.isDirectory())
             throw new InternalException("file " + folder.getName() + " is not a folder");

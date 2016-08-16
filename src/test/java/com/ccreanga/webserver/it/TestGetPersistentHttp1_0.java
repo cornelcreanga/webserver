@@ -7,10 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestGetPersistentHttp1_0 extends TestParent {
 
@@ -19,13 +17,14 @@ public class TestGetPersistentHttp1_0 extends TestParent {
     public void testWithKeepAlive() throws Exception {
         testTwoConnections(true);
     }
+
     @Test
     public void testWithoutKeepAlive() throws Exception {
         testTwoConnections(false);
     }
 
     public void testTwoConnections(boolean keepAlive) throws Exception {
-        try(Socket socket = new Socket(host,Integer.parseInt(port))) {
+        try (Socket socket = new Socket(host, Integer.parseInt(port))) {
             socket.setSoTimeout(30000);
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
@@ -58,13 +57,13 @@ public class TestGetPersistentHttp1_0 extends TestParent {
 
             //we should recieve 2 responses for a persistent connection and 1 for a non persistent,
             int count = 0;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             String line;
-            while((line=reader.readLine())!=null){
+            while ((line = reader.readLine()) != null) {
                 if (line.contains("HTTP/1.1 200 OK"))
                     count++;
             }
-            assertEquals(count, keepAlive?2:1);
+            assertEquals(count, keepAlive ? 2 : 1);
 
 
         }

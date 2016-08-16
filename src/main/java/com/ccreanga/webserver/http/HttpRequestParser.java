@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,8 @@ import java.util.Map;
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
 import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
-import static com.google.common.net.HttpHeaders.*;
+import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
+import static com.google.common.net.HttpHeaders.TRANSFER_ENCODING;
 
 /**
  * This class does the "hard work" - parsing the http request.
@@ -30,18 +30,18 @@ public class HttpRequestParser {
     private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
 
-    public static HttpRequestLine consumeRequestMethod(InputStream in, int lineMaxLength,int uriMaxLength) throws IOException, InvalidMessageException {
+    public static HttpRequestLine consumeRequestMethod(InputStream in, int lineMaxLength, int uriMaxLength) throws IOException, InvalidMessageException {
         String line;
         HttpMethod httpMethod;
         String fullUri;
         HttpVersion version;
 
         //read the first line;block until timeout/exception
-        int counter=0;
-        while (((line = IOUtil.readLine(in, lineMaxLength)) == null) || (line.isEmpty())){
-            if ((line!=null) && (line.isEmpty())){
+        int counter = 0;
+        while (((line = IOUtil.readLine(in, lineMaxLength)) == null) || (line.isEmpty())) {
+            if ((line != null) && (line.isEmpty())) {
                 counter++;
-                if (counter>=100)
+                if (counter >= 100)
                     throw new InvalidMessageException("too many empty lines ", BAD_REQUEST);
             }
         }
@@ -65,8 +65,8 @@ public class HttpRequestParser {
             throw new InvalidMessageException("malformed url", BAD_REQUEST);
         //remove the '/' in front of the uri
         fullUri = line.substring(index + 1, secondIndex).trim();
-        if (fullUri.length()>uriMaxLength)
-            throw new UriTooLongException("uri too long "+fullUri.length());
+        if (fullUri.length() > uriMaxLength)
+            throw new UriTooLongException("uri too long " + fullUri.length());
         try {
             version = HttpVersion.from(line.substring(secondIndex).trim());
         } catch (IllegalArgumentException e) {
@@ -75,21 +75,21 @@ public class HttpRequestParser {
 
         index = fullUri.indexOf('?');
         String uri = fullUri;
-        Map<String,String> uriParams = Collections.EMPTY_MAP;
-        if (index>-1){
-            uri = fullUri.substring(0,index);
-            if (index!=(fullUri.length()-1)){
-                uriParams = parseParameters(fullUri.substring(index+1));
+        Map<String, String> uriParams = Collections.EMPTY_MAP;
+        if (index > -1) {
+            uri = fullUri.substring(0, index);
+            if (index != (fullUri.length() - 1)) {
+                uriParams = parseParameters(fullUri.substring(index + 1));
             }
         }
 
-        return new HttpRequestLine(httpMethod, decodeUTF8(uri),uriParams, version);
+        return new HttpRequestLine(httpMethod, decodeUTF8(uri), uriParams, version);
     }
 
-    public static Map<String,String> parseParameters(String params){
+    public static Map<String, String> parseParameters(String params) {
 
         String[] tokens = params.split("&");
-        HashMap<String,String> uriParams = new HashMap<>();
+        HashMap<String, String> uriParams = new HashMap<>();
         for (String token : tokens) {
             int indexEqual = token.indexOf('=');
             if (indexEqual != -1)
@@ -147,7 +147,7 @@ public class HttpRequestParser {
 
         int maxLineLength = cfg.getRequestMaxLineLength();
         int maxHeaders = cfg.getRequestMaxHeaders();
-        HttpRequestLine httpRequestLine = HttpRequestParser.consumeRequestMethod(in, maxLineLength,cfg.getRequestURIMaxSize());
+        HttpRequestLine httpRequestLine = HttpRequestParser.consumeRequestMethod(in, maxLineLength, cfg.getRequestURIMaxSize());
         HttpHeaders httpHeaders = HttpRequestParser.consumeHeaders(in, maxLineLength, maxHeaders);
 
 
@@ -165,20 +165,20 @@ public class HttpRequestParser {
 
         boolean chunk = false;
         String encoding = httpHeaders.getHeader(TRANSFER_ENCODING);
-        if (encoding!=null){
-            if (length!=-1)
+        if (encoding != null) {
+            if (length != -1)
                 throw new InvalidMessageException("Transfer-Encoding and Content-Length are mutually exclusive", BAD_REQUEST);
             //todo - check for gzip/deflate in transfer encoding
             chunk = encoding.contains("chunked");
-            if ((chunk) && (encoding.lastIndexOf("chunked")!=(encoding.length()-7)))//chunked is not the last encoding
+            if ((chunk) && (encoding.lastIndexOf("chunked") != (encoding.length() - 7)))//chunked is not the last encoding
                 throw new InvalidMessageException("invalid encoding header", HttpStatus.BAD_REQUEST);
 
         }
 
         if (chunk) {
-            return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders,cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1,true);
+            return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders, cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1, true);
         }
-        return new HttpRequestMessage(httpRequestLine, httpHeaders, in, length,false);
+        return new HttpRequestMessage(httpRequestLine, httpHeaders, in, length, false);
 
     }
 

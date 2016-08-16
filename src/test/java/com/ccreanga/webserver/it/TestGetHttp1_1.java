@@ -21,14 +21,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static com.google.common.net.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestGetHttp1_1 extends TestParent {
 
@@ -60,6 +56,7 @@ public class TestGetHttp1_1 extends TestParent {
     public void testResourceWithSpecialChars() throws Exception {
         testResourceOk("folder1/a?b.txt");
     }
+
     @Test
     public void testFolderHtmlContentType() throws Exception {
         testFolder("html");
@@ -71,7 +68,6 @@ public class TestGetHttp1_1 extends TestParent {
     }
 
 
-
     public void testFolder(String mime) throws Exception {
         String fileName = "www/folder1";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
@@ -80,7 +76,7 @@ public class TestGetHttp1_1 extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("folder1"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.setHeader("Accept",Mime.getType(mime));
+        request.setHeader("Accept", Mime.getType(mime));
 
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
@@ -89,17 +85,17 @@ public class TestGetHttp1_1 extends TestParent {
             assertEquals(response.getFirstHeader(CONNECTION).getValue(), "Keep-Alive");
             assertEquals(response.getFirstHeader(CONTENT_LENGTH), null);
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(mime));
-            assertEquals(response.getFirstHeader(ETAG),null);
+            assertEquals(response.getFirstHeader(ETAG), null);
 
             HttpEntity entity = response.getEntity();
             String content = Util.readAsUtfString(entity.getContent());
 
-            assertEquals(content, getRepresentation(response).folderRepresentation(file,new File(configuration.getServerRootFolder())));
+            assertEquals(content, getRepresentation(response).folderRepresentation(file, new File(configuration.getServerRootFolder())));
         }
 
     }
 
-    private FileResourceRepresentation getRepresentation(CloseableHttpResponse response){
+    private FileResourceRepresentation getRepresentation(CloseableHttpResponse response) {
         return RepresentationManager.getInstance().getRepresentation(response.getFirstHeader(CONTENT_TYPE).getValue());
     }
 
@@ -149,8 +145,8 @@ public class TestGetHttp1_1 extends TestParent {
         testResourceOk("சுப்ரமணிய/பாரதியார்.html");
     }
 
-    private void testResourceOk(String resource) throws Exception{
-        String fileName = "www/"+resource;
+    private void testResourceOk(String resource) throws Exception {
+        String fileName = "www/" + resource;
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         String extension = Util.extension(fileName);
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
@@ -158,7 +154,7 @@ public class TestGetHttp1_1 extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape(resource));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(ACCEPT_ENCODING,"gzip,deflate");
+        request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             StatusLine statusLine = response.getStatusLine();
@@ -168,7 +164,7 @@ public class TestGetHttp1_1 extends TestParent {
             assertEquals(response.getFirstHeader(CONTENT_TYPE).getValue(), Mime.getType(extension));
             //this header is removed in case of content decompression by the http client
 //        assertEquals(response.getFirstHeader(CONTENT_ENCODING).getValue(),"gzip");
-            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file,EtagManager.GZIP_EXT, true));
+            assertEquals(response.getFirstHeader(ETAG).getValue(), EtagManager.getInstance().getFileEtag(file, EtagManager.GZIP_EXT, true));
 
             LocalDateTime date = DateUtil.parseRfc2161CompliantDate(response.getFirstHeader(LAST_MODIFIED).getValue());
             LocalDateTime modifiedDate = IOUtil.modifiedDateAsUTC(file);

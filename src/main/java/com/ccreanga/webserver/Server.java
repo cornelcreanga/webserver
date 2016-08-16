@@ -2,10 +2,10 @@ package com.ccreanga.webserver;
 
 import ch.qos.logback.classic.Level;
 import com.ccreanga.webserver.formatters.DateUtil;
-import com.ccreanga.webserver.http.HttpHeaders;
-import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.HttpConnectionProcessor;
+import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpMessageWriter;
+import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -17,8 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.*;
-import java.time.format.DateTimeFormatter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -61,7 +61,7 @@ public class Server implements Runnable {
         serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
     }
 
-    private void initContext(UUID uuid,String ip){
+    private void initContext(UUID uuid, String ip) {
         ContextHolder.put(new Context());
         ContextHolder.get().setUuid(uuid);
         ContextHolder.get().setIp(ip);
@@ -92,7 +92,7 @@ public class Server implements Runnable {
                                 //when logging the events related to a a connection will also print the connection associated UUID in order to make the debugging easier
                                 UUID uuid = UUID.randomUUID();
                                 String ip = IOUtil.getIp(socket);
-                                initContext(uuid,ip);
+                                initContext(uuid, ip);
                                 serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
 
                                 ConnectionProcessor connectionProcessor = new HttpConnectionProcessor();
@@ -108,7 +108,7 @@ public class Server implements Runnable {
                     } catch (RejectedExecutionException e) {
                         //if the server will have to reject connection because there is no available thread and the
                         //waiting queue is full it will return SERVICE_UNAVAILABLE
-                        HttpMessageWriter.writeNoBodyResponse(new HttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE,socket.getOutputStream());
+                        HttpMessageWriter.writeNoBodyResponse(new HttpHeaders(), HttpStatus.SERVICE_UNAVAILABLE, socket.getOutputStream());
                         accessLog.info(LogEntry.generateLogEntry(
                                 IOUtil.getIp(socket),
                                 "-",
@@ -153,7 +153,6 @@ public class Server implements Runnable {
     }
 
 
-
     public static void main(String[] args) {
 
         Server server = null;
@@ -165,10 +164,10 @@ public class Server implements Runnable {
                     properties = new Properties();
                     properties.load(new FileReader(args[0]));
                 } catch (IOException e) {
-                    serverLog.error("cannot load file " + args[0]+", error is:"+e.getMessage());
+                    serverLog.error("cannot load file " + args[0] + ", error is:" + e.getMessage());
                     System.exit(-1);
                 }
-            }else{
+            } else {
                 serverLog.info("No configuration file was passed as parameter, will use the default values.");
                 properties = new Properties();
                 properties.put("serverPort", "8082");
@@ -189,7 +188,7 @@ public class Server implements Runnable {
             Configuration configuration = null;
             try {
                 configuration = new Configuration(properties);
-            }catch (ConfigurationException e){
+            } catch (ConfigurationException e) {
                 serverLog.error("configuration error, cannot start the server");
                 serverLog.error(e.getMessage());
                 System.exit(-1);

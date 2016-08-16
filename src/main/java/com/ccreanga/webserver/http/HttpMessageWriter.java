@@ -8,7 +8,9 @@ import com.google.common.base.Charsets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import static com.google.common.net.HttpHeaders.*;
+
+import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
+import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 
 public class HttpMessageWriter {
     private static final byte[] CRLF = {0x0d, 0x0a};
@@ -31,7 +33,7 @@ public class HttpMessageWriter {
     }
 
     public static void writeNoBodyResponse(HttpHeaders responseHeaders, HttpStatus status, OutputStream out) throws IOException {
-        if (ContextHolder.get()!=null)
+        if (ContextHolder.get() != null)
             ContextHolder.get().setStatusCode(status.toString());
         responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeResponseLine(status, out);
@@ -52,7 +54,7 @@ public class HttpMessageWriter {
 
     public static void writeResponseLine(HttpStatus status, OutputStream out) throws IOException {
         //we might not even have an context here in case of rejected execution exception
-        if (ContextHolder.get()!=null)
+        if (ContextHolder.get() != null)
             ContextHolder.get().setStatusCode(status.toString());
         out.write("HTTP/1.1".getBytes(Charsets.ISO_8859_1));
         out.write(SP);

@@ -4,9 +4,9 @@ import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.*;
+import com.ccreanga.webserver.http.chunked.ChunkedOutputStream;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
 import com.ccreanga.webserver.http.representation.RepresentationManager;
-import com.ccreanga.webserver.http.chunked.ChunkedOutputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
@@ -19,17 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 import static com.ccreanga.webserver.http.HttpStatus.PARTIAL_CONTENT;
 import static com.ccreanga.webserver.http.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
 import static com.google.common.net.HttpHeaders.*;
-import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
 /**
  * Get handler. Right now the RFC's are not entirely implemented (todo - add details)
@@ -50,15 +49,15 @@ public class GetHandler implements HttpMethodHandler {
         //ignore body for a GET request and skip the data in order to be able to read the next request
         //see http://tech.groups.yahoo.com/group/rest-discuss/message/9962
         //if the body is larger than the declared header write an response error and the persistent connection will be closed
-        if (request.getLength() > 0){
+        if (request.getLength() > 0) {
             long skipped = request.getBody().skip(request.getLength());
-            if (request.getLength()!=skipped){//invalid http request
-                writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.BAD_REQUEST, "body longer than the content lenght header", out);
+            if (request.getLength() != skipped) {//invalid http request
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "body longer than the content lenght header", out);
                 return;
             }
-        }else if (request.isChunked()) {//chunkedstream
+        } else if (request.isChunked()) {//chunkedstream
             //consume all the body
-            while(request.getBody().read()>0);
+            while (request.getBody().read() > 0) ;
         }
 
 
@@ -69,7 +68,7 @@ public class GetHandler implements HttpMethodHandler {
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
         if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
             return;
         }
 
@@ -84,10 +83,10 @@ public class GetHandler implements HttpMethodHandler {
         try {
             file = FileManager.getInstance().getFile(configuration.getServerRootFolder() + resource);
         } catch (ForbiddenException e) {
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.FORBIDDEN, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.FORBIDDEN, "", out);
             return;
         } catch (NotFoundException e) {
-            writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.NOT_FOUND, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.NOT_FOUND, "", out);
             return;
         }
 
@@ -115,13 +114,13 @@ public class GetHandler implements HttpMethodHandler {
         if (request.isHTTP1_1()) {
 
             //should we compress?
-            boolean shouldGzip = false,shouldDeflate=false;
+            boolean shouldGzip = false, shouldDeflate = false;
             String etagExtension = "";
-            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)){
+            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)) {
                 shouldGzip = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
                 etagExtension = EtagManager.GZIP_EXT;
-            }else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)){
+            } else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)) {
                 shouldDeflate = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
                 etagExtension = EtagManager.DF_EXT;
@@ -129,14 +128,14 @@ public class GetHandler implements HttpMethodHandler {
 
             //should we generate an etag?
             if (configuration.getRequestEtag().equals(Configuration.ETAG_WEAK)) {
-                etag = EtagManager.getInstance().getFileEtag(file,etagExtension, true);
+                etag = EtagManager.getInstance().getFileEtag(file, etagExtension, true);
                 responseHeaders.putHeader(ETAG, etag);
             }
 
             HttpStatus ifRangeConditional = null;
-            if ((request.hasHeader(IF_RANGE)) && (request.hasHeader(RANGE))){//ignore any other possible conditionals
+            if ((request.hasHeader(IF_RANGE)) && (request.hasHeader(RANGE))) {//ignore any other possible conditionals
                 ifRangeConditional = HttpConditionals.evaluateIfRange(request, etag, modifiedDate);
-            }else {
+            } else {
                 //evaluate the conditionals.
                 HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
                 if (!statusAfterConditionals.equals(HttpStatus.OK)) {
@@ -154,11 +153,11 @@ public class GetHandler implements HttpMethodHandler {
                     shouldSendRange = true;
                     range = RangeManager.getInstance().obtainRange(request.getHeader(RANGE), file.length());
                 }
-            }catch (RangeException e){
+            } catch (RangeException e) {
                 writeResponseLine(REQUESTED_RANGE_NOT_SATISFIABLE, out);
                 ContextHolder.get().setContentLength("0");
                 responseHeaders.removeHeader(CONTENT_ENCODING);
-                responseHeaders.putHeader(CONTENT_RANGE,"bytes */"+file.length());
+                responseHeaders.putHeader(CONTENT_RANGE, "bytes */" + file.length());
                 writeHeaders(responseHeaders, out);
                 return;
             }
@@ -168,16 +167,16 @@ public class GetHandler implements HttpMethodHandler {
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");
 
 
-            long start = 0, end=file.length();
-            if (shouldSendRange){
+            long start = 0, end = file.length();
+            if (shouldSendRange) {
                 start = range[0];
                 end = range[1];
-                responseHeaders.putHeader(CONTENT_RANGE,"bytes * "+start+"-"+end+"/"+file.length());
+                responseHeaders.putHeader(CONTENT_RANGE, "bytes * " + start + "-" + end + "/" + file.length());
             }
 
 
             //write status+headers
-            writeResponseLine(shouldSendRange?HttpStatus.PARTIAL_CONTENT:HttpStatus.OK, out);
+            writeResponseLine(shouldSendRange ? HttpStatus.PARTIAL_CONTENT : HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);
             //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);
@@ -191,7 +190,7 @@ public class GetHandler implements HttpMethodHandler {
             if (writeBody) {
                 try {
                     InputStream in = new FileInputStream(file);
-                    IOUtil.copy(in, enclosed,start,end-start);
+                    IOUtil.copy(in, enclosed, start, end - start);
                 } catch (IOException e) {
                     throw new IOException(e.getMessage() + "( file name was " + file.getAbsolutePath() + ")");
                 }
@@ -224,7 +223,7 @@ public class GetHandler implements HttpMethodHandler {
         //theoretically the folder modification is updated each time when it's content it's updated so we can use the folder lastmodified date
         //however more tests should be done (windows etc)
 
-        String folderRepresentation = representation.folderRepresentation(file,new File(configuration.getServerRootFolder()));
+        String folderRepresentation = representation.folderRepresentation(file, new File(configuration.getServerRootFolder()));
 
         writeResponseLine(HttpStatus.OK, out);
         if (request.isHTTP1_1()) {
@@ -270,6 +269,7 @@ public class GetHandler implements HttpMethodHandler {
     /**
      * Returns true is the resource mimetype satisfies some conditions.
      * Right now it will only compress the most common text files but a lot of improvements can be bone
+     *
      * @param mimetype - mimetype
      * @return - should we compress?
      */

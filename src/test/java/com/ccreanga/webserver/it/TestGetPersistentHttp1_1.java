@@ -15,7 +15,7 @@ public class TestGetPersistentHttp1_1 extends TestParent {
 
     @Test
     public void testKeepAlive() throws Exception {
-        try(Socket socket = new Socket(host,Integer.parseInt(port))) {
+        try (Socket socket = new Socket(host, Integer.parseInt(port))) {
             socket.setSoTimeout(30000);
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
@@ -39,9 +39,9 @@ public class TestGetPersistentHttp1_1 extends TestParent {
 
             //we should be able to read both responses using the same socket
             int count = 0;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             String line;
-            while((line=reader.readLine())!=null){
+            while ((line = reader.readLine()) != null) {
                 if (line.contains("HTTP/1.1 200 OK"))
                     count++;
             }

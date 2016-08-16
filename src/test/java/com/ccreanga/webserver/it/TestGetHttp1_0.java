@@ -13,7 +13,6 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static com.google.common.net.HttpHeaders.*;
-
 import static org.junit.Assert.assertEquals;
 
 public class TestGetHttp1_0 extends TestParent {
@@ -25,10 +24,10 @@ public class TestGetHttp1_0 extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/file.txt");
         request.setProtocolVersion(HttpVersion.HTTP_1_0);
-        request.addHeader("Connection","Keep-Alive");
-        request.addHeader("Accept-Encoding","gzip,deflate");
+        request.addHeader("Connection", "Keep-Alive");
+        request.addHeader("Accept-Encoding", "gzip,deflate");
 
-        try(CloseableHttpResponse response = httpclient.execute(request)) {
+        try (CloseableHttpResponse response = httpclient.execute(request)) {
 
             String fileContent = Util.readAsUtfString(fileName);
 

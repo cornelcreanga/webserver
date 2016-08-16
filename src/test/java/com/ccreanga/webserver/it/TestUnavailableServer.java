@@ -18,7 +18,6 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestUnavailableServer {
@@ -31,7 +30,7 @@ public class TestUnavailableServer {
     public void serverUnavailableProperResponse() throws Exception {
 
         Properties properties = new Properties();
-        properties.put("serverPort",port);
+        properties.put("serverPort", port);
         properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
         properties.put("serverInitialThreads", "1");
         properties.put("serverMaxThreads", "1");
@@ -49,7 +48,7 @@ public class TestUnavailableServer {
         properties.put("verbose", "false");
 
         Server server = new Server(new Configuration(properties));
-        CloseableHttpAsyncClient httpclient =HttpAsyncClients.custom()
+        CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
                 .setMaxConnTotal(100)
                 .setMaxConnPerRoute(100)
                 .build();
@@ -58,7 +57,7 @@ public class TestUnavailableServer {
 
         try {
             new Thread(server).start();
-            while(!server.isReady());
+            while (!server.isReady()) ;
         } catch (InternalException e) {
             server.stop();
             throw e;
@@ -98,10 +97,10 @@ public class TestUnavailableServer {
             latch.await();
             assertTrue(counter.get() > 1);
 
-        }finally {
+        } finally {
             httpclient.close();
             server.stop();
-            while(!server.isStopped());
+            while (!server.isStopped()) ;
         }
     }
 }

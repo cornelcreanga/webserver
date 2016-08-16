@@ -24,13 +24,13 @@ public class ChunkedInputStream extends FixedLengthInputStream {
      * a headers container to which the stream's trailing headers will be
      * added.
      *
-     * @param in the underlying "chunked"-encoded input stream
+     * @param in      the underlying "chunked"-encoded input stream
      * @param headers the headers container to which the stream's trailing
-     *        headers will be added, or null if they are to be discarded
+     *                headers will be added, or null if they are to be discarded
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedInputStream(InputStream in, HttpHeaders headers,int maxBodySize, int lineMaxNo, int headerMaxNo) {
-        super(new LimitedInputStream(in,maxBodySize),0,true);
+    public ChunkedInputStream(InputStream in, HttpHeaders headers, int maxBodySize, int lineMaxNo, int headerMaxNo) {
+        super(new LimitedInputStream(in, maxBodySize), 0, true);
         this.headers = headers;
         this.headerMaxNo = headerMaxNo;
         this.lineMaxNo = lineMaxNo;
@@ -51,7 +51,7 @@ public class ChunkedInputStream extends FixedLengthInputStream {
      * ended, or the end of stream has been reached, does nothing.
      *
      * @return the length of the chunk, or -1 if the end of stream
-     *         has been reached
+     * has been reached
      * @throws IOException if an IO error occurs or the stream is corrupt
      */
     protected long initChunk() throws IOException {
@@ -66,14 +66,14 @@ public class ChunkedInputStream extends FixedLengthInputStream {
             if (limit == 0) { // last chunk has size 0
                 limit = -1; // mark end of stream
                 // read trailing headers, if any
-                HttpHeaders trailingHeaders = HttpRequestParser.consumeHeaders(in,lineMaxNo,headerMaxNo);
-                if (headers != null){
-                    Map<String,String> headerMap = trailingHeaders.getAllHeadersMap();
+                HttpHeaders trailingHeaders = HttpRequestParser.consumeHeaders(in, lineMaxNo, headerMaxNo);
+                if (headers != null) {
+                    Map<String, String> headerMap = trailingHeaders.getAllHeadersMap();
                     String trailer = headers.getHeader(TRAILER);
-                    if (trailer!=null)
+                    if (trailer != null)
                         headerMap.keySet().stream().
                                 filter(trailer::contains).
-                                forEach(h->headers.appendHeader(h,headerMap.get(h)));
+                                forEach(h -> headers.appendHeader(h, headerMap.get(h)));
                 }
             }
         }

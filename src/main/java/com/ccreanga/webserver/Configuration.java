@@ -65,7 +65,7 @@ public class Configuration {
      */
     private boolean verbose;
 
-    private Properties properties ;
+    private Properties properties;
 
 
     public Configuration(Properties properties) {
@@ -130,13 +130,13 @@ public class Configuration {
         if (serverRootFolder.equals("/"))
             throw new ConfigurationException("Root folder can't be /");
         if (!root.exists())
-            serverLog.info("Warning:"+root.getAbsolutePath() + " does not exists yet");
+            serverLog.info("Warning:" + root.getAbsolutePath() + " does not exists yet");
 
         serverInitialThreads = parseInt("serverInitialThreads", 1, 1024);
         serverMaxThreads = parseInt("serverMaxThreads", 1, 1024);
 
-        if (serverMaxThreads<serverInitialThreads)
-            throw new ConfigurationException("serverMaxThreads is lower than serverInitialThreads "+serverMaxThreads+"<"+serverInitialThreads);
+        if (serverMaxThreads < serverInitialThreads)
+            throw new ConfigurationException("serverMaxThreads is lower than serverInitialThreads " + serverMaxThreads + "<" + serverInitialThreads);
 
         requestTimeoutSeconds = parseInt("requestTimeoutSeconds", 1, 3600);
 
@@ -148,10 +148,10 @@ public class Configuration {
             throw new IllegalArgumentException("unknown etag:" + requestEtag + "; it should be none or weak");
 
 
-        requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8*1204);
+        requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8 * 1204);
 
         requestMessageBodyMaxSize = parseInt("requestMessageBodyMaxSize", 256, 1073741824);
-        requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10*1024);
+        requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10 * 1024);
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
         if (properties.get("verbose") == null)
