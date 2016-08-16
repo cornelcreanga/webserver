@@ -24,6 +24,9 @@ public class HttpRequestLine {
         this.uriParams = ImmutableMap.copyOf(uriParams);
     }
 
+    public Map<String, String> getUriParams() {
+        return uriParams;
+    }
 
     public HttpMethod getMethod() {
         return method;

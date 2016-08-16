@@ -101,6 +101,7 @@ public class TestGetRange extends TestParent{
 
     @Test
     public void testIfRangeInvalid() throws Exception{
+        //todo - check if all thre response headers are ok! it might not be the case, this test takes too much seconds
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
         Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
         String etag = EtagManager.getInstance().getFileEtag(file,EtagManager.GZIP_EXT, true);

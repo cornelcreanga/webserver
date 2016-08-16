@@ -1,14 +1,12 @@
 package com.ccreanga.webserver.ioutil;
 
+import com.ccreanga.webserver.InternalException;
 import com.google.common.io.Closeables;
 import com.google.common.net.InetAddresses;
 
 import javax.naming.LimitExceededException;
 import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
+import java.net.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,6 +35,14 @@ public class IOUtil {
         try {
             Closeables.close(closeable, true);
         } catch (IOException e) {/**ignore**/}
+    }
+
+    public static String decodeUTF8(String s){
+        try {
+            return URLDecoder.decode(s,"UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalException("unknown encoding, this should never happen");
+        }
     }
 
     public static String getIp(Socket socket) {

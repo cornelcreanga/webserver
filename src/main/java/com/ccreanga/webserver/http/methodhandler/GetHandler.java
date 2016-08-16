@@ -76,10 +76,10 @@ public class GetHandler implements HttpMethodHandler {
         //check if resource exists
         //decode the resource and remove any possible the parameters (as we only deliver static files)
         String resource = request.getUri();
-        int index = resource.indexOf('?');
-        if (index != -1)
-            resource = resource.substring(0, index);
-        resource = URLDecoder.decode(resource, "UTF-8");
+//        int index = resource.indexOf('?');
+//        if (index != -1)
+//            resource = resource.substring(0, index);
+//        resource = URLDecoder.decode(resource, "UTF-8");
         File file;
         try {
             file = FileManager.getInstance().getFile(configuration.getServerRootFolder() + resource);

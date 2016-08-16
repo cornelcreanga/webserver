@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLDecoder;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
+import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
 import static com.google.common.net.HttpHeaders.*;
 
 /**
@@ -72,32 +75,33 @@ public class HttpRequestParser {
 
         index = fullUri.indexOf('?');
         String uri = fullUri;
-        Map<String,String> uriParams = null;
+        Map<String,String> uriParams = Collections.EMPTY_MAP;
         if (index>-1){
             uri = fullUri.substring(0,index);
             if (index!=(fullUri.length()-1)){
-                uriParams = new HashMap<>();
-                int indexParam=index+1;
-                ///folder2/test.txt?param1=cucu&param2=mumu
-                ///folder2/test.txt?param1&param2=mumu
-
-                for(int i=index+1;i<fullUri.length();i++){
-                    if (fullUri.charAt(i)=='&'){
-                        String token = fullUri.substring(indexParam,i);
-                        int indexEqual = token.indexOf('=');
-                        if (indexEqual!=-1)
-                            uriParams.put(token.substring(indexParam,indexEqual),token.substring(indexEqual+1,i));
-                        else
-                            uriParams.put(token,"");
-                    }
-                }
+                uriParams = parseParameters(fullUri.substring(index+1));
             }
+        }
 
+        return new HttpRequestLine(httpMethod, decodeUTF8(uri),uriParams, version);
+    }
+
+    public static Map<String,String> parseParameters(String params){
+
+        String[] tokens = params.split("&");
+        HashMap<String,String> uriParams = new HashMap<>();
+        for (String token : tokens) {
+            int indexEqual = token.indexOf('=');
+            if (indexEqual != -1)
+                uriParams.put(
+                        decodeUTF8(token.substring(0, indexEqual)),
+                        decodeUTF8(token.substring(indexEqual + 1)));
+            else
+                uriParams.put(decodeUTF8(token), "");
 
         }
 
-
-        return new HttpRequestLine(httpMethod, uri, version);
+        return uriParams;
     }
 
     public static HttpHeaders consumeHeaders(InputStream in, int lineMaxLength, int headerMaxNo) throws IOException, InvalidMessageException {
