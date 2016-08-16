@@ -68,7 +68,7 @@ public class GetHandler implements HttpMethodHandler {
         responseHeaders.putHeader(VARY, "Accept-Encoding");
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
-        if ((request.getHeader(HOST) == null) && (request.isHTTP1_1())) {//host is mandatory
+        if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
             writeErrorResponse(request.getHeader(ACCEPT),responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
             return;
         }
@@ -134,7 +134,7 @@ public class GetHandler implements HttpMethodHandler {
             }
 
             HttpStatus ifRangeConditional = null;
-            if ((request.getHeader(IF_RANGE)!=null) && (request.getHeader(RANGE)!=null)){//ignore any other possible conditionals
+            if ((request.hasHeader(IF_RANGE)) && (request.hasHeader(RANGE))){//ignore any other possible conditionals
                 ifRangeConditional = HttpConditionals.evaluateIfRange(request, etag, modifiedDate);
             }else {
                 //evaluate the conditionals.
@@ -150,7 +150,7 @@ public class GetHandler implements HttpMethodHandler {
             boolean shouldSendRange = false;
             long[] range = null;
             try {
-                if (((request.getHeader(RANGE) != null) && (request.getHeader(IF_RANGE) == null)) || (PARTIAL_CONTENT.equals(ifRangeConditional))) {
+                if (((request.hasHeader(RANGE)) && (!request.hasHeader(IF_RANGE))) || (PARTIAL_CONTENT.equals(ifRangeConditional))) {
                     shouldSendRange = true;
                     range = RangeManager.getInstance().obtainRange(request.getHeader(RANGE), file.length());
                 }

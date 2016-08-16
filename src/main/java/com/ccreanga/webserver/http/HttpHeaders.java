@@ -38,6 +38,9 @@ public class HttpHeaders {
         headers.remove(header);
     }
 
+    public boolean hasHeader(String header){
+        return headers.containsKey(header);
+    }
 
     public boolean headerContains(String header,String value){
         String headerValue = headers.get(header);

@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
@@ -28,7 +30,7 @@ public class HttpRequestParser {
     public static HttpRequestLine consumeRequestMethod(InputStream in, int lineMaxLength,int uriMaxLength) throws IOException, InvalidMessageException {
         String line;
         HttpMethod httpMethod;
-        String uri;
+        String fullUri;
         HttpVersion version;
 
         //read the first line;block until timeout/exception
@@ -39,7 +41,7 @@ public class HttpRequestParser {
                 if (counter>=100)
                     throw new InvalidMessageException("too many empty lines ", BAD_REQUEST);
             }
-        };
+        }
 
 
         serverLog.trace("Connection " + ContextHolder.get().getUuid() + " : " + line);
@@ -59,14 +61,42 @@ public class HttpRequestParser {
         if (secondIndex == -1)
             throw new InvalidMessageException("malformed url", BAD_REQUEST);
         //remove the '/' in front of the uri
-        uri = line.substring(index + 1, secondIndex).trim();
-        if (uri.length()>uriMaxLength)
-            throw new UriTooLongException("uri too long "+uri.length());
+        fullUri = line.substring(index + 1, secondIndex).trim();
+        if (fullUri.length()>uriMaxLength)
+            throw new UriTooLongException("uri too long "+fullUri.length());
         try {
             version = HttpVersion.from(line.substring(secondIndex).trim());
         } catch (IllegalArgumentException e) {
             throw new InvalidMessageException("invalid http version " + line.substring(secondIndex).trim(), BAD_REQUEST);
         }
+
+        index = fullUri.indexOf('?');
+        String uri = fullUri;
+        Map<String,String> uriParams = null;
+        if (index>-1){
+            uri = fullUri.substring(0,index);
+            if (index!=(fullUri.length()-1)){
+                uriParams = new HashMap<>();
+                int indexParam=index+1;
+                ///folder2/test.txt?param1=cucu&param2=mumu
+                ///folder2/test.txt?param1&param2=mumu
+
+                for(int i=index+1;i<fullUri.length();i++){
+                    if (fullUri.charAt(i)=='&'){
+                        String token = fullUri.substring(indexParam,i);
+                        int indexEqual = token.indexOf('=');
+                        if (indexEqual!=-1)
+                            uriParams.put(token.substring(indexParam,indexEqual),token.substring(indexEqual+1,i));
+                        else
+                            uriParams.put(token,"");
+                    }
+                }
+            }
+
+
+        }
+
+
         return new HttpRequestLine(httpMethod, uri, version);
     }
 

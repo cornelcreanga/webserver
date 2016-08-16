@@ -7,8 +7,6 @@ import java.io.InputStream;
  */
 public class HttpRequestMessage {
 
-
-
     private HttpMethod method;
     private HttpHeaders headers;
     private String uri;
@@ -67,6 +65,10 @@ public class HttpRequestMessage {
 
     public HttpMethod getMethod() {
         return method;
+    }
+
+    public boolean hasHeader(String header) {
+        return headers.hasHeader(header);
     }
 
     public String getHeader(String header) {
