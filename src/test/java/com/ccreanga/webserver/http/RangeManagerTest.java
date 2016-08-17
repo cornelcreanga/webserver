@@ -7,7 +7,7 @@ public class RangeManagerTest {
     @Test
     public void testObtainRangeLastBytes() throws Exception {
         RangeManager manager = RangeManager.getInstance();
-        long[] range = manager.obtainRange("-1", 10);
+        long[] range = manager.obtainRange("bytes=-1", 10);
         Assert.assertEquals(range[0], 9);
         Assert.assertEquals(range[1], 10);
     }
@@ -15,7 +15,7 @@ public class RangeManagerTest {
     @Test
     public void testObtainRangeFirstBytes() throws Exception {
         RangeManager manager = RangeManager.getInstance();
-        long[] range = manager.obtainRange("1-", 10);
+        long[] range = manager.obtainRange("bytes=1-", 10);
         Assert.assertEquals(range[0], 1);
         Assert.assertEquals(range[1], 10);
     }
@@ -23,7 +23,7 @@ public class RangeManagerTest {
     @Test
     public void testObtainRangeIntervalBytes() throws Exception {
         RangeManager manager = RangeManager.getInstance();
-        long[] range = manager.obtainRange("1-5", 10);
+        long[] range = manager.obtainRange("bytes=1-5", 10);
         Assert.assertEquals(range[0], 1);
         Assert.assertEquals(range[1], 5);
     }

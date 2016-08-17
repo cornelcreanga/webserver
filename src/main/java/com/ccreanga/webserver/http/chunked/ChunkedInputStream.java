@@ -65,7 +65,8 @@ public class ChunkedInputStream extends FixedLengthInputStream {
             limit = parseChunkSize(readLine(in)); // read next chunk size
             if (limit == 0) { // last chunk has size 0
                 limit = -1; // mark end of stream
-                // read trailing headers, if any
+                // read trailing headers, if any//
+                //todo - 3 header field types are specifically prohibited from appearing as a trailer field: Transfer-Encoding, Content-Length and Trailer.
                 HttpHeaders trailingHeaders = HttpRequestParser.consumeHeaders(in, lineMaxNo, headerMaxNo);
                 if (headers != null) {
                     Map<String, String> headerMap = trailingHeaders.getAllHeadersMap();

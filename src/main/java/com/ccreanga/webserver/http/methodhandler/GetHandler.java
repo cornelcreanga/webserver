@@ -139,6 +139,8 @@ public class GetHandler implements HttpMethodHandler {
                 //evaluate the conditionals.
                 HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
                 if (!statusAfterConditionals.equals(HttpStatus.OK)) {
+                    responseHeaders.removeHeader(CONTENT_ENCODING);
+
                     ContextHolder.get().setContentLength("0");
                     writeResponseLine(statusAfterConditionals, out);
                     writeHeaders(responseHeaders, out);
@@ -154,6 +156,8 @@ public class GetHandler implements HttpMethodHandler {
                     range = RangeManager.getInstance().obtainRange(request.getHeader(RANGE), file.length());
                 }
             } catch (RangeException e) {
+                //RFC 7233 3.1 the specified range(s) are invalid or unsatisfiable, the server SHOULD send a 416 (Range Not Satisfiable) response.
+                //RFC 7233 4.4 specifies that 200 OK can be also returned but I think it's better to send 416
                 writeResponseLine(REQUESTED_RANGE_NOT_SATISFIABLE, out);
                 ContextHolder.get().setContentLength("0");
                 responseHeaders.removeHeader(CONTENT_ENCODING);
@@ -171,7 +175,7 @@ public class GetHandler implements HttpMethodHandler {
             if (shouldSendRange) {
                 start = range[0];
                 end = range[1];
-                responseHeaders.putHeader(CONTENT_RANGE, "bytes * " + start + "-" + end + "/" + file.length());
+                responseHeaders.putHeader(CONTENT_RANGE, "bytes " + start + "-" + end + "/" + file.length());
             }
 
 
@@ -190,7 +194,7 @@ public class GetHandler implements HttpMethodHandler {
             if (writeBody) {
                 try {
                     InputStream in = new FileInputStream(file);
-                    IOUtil.copy(in, enclosed, start, end - start);
+                    IOUtil.copy(in, enclosed, start, end - start+1);
                 } catch (IOException e) {
                     throw new IOException(e.getMessage() + "( file name was " + file.getAbsolutePath() + ")");
                 }

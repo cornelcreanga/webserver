@@ -11,10 +11,18 @@ public class RangeManager {
         return manager;
     }
 
-    //todo - check when we should return null and when return an exception
+    /**
+     * Obtain a range or throw an exception is the range is invalid
+     * @param rangeValue
+     * @param fileLength
+     * @return
+     */
     public long[] obtainRange(String rangeValue, long fileLength) {
         if (rangeValue.contains(","))
             throw new RangeException("multiple ranges are not accepted " + rangeValue);//the server does not accept multiple ranges
+        if (!rangeValue.startsWith("bytes="))
+            throw new RangeException("only bytes ranges are accepted (and the header should specify that)" + rangeValue);//the server does not accept multiple ranges
+        rangeValue = rangeValue.substring(6);
         int index = rangeValue.indexOf('-');
         if (index == -1)
             throw new RangeException("invalid range (missing -) " + rangeValue);

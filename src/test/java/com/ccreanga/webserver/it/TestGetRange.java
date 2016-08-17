@@ -27,10 +27,10 @@ public class TestGetRange extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(RANGE, "1-5");
+        request.addHeader(RANGE, "bytes=1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
-        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "2345");
+        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "23456");
     }
 
     @Test
@@ -39,7 +39,7 @@ public class TestGetRange extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(RANGE, "-1-5");
+        request.addHeader(RANGE, "bytes=-1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
         checkForStatus(request, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "");
@@ -51,7 +51,7 @@ public class TestGetRange extends TestParent {
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
-        request.addHeader(RANGE, "1-5,8-11");
+        request.addHeader(RANGE, "bytes=1-5,8-11");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
         checkForStatus(request, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "");
@@ -66,9 +66,9 @@ public class TestGetRange extends TestParent {
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_RANGE, etag);
-        request.addHeader(RANGE, "1-5");
+        request.addHeader(RANGE, "bytes=1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "2345");
+        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "23456");
     }
 
     @Test
@@ -80,9 +80,9 @@ public class TestGetRange extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
         request.addHeader(IF_RANGE, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_RFC822));
-        request.addHeader(RANGE, "1-5");
+        request.addHeader(RANGE, "bytes=1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "2345");
+        checkForStatus(request, HttpStatus.PARTIAL_CONTENT, "23456");
     }
 
     @Test
@@ -94,7 +94,7 @@ public class TestGetRange extends TestParent {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
         request.addHeader(IF_RANGE, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()).minusSeconds(100), DateUtil.FORMATTER_RFC822));
-        request.addHeader(RANGE, "1-5");
+        request.addHeader(RANGE, "bytes=1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         checkForStatus(request, HttpStatus.OK, "123456789");
     }
@@ -109,7 +109,7 @@ public class TestGetRange extends TestParent {
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_RANGE, etag);
-        request.addHeader(RANGE, "d1-5");
+        request.addHeader(RANGE, "bytes=d1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         checkForStatus(request, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "");
     }
