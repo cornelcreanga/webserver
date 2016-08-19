@@ -116,11 +116,11 @@ public class GetHandler implements HttpMethodHandler {
             //should we compress?
             boolean shouldGzip = false, shouldDeflate = false;
             String etagExtension = "";
-            if (request.headerContains(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)) {
+            if (request.headerContainsValue(ACCEPT_ENCODING, "gzip") && shouldCompress(mime)) {
                 shouldGzip = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
                 etagExtension = EtagManager.GZIP_EXT;
-            } else if (request.headerContains(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)) {
+            } else if (request.headerContainsValue(ACCEPT_ENCODING, "deflate") && shouldCompress(mime)) {
                 shouldDeflate = true;
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
                 etagExtension = EtagManager.DF_EXT;
@@ -235,9 +235,9 @@ public class GetHandler implements HttpMethodHandler {
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");
             ContextHolder.get().setContentLength("chunked");
             //if compression is accepted than use it
-            if (request.headerContains(ACCEPT_ENCODING, "gzip")) {
+            if (request.headerContainsValue(ACCEPT_ENCODING, "gzip")) {
                 responseHeaders.putHeader(CONTENT_ENCODING, "gzip");
-            } else if (request.headerContains(ACCEPT_ENCODING, "deflate")) {
+            } else if (request.headerContainsValue(ACCEPT_ENCODING, "deflate")) {
                 responseHeaders.putHeader(CONTENT_ENCODING, "deflate");
             }
 
@@ -245,8 +245,8 @@ public class GetHandler implements HttpMethodHandler {
 
             OutputStream enclosed = new ChunkedOutputStream(out);
 
-            boolean shouldGzip = request.headerContains(ACCEPT_ENCODING, "gzip");
-            boolean shouldDeflate = request.headerContains(ACCEPT_ENCODING, "deflate");
+            boolean shouldGzip = request.headerContainsValue(ACCEPT_ENCODING, "gzip");
+            boolean shouldDeflate = request.headerContainsValue(ACCEPT_ENCODING, "deflate");
 
             //if compression is accepted than use it
             if (shouldGzip) {

@@ -10,6 +10,9 @@ import com.ccreanga.webserver.http.methodhandler.OptionsHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.google.common.net.HttpHeaders.EXPECT;
+
 /**
  * Finds the proper message handler taking into account the HTTP method.
  */
@@ -25,7 +28,12 @@ public class HttpMessageHandler {
      * @throws IOException - in case of I/O error
      */
     public void handleMessage(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
-        //EXPECT header is not yet handled
+
+        if (request.isHTTP1_1() && (request.headerIsEqualWithValue(EXPECT,"100-continue"))){//in future the result will depend on authentication
+            writeResponseLine(HttpStatus.CONTINUE, out);
+            out.flush();
+        }
+
         switch (request.getMethod()) {
             case GET:
                 new GetHandler(true).handleGetResponse(request, configuration, out);

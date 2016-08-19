@@ -40,18 +40,14 @@ public class HttpRequestMessage {
         return getVersion().equals(HttpVersion.HTTP_1_0);
     }
 
-    public boolean headerContains(String header, String value) {
+    public boolean headerContainsValue(String header, String value) {
         String headerValue = getHeader(header);
-        if (headerValue == null)
-            return false;
-        return headerValue.contains(value);
+        return headerValue != null && headerValue.contains(value);
     }
 
-    public boolean headerIs(String header, String value) {
+    public boolean headerIsEqualWithValue(String header, String value) {
         String headerValue = getHeader(header);
-        if (headerValue == null)
-            return false;
-        return headerValue.equalsIgnoreCase(value);
+        return headerValue != null && headerValue.equalsIgnoreCase(value);
     }
 
     public long getLength() {

@@ -75,7 +75,7 @@ public class HttpRequestParser {
 
         index = fullUri.indexOf('?');
         String uri = fullUri;
-        Map<String, String> uriParams = Collections.EMPTY_MAP;
+        Map<String, String> uriParams = Collections.emptyMap();
         if (index > -1) {
             uri = fullUri.substring(0, index);
             if (index != (fullUri.length() - 1)) {
