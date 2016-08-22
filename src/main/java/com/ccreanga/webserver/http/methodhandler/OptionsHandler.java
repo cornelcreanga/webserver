@@ -16,7 +16,7 @@ import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
 
 public class OptionsHandler implements HttpMethodHandler {
     @Override
-    public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
+    public void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.putHeader(ALLOW, "GET, HEAD, OPTIONS");
         responseHeaders.putHeader(CONTENT_LENGTH, "0");

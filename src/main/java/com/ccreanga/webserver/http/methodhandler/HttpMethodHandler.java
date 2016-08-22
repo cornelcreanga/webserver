@@ -7,5 +7,5 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public interface HttpMethodHandler {
-    void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException;
+    void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException;
 }

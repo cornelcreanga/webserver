@@ -18,7 +18,7 @@ import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
  */
 public class NotSupportedHandler implements HttpMethodHandler {
     @Override
-    public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
+    public void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         writeResponseLine(HttpStatus.NOT_IMPLEMENTED, out);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.putHeader(CONTENT_LENGTH, "0");

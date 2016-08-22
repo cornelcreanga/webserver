@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
@@ -23,7 +24,7 @@ public class HttpMessageWriter {
                 RepresentationManager.getInstance().getRepresentation(acceptHeader);
 
         String errorHtml = representation.errorRepresentation(status, extendedStatus);
-        byte[] body = errorHtml.getBytes(Charsets.UTF_8);
+        byte[] body = errorHtml.getBytes(StandardCharsets.UTF_8);
         ContextHolder.get().setContentLength(String.valueOf(body.length));
         responseHeaders.putHeader(CONTENT_LENGTH, String.valueOf(body.length));
         responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());

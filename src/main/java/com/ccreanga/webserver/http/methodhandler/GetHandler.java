@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.zip.DeflaterOutputStream;
@@ -43,7 +44,7 @@ public class GetHandler implements HttpMethodHandler {
         this.writeBody = writeBody;
     }
 
-    public void handleGetResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
+    public void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         //ignore body for a GET request and skip the data in order to be able to read the next request
@@ -255,7 +256,7 @@ public class GetHandler implements HttpMethodHandler {
                 enclosed = new DeflaterOutputStream(enclosed);
             }
             if (writeBody) {
-                enclosed.write(folderRepresentation.getBytes(Charsets.UTF_8));
+                enclosed.write(folderRepresentation.getBytes(StandardCharsets.UTF_8));
             }
             enclosed.close();
         } else {
@@ -264,7 +265,7 @@ public class GetHandler implements HttpMethodHandler {
             responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? "" + folderRepresentation.length() : "0");
             writeHeaders(responseHeaders, out);
             if (writeBody) {
-                out.write(folderRepresentation.getBytes(Charsets.UTF_8));
+                out.write(folderRepresentation.getBytes(StandardCharsets.UTF_8));
             }
         }
 

@@ -74,6 +74,10 @@ public class HttpRequestMessage {
         return headers.getHeader(header);
     }
 
+    public HttpHeaders getHeaders(){
+        return headers;
+    }
+
     public String getUri() {
         return uri;
     }

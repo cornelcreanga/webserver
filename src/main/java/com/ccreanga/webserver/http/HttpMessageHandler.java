@@ -6,6 +6,7 @@ import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.http.methodhandler.GetHandler;
 import com.ccreanga.webserver.http.methodhandler.NotSupportedHandler;
 import com.ccreanga.webserver.http.methodhandler.OptionsHandler;
+import com.ccreanga.webserver.http.methodhandler.TraceHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,31 +37,31 @@ public class HttpMessageHandler {
 
         switch (request.getMethod()) {
             case GET:
-                new GetHandler(true).handleGetResponse(request, configuration, out);
+                new GetHandler(true).handleResponse(request, configuration, out);
                 return;
             case HEAD:
                 //head is GET without the body
-                new GetHandler(false).handleGetResponse(request, configuration, out);
+                new GetHandler(false).handleResponse(request, configuration, out);
                 return;
             case POST:
-                new NotSupportedHandler().handleGetResponse(request, configuration, out);
+                new NotSupportedHandler().handleResponse(request, configuration, out);
                 return;
             case PUT:
-                new NotSupportedHandler().handleGetResponse(request, configuration, out);
+                new NotSupportedHandler().handleResponse(request, configuration, out);
                 return;
             case DELETE:
-                new NotSupportedHandler().handleGetResponse(request, configuration, out);
+                new NotSupportedHandler().handleResponse(request, configuration, out);
                 return;
             case CONNECT:
                 return;
             case PATCH:
-                new NotSupportedHandler().handleGetResponse(request, configuration, out);
+                new NotSupportedHandler().handleResponse(request, configuration, out);
                 return;
             case TRACE:
-                new NotSupportedHandler().handleGetResponse(request, configuration, out);
+                new TraceHandler().handleResponse(request, configuration, out);
                 return;
             case OPTIONS:
-                new OptionsHandler().handleGetResponse(request, configuration, out);
+                new OptionsHandler().handleResponse(request, configuration, out);
                 return;
         }
         //this should never happen unles we have a bug :)
