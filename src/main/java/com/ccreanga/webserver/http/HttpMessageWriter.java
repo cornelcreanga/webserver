@@ -45,9 +45,9 @@ public class HttpMessageWriter {
     public static void writeHeaders(HttpHeaders headers, OutputStream out) throws IOException {
         Map<String, String> headerMap = headers.getAllHeadersMap();
         for (Map.Entry<String, String> e : headerMap.entrySet()) {
-            out.write(e.getKey().getBytes(Charsets.ISO_8859_1));
+            out.write(e.getKey().getBytes(StandardCharsets.ISO_8859_1));
             out.write(HEADER_SEP);
-            out.write(e.getValue().getBytes(Charsets.ISO_8859_1));
+            out.write(e.getValue().getBytes(StandardCharsets.ISO_8859_1));
             out.write(CRLF);
         }
         out.write(CRLF);
@@ -57,11 +57,11 @@ public class HttpMessageWriter {
         //we might not even have an context here in case of rejected execution exception
         if (ContextHolder.get() != null)
             ContextHolder.get().setStatusCode(status.toString());
-        out.write("HTTP/1.1".getBytes(Charsets.ISO_8859_1));
+        out.write("HTTP/1.1".getBytes(StandardCharsets.ISO_8859_1));
         out.write(SP);
-        out.write(status.toString().getBytes(Charsets.ISO_8859_1));
+        out.write(status.toString().getBytes(StandardCharsets.ISO_8859_1));
         out.write(SP);
-        out.write((status.getReasonPhrase().getBytes(Charsets.ISO_8859_1)));
+        out.write((status.getReasonPhrase().getBytes(StandardCharsets.ISO_8859_1)));
         out.write(CRLF);
     }
 

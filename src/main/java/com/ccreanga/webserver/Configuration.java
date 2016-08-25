@@ -162,21 +162,6 @@ public class Configuration {
 
     }
 
-    private int parseInt(String name, int min, int max) {
-        String string = "";
-        try {
-            string = (String) properties.get(name);
-            if (string == null)
-                throw new ConfigurationException("Cannot find the value " + name);
-
-            int value = Integer.parseInt(string);
-            if ((value < min) || (value > max))
-                throw new ConfigurationException("Cannot configure " + name + " - expecting a number between " + min + " and " + max + " instead of " + value);
-            return value;
-        } catch (NumberFormatException e) {
-            throw new ConfigurationException("Cannot configure " + name + " - expecting an integer  instead of " + string);
-        }
-    }
 
     public boolean isVerbose() {
         return verbose;
