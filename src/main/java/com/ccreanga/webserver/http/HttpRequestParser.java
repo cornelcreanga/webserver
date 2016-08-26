@@ -3,6 +3,7 @@ package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.ParseUtil;
+import com.ccreanga.webserver.TooManyEntriesException;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -13,7 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
@@ -21,6 +24,7 @@ import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
 import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.google.common.net.HttpHeaders.TRANSFER_ENCODING;
+import static java.util.stream.Collectors.toList;
 
 /**
  * This class does the "hard work" - parsing the http request.
@@ -175,17 +179,26 @@ public class HttpRequestParser {
         }
 
         String contentType = httpHeaders.getHeader(CONTENT_TYPE);
+        Map<String,List<String>> params = new HashMap<>();
         if (contentType!=null){
             if (contentType.startsWith("application/x-www-form-urlencoded")){
-                //p_69342__action=send&p_69342__firstname=%CE%B3%CE%BB%CF%8E%CF%83%CF%83%CE%B1&p_69342__lastname=%26%26nume-%2B%3C%3E%21%3B%3F%3A%26&p_69342__subject=oferte+de+colaborare&p_69342__email=email&p_69342__message=mesaj&p_69342__send=Trimite%3A
-                //todo - decode body params and consume body
+                String form = IOUtil.readToken(in,-1,"UTF-8",8*1024*1024);
+                int limit = 10000;//max 10000 params
+                try {
+                    params = ParseUtil.parseFormEncodedParams(form,limit);
+                }catch (TooManyEntriesException e){
+                    throw new InvalidMessageException("too many form params", HttpStatus.BAD_REQUEST);
+                }
             }
         }
 
-        if (chunk) {
-            return new HttpRequestMessage(httpRequestLine, httpHeaders, new ChunkedInputStream(in, httpHeaders, cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders), -1, true);
-        }
-        return new HttpRequestMessage(httpRequestLine, httpHeaders, in, length, false);
+        //todo - add tests for x-www-form-urlencoded
+
+        InputStream enclosed = in;
+        if (chunk)
+            enclosed = new ChunkedInputStream(in, httpHeaders, cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders);
+
+        return new HttpRequestMessage(httpRequestLine, httpHeaders,params, enclosed, length, false);
 
     }
 
