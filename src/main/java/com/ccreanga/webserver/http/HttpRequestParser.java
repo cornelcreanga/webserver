@@ -2,6 +2,7 @@ package com.ccreanga.webserver.http;
 
 
 import com.ccreanga.webserver.Configuration;
+import com.ccreanga.webserver.ParseUtil;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -18,6 +19,7 @@ import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
 import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
 import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
+import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 import static com.google.common.net.HttpHeaders.TRANSFER_ENCODING;
 
 /**
@@ -154,11 +156,8 @@ public class HttpRequestParser {
         long length = -1;
         String len = httpHeaders.getHeader(CONTENT_LENGTH);
         try {
-            if (len != null) {
-                length = Long.parseLong(len);
-                if (length < 0)
-                    throw new InvalidMessageException("invalid content length value " + length, BAD_REQUEST);
-            }
+            if (len != null)
+                length = ParseUtil.parseLong(len,0,Long.MAX_VALUE);
         } catch (NumberFormatException e) {
             throw new InvalidMessageException("invalid content length value " + len, BAD_REQUEST);
         }
@@ -173,6 +172,14 @@ public class HttpRequestParser {
             if ((chunk) && (encoding.lastIndexOf("chunked") != (encoding.length() - 7)))//chunked is not the last encoding
                 throw new InvalidMessageException("invalid encoding header", HttpStatus.BAD_REQUEST);
 
+        }
+
+        String contentType = httpHeaders.getHeader(CONTENT_TYPE);
+        if (contentType!=null){
+            if (contentType.startsWith("application/x-www-form-urlencoded")){
+                //p_69342__action=send&p_69342__firstname=%CE%B3%CE%BB%CF%8E%CF%83%CF%83%CE%B1&p_69342__lastname=%26%26nume-%2B%3C%3E%21%3B%3F%3A%26&p_69342__subject=oferte+de+colaborare&p_69342__email=email&p_69342__message=mesaj&p_69342__send=Trimite%3A
+                //todo - decode body params and consume body
+            }
         }
 
         if (chunk) {

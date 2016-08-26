@@ -162,6 +162,17 @@ public class Configuration {
 
     }
 
+    private int parseInt(String name, int min, int max) {
+        try {
+            String string = (String) properties.get(name);
+            if (string == null)
+                throw new ConfigurationException("Cannot find the value " + name);
+            return (int)ParseUtil.parseLong(string,min, max);
+        } catch (NumberFormatException e) {
+            throw new ConfigurationException("Error when trying to configure " + name + " - "+e.getMessage());
+        }
+    }
+
 
     public boolean isVerbose() {
         return verbose;

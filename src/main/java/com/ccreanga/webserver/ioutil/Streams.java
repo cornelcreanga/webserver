@@ -16,13 +16,9 @@
  */
 package com.ccreanga.webserver.ioutil;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import org.apache.commons.fileupload.InvalidFileNameException;
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for working with streams.
@@ -120,76 +116,14 @@ public final class Streams {
             in = null;
             return total;
         } finally {
-            IOUtils.closeQuietly(in);
+            IOUtil.closeSilent(in);
+
             if (closeOutputStream) {
-                IOUtils.closeQuietly(out);
+                IOUtil.closeSilent(out);
             }
         }
     }
 
-    /**
-     * This convenience method allows to read a
-     * {@link org.apache.commons.fileupload.FileItemStream}'s
-     * content into a string. The platform's default character encoding
-     * is used for converting bytes into characters.
-     *
-     * @param inputStream The input stream to read.
-     * @see #asString(InputStream, String)
-     * @return The streams contents, as a string.
-     * @throws IOException An I/O error occurred.
-     */
-    public static String asString(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(inputStream, baos, true);
-        return baos.toString();
-    }
 
-    /**
-     * This convenience method allows to read a
-     * {@link org.apache.commons.fileupload.FileItemStream}'s
-     * content into a string, using the given character encoding.
-     *
-     * @param inputStream The input stream to read.
-     * @param encoding The character encoding, typically "UTF-8".
-     * @see #asString(InputStream)
-     * @return The streams contents, as a string.
-     * @throws IOException An I/O error occurred.
-     */
-    public static String asString(InputStream inputStream, String encoding) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(inputStream, baos, true);
-        return baos.toString(encoding);
-    }
-
-    /**
-     * Checks, whether the given file name is valid in the sense,
-     * that it doesn't contain any NUL characters. If the file name
-     * is valid, it will be returned without any modifications. Otherwise,
-     * an {@link InvalidFileNameException} is raised.
-     *
-     * @param fileName The file name to check
-     * @return Unmodified file name, if valid.
-     * @throws InvalidFileNameException The file name was found to be invalid.
-     */
-    public static String checkFileName(String fileName) {
-        if (fileName != null  &&  fileName.indexOf('\u0000') != -1) {
-            // pFileName.replace("\u0000", "\\0")
-            final StringBuilder sb = new StringBuilder();
-            for (int i = 0;  i < fileName.length();  i++) {
-                char c = fileName.charAt(i);
-                switch (c) {
-                    case 0:
-                        sb.append("\\0");
-                        break;
-                    default:
-                        sb.append(c);
-                        break;
-                }
-            }
-            throw new InvalidFileNameException(fileName,
-                    "Invalid file name: " + sb);
-        }
-        return fileName;
-    }
 
 }

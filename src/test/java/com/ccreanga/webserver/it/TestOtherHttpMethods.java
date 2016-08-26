@@ -35,11 +35,6 @@ public class TestOtherHttpMethods extends TestParent {
     }
 
     @Test
-    public void testTrace() throws IOException {
-        testNotImplemented(new HttpTrace("http://" + host + ":" + port + "/"));
-    }
-
-    @Test
     public void testOptions() throws IOException {
         HttpOptions request = new HttpOptions("http://" + host + ":" + port + "/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);

@@ -1,23 +1,15 @@
 package com.ccreanga.webserver;
 
-import com.ccreanga.webserver.http.InvalidMessageException;
 
-import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
+import com.google.common.base.Preconditions;
 
 public class ParseUtil {
 
-    private long parseLong(String string, long min, long max) {
-        try {
-            if (string == null)
-                throw new ConfigurationException("Cannot find the value " + string);
-
-            int value = Integer.parseInt(string);
-            if ((value < min) || (value > max))
-                throw new ConfigurationException("Cannot configure " + string + " - expecting a number between " + min + " and " + max + " instead of " + value);
-            return value;
-        } catch (NumberFormatException e) {
-            throw new ConfigurationException("Cannot configure " + string + " - expecting an integer  instead of " + string);
-        }
+    public static long parseLong(String string, long min, long max) {
+        long value = Preconditions.checkNotNull(Long.parseLong(string));
+        if ((value < min) || (value > max))
+            throw new NumberFormatException("expecting a number between " + min + " and " + max + " instead of " + value);
+        return value;
     }
 
 
