@@ -183,7 +183,7 @@ public class HttpRequestParser {
         if (contentType!=null){
             if (contentType.startsWith("application/x-www-form-urlencoded")){
                 String form = IOUtil.readToken(in,-1,"UTF-8",8*1024*1024);
-                int limit = 10000;//max 10000 params
+                int limit = 10000;//max 10000 params -todo -config that
                 try {
                     params = ParseUtil.parseFormEncodedParams(form,limit);
                 }catch (TooManyEntriesException e){

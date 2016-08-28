@@ -23,7 +23,7 @@ public class LimitedInputStreamTest {
         boolean error = false;
         try {
             CharStreams.toString(new InputStreamReader(stream, "UTF-8"));
-        } catch (LengthExceededException e) {
+        } catch (LimitedInputStream.LengthExceededException e) {
             error = true;
         }
         assertTrue(error);

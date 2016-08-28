@@ -23,7 +23,7 @@ public class FixedLengthInputStreamTest {
         boolean error = false;
         try {
             String string = CharStreams.toString(new InputStreamReader(fixedLengthInputStream, "UTF-8"));
-        } catch (StreamExhaustedException e) {
+        } catch (FixedLengthInputStream.StreamExhaustedException e) {
             error = true;
         }
         assertTrue(error);

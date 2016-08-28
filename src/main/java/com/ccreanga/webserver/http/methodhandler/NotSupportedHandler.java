@@ -24,5 +24,7 @@ public class NotSupportedHandler implements HttpMethodHandler {
         responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeHeaders(responseHeaders, out);
         ContextHolder.get().setContentLength("-");
+        //consume body - otherwise the server will try to parse it as a valid HTTP request and it will return 401
+        while (request.getBody().read() > 0) ;
     }
 }

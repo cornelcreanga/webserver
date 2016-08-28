@@ -3,10 +3,7 @@ package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
-import com.ccreanga.webserver.http.methodhandler.GetHandler;
-import com.ccreanga.webserver.http.methodhandler.NotSupportedHandler;
-import com.ccreanga.webserver.http.methodhandler.OptionsHandler;
-import com.ccreanga.webserver.http.methodhandler.TraceHandler;
+import com.ccreanga.webserver.http.methodhandler.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,7 +41,7 @@ public class HttpMessageHandler {
                 new GetHandler(false).handleResponse(request, configuration, out);
                 return;
             case POST:
-                new NotSupportedHandler().handleResponse(request, configuration, out);
+                new PostHandler().handleResponse(request, configuration, out);
                 return;
             case PUT:
                 new NotSupportedHandler().handleResponse(request, configuration, out);

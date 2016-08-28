@@ -77,62 +77,22 @@ import java.io.*;
  */
 public class MultipartStream {
 
-    // ----------------------------------------------------- Manifest constants
-
-    /**
-     * The Carriage Return ASCII character value.
-     */
     public static final byte CR = 0x0D;
-
-    /**
-     * The Line Feed ASCII character value.
-     */
     public static final byte LF = 0x0A;
 
     /**
      * The dash (-) ASCII character value.
      */
     public static final byte DASH = 0x2D;
-
-    /**
-     * The maximum length of <code>header-part</code> that will be
-     * processed (10 kilobytes = 10240 bytes.).
-     */
     public static final int HEADER_PART_SIZE_MAX = 10240;
-
-    /**
-     * The default length of the buffer used for processing a request.
-     */
     protected static final int DEFAULT_BUFSIZE = 4096;
-
-    /**
-     * A byte sequence that marks the end of <code>header-part</code>
-     * (<code>CRLFCRLF</code>).
-     */
     protected static final byte[] HEADER_SEPARATOR = {CR, LF, CR, LF};
-
-    /**
-     * A byte sequence that that follows a delimiter that will be
-     * followed by an encapsulation (<code>CRLF</code>).
-     */
     protected static final byte[] FIELD_SEPARATOR = {CR, LF};
-
-    /**
-     * A byte sequence that that follows a delimiter of the last
-     * encapsulation in the stream (<code>--</code>).
-     */
     protected static final byte[] STREAM_TERMINATOR = {DASH, DASH};
-
-    /**
-     * A byte sequence that precedes a boundary (<code>CRLF--</code>).
-     */
     protected static final byte[] BOUNDARY_PREFIX = {CR, LF, DASH, DASH};
 
     // ----------------------------------------------------------- Data members
 
-    /**
-     * The input stream from which data is read.
-     */
     private final InputStream input;
 
     /**
@@ -140,67 +100,22 @@ public class MultipartStream {
      */
     private int boundaryLength;
 
-    /**
-     * The amount of data, in bytes, that must be kept in the buffer in order
-     * to detect delimiters reliably.
-     */
     private final int keepRegion;
 
-    /**
-     * The byte sequence that partitions the stream.
-     */
     private final byte[] boundary;
 
-    /**
-     * The length of the buffer used for processing the request.
-     */
     private final int bufSize;
 
-    /**
-     * The buffer used for processing the request.
-     */
     private final byte[] buffer;
 
-    /**
-     * The index of first valid character in the buffer.
-     * <br>
-     * 0 <= head < bufSize
-     */
     private int head;
 
-    /**
-     * The index of last valid character in the buffer + 1.
-     * <br>
-     * 0 <= tail <= bufSize
-     */
     private int tail;
 
-    /**
-     * The content encoding to use when reading headers.
-     */
     private String headerEncoding;
 
 
-    // ----------------------------------------------------------- Constructors
 
-
-    /**
-     * <p> Constructs a <code>MultipartStream</code> with a custom size buffer.
-     *
-     * <p> Note that the buffer must be at least big enough to contain the
-     * boundary string, plus 4 characters for CR/LF and double dash, plus at
-     * least one byte of data.  Too small a buffer size setting will degrade
-     * performance.
-     *
-     * @param input    The <code>InputStream</code> to serve as a data source.
-     * @param boundary The token used for dividing the stream into
-     *                 <code>encapsulations</code>.
-     * @param bufSize  The size of the buffer to be used, in bytes.
-     *
-     * @throws IllegalArgumentException If the buffer size is too small
-     *
-     * @since 1.3.1
-     */
     public MultipartStream(InputStream input,
                            byte[] boundary,
                            int bufSize) {
@@ -223,41 +138,18 @@ public class MultipartStream {
         this.boundary = new byte[this.boundaryLength];
         this.keepRegion = this.boundary.length;
 
-        System.arraycopy(BOUNDARY_PREFIX, 0, this.boundary, 0,
-                BOUNDARY_PREFIX.length);
-        System.arraycopy(boundary, 0, this.boundary, BOUNDARY_PREFIX.length,
-                boundary.length);
+        System.arraycopy(BOUNDARY_PREFIX, 0, this.boundary, 0, BOUNDARY_PREFIX.length);
+        System.arraycopy(boundary, 0, this.boundary, BOUNDARY_PREFIX.length, boundary.length);
 
         head = 0;
         tail = 0;
     }
 
-    MultipartStream(InputStream input,
+    public MultipartStream(InputStream input,
                     byte[] boundary) {
         this(input, boundary, DEFAULT_BUFSIZE);
     }
 
-
-    // --------------------------------------------------------- Public methods
-
-    /**
-     * Retrieves the character encoding used when reading the headers of an
-     * individual part. When not specified, or <code>null</code>, the platform
-     * default encoding is used.
-     *
-     * @return The encoding used to read part headers.
-     */
-    public String getHeaderEncoding() {
-        return headerEncoding;
-    }
-
-    /**
-     * Specifies the character encoding to be used when reading the headers of
-     * individual parts. When not specified, or <code>null</code>, the platform
-     * default encoding is used.
-     *
-     * @param encoding The encoding used to read part headers.
-     */
     public void setHeaderEncoding(String encoding) {
         headerEncoding = encoding;
     }
@@ -291,12 +183,11 @@ public class MultipartStream {
      * @return <code>true</code> if there are more encapsulations in
      *         this stream; <code>false</code> otherwise.
      *
-     * @throws FileUploadIOException if the bytes read from the stream exceeded the size limits
      * @throws MalformedStreamException if the stream ends unexpectedly or
      *                                  fails to follow required syntax.
      */
     public boolean readBoundary()
-            throws MalformedStreamException, FileUploadIOException {
+            throws MalformedStreamException{
         byte[] marker = new byte[2];
         boolean nextChunk = false;
 
@@ -322,9 +213,6 @@ public class MultipartStream {
                 throw new MalformedStreamException(
                         "Unexpected characters follow a boundary");
             }
-        } catch (FileUploadIOException e) {
-            // wraps a SizeException, re-throw as it will be unwrapped later
-            throw e;
         } catch (IOException e) {
             throw new MalformedStreamException("Stream ended unexpectedly");
         }
@@ -373,10 +261,9 @@ public class MultipartStream {
      *
      * @return The <code>header-part</code> of the current encapsulation.
      *
-     * @throws FileUploadIOException if the bytes read from the stream exceeded the size limits.
      * @throws MalformedStreamException if the stream ends unexpectedly.
      */
-    public String readHeaders() throws FileUploadIOException, MalformedStreamException {
+    public String readHeaders() throws MalformedStreamException {
         int i = 0;
         byte b;
         // to support multi-byte characters
@@ -385,16 +272,11 @@ public class MultipartStream {
         while (i < HEADER_SEPARATOR.length) {
             try {
                 b = readByte();
-            } catch (FileUploadIOException e) {
-                // wraps a SizeException, re-throw as it will be unwrapped later
-                throw e;
             } catch (IOException e) {
                 throw new MalformedStreamException("Stream ended unexpectedly");
             }
             if (++size > HEADER_PART_SIZE_MAX) {
-                throw new MalformedStreamException(
-                        format("Header section has more than %s bytes (maybe it is not properly terminated)",
-                                Integer.valueOf(HEADER_PART_SIZE_MAX)));
+                throw new MalformedStreamException(format("Header section has more than %s bytes (maybe it is not properly terminated)", HEADER_PART_SIZE_MAX));
             }
             if (b == HEADER_SEPARATOR[i]) {
                 i++;
@@ -615,7 +497,7 @@ public class MultipartStream {
     /**
      * An {@link InputStream} for reading an items contents.
      */
-    public class ItemInputStream extends InputStream implements Closeable {
+    private class ItemInputStream extends InputStream implements Closeable {
 
         /**
          * The number of bytes, which have been read so far.

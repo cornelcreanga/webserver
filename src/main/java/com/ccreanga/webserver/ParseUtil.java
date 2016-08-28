@@ -36,7 +36,7 @@ public class ParseUtil {
         boolean lastMatch = false;
         while (i < len) {
             if (str.charAt(i) == separatorChar) {
-                if (counter++>maxNo)
+                if (++counter>maxNo)
                     throw new TooManyEntriesException();
                 if (match || preserveAllTokens) {
                     list.add(str.substring(start, i));
@@ -51,6 +51,8 @@ public class ParseUtil {
             i++;
         }
         if (match || preserveAllTokens && lastMatch) {
+            if (++counter>maxNo)
+                throw new TooManyEntriesException();
             list.add(str.substring(start, i));
         }
         return list;

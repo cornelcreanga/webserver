@@ -1,9 +1,12 @@
 package com.ccreanga.webserver.http;
 
 
+import com.ccreanga.webserver.ParseUtil;
 import com.google.common.collect.ImmutableMap;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class HttpHeaders {
@@ -42,11 +45,23 @@ public class HttpHeaders {
         return headers.containsKey(header);
     }
 
-    public boolean headerContains(String header, String value) {
+    public Map<String, String> getHeaderParams(String header) {
+        Map<String, String> headerParams = new LinkedHashMap<String, String>();
         String headerValue = headers.get(header);
-        if (headerValue == null)
-            return false;
-        return headerValue.contains(value);
+        List<String> params = ParseUtil.split(headerValue, ';',false,100);
+        for (String param : params) {
+            String key = ParseUtil.left(param,'=');
+            String value = ParseUtil.right(param,'=');
+            if (value.length()>0){
+                if (value.startsWith("\""))
+                    value = value.substring(1);
+                if (value.endsWith("\""))
+                    value = value.substring(0,value.length()-1);
+            }
+
+            headerParams.put(key.trim(), value);
+        }
+        return headerParams;
     }
 
     public int size() {

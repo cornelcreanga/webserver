@@ -53,4 +53,8 @@ public class LimitedInputStream extends FilterInputStream {
         closed = true;
         super.close();
     }
+
+    public static class LengthExceededException extends RuntimeException {
+    }
+
 }

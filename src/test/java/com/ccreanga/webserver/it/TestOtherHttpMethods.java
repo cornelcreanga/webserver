@@ -14,10 +14,10 @@ import static org.junit.Assert.assertEquals;
 public class TestOtherHttpMethods extends TestParent {
 
 
-    @Test
-    public void testPost() throws IOException {
-        testNotImplemented(new HttpPost("http://" + host + ":" + port + "/"));
-    }
+//    @Test
+//    public void testPost() throws IOException {
+//        testNotImplemented(new HttpPost("http://" + host + ":" + port + "/"));
+//    }
 
     @Test
     public void testPut() throws IOException {

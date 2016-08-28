@@ -62,5 +62,12 @@ public class FixedLengthInputStream extends FilterInputStream {
     public void close() {
         limit = 0; // end this stream, but don't close the underlying stream
     }
+
+    public static class StreamExhaustedException extends RuntimeException {
+
+        public StreamExhaustedException(String message) {
+            super(message);
+        }
+    }
 }
 
