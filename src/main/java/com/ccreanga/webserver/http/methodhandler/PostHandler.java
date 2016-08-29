@@ -10,10 +10,10 @@ import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.ioutil.MultipartStream;
 import com.ccreanga.webserver.logging.ContextHolder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringReader;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
@@ -27,7 +27,6 @@ import static com.google.common.net.HttpHeaders.HOST;
 public class PostHandler implements HttpMethodHandler {
     @Override
     public void handleResponse(HttpRequestMessage request, Configuration cfg, OutputStream out) throws IOException {
-        //consume body - otherwise the server will try to parse it as a valid HTTP request and it will return 401
 
         HttpHeaders responseHeaders = new HttpHeaders();
         String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
@@ -55,6 +54,7 @@ public class PostHandler implements HttpMethodHandler {
             }
             MultipartStream stream = new MultipartStream(request.getBody(),boundary.getBytes());
             boolean nextPart = stream.skipPreamble();
+            Map<String, List<String>> params = new HashMap<>();
             while(nextPart) {
                 String header = stream.readHeaders();
                 int maxLineLength = cfg.getRequestMaxLineLength();
@@ -62,13 +62,29 @@ public class PostHandler implements HttpMethodHandler {
                 HttpHeaders httpHeaders = HttpRequestParser.consumeHeaders(new ByteArrayInputStream(header.getBytes("UTF-8")),maxLineLength,maxHeaders);
                 Map<String,String> headerParams = httpHeaders.getHeaderParams("Content-Disposition");
 
-                System.out.println(headerParams.get("name"));
-                System.out.println(headerParams.get("filename"));
-                stream.readBodyData(System.out);
+                String name = headerParams.get("name");
+                if (name==null || name.length()==0) {//bad request
+                    writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing/empty name parameter", out);
+                    return;
+                }
+                String filename = headerParams.get("filename");
+                if (filename==null){
+                    params.putIfAbsent(name,new ArrayList<>());
+                    List<String> values = params.get(name);
+                    ByteArrayOutputStream valueOut = new ByteArrayOutputStream();
+                    stream.readBodyData(valueOut);
+                    values.add(new String(valueOut.toByteArray()));
+                }else{
+                    System.out.println(filename);
+                    stream.readBodyData(System.out);
+                    //todo - save the files somewhere
+                }
+
                 nextPart = stream.readBoundary();
             }
-            int i;//consume the last byte; todo - why the stream is not fully consumed? could it be from chunkedinputstream
-            while ((i=request.getBody().read()) > 0);
+            if (request.isChunked()){//we need to consume the ending 3 bytes of the chunked input stream
+                while (request.getBody().read() > 0);
+            }
 
         }
 

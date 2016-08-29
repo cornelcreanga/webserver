@@ -195,10 +195,13 @@ public class HttpRequestParser {
         //todo - add tests for x-www-form-urlencoded
 
         InputStream enclosed = in;
-        if (chunk)
+        boolean chunked = false;
+        if (chunk) {
             enclosed = new ChunkedInputStream(in, httpHeaders, cfg.getRequestMessageBodyMaxSize(), maxLineLength, maxHeaders);
+            chunked = true;
+        }
 
-        return new HttpRequestMessage(httpRequestLine, httpHeaders,params, enclosed, length, false);
+        return new HttpRequestMessage(httpRequestLine, httpHeaders,params, enclosed, length, chunked);
 
     }
 
