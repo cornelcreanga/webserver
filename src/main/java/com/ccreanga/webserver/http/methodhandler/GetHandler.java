@@ -12,7 +12,6 @@ import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
 import com.ccreanga.webserver.repository.NotFoundException;
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import org.slf4j.Logger;
@@ -190,7 +189,7 @@ public class GetHandler implements HttpMethodHandler {
             if (writeBody) {
                 try {
                     InputStream in = new FileInputStream(file);
-                    IOUtil.copy(in, enclosed, start, end - start+1);
+                    IOUtil.copy(in, enclosed, start, end - start + 1);
                 } catch (IOException e) {
                     throw new IOException(e.getMessage() + "( file name was " + file.getAbsolutePath() + ")");
                 }

@@ -20,19 +20,19 @@ public class HttpRequestMessage {
     private long length;//body length; makes sense only when chunk=false; -1 otherwise
     private boolean chunked;
 
-    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers,Map<String, List<String>> bodyParams, InputStream body, long length, boolean chunked) {
+    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, Map<String, List<String>> bodyParams, InputStream body, long length, boolean chunked) {
         this.method = line.getMethod();
         this.headers = headers;
         this.uri = line.getUri();
         this.params = new HashMap<>(bodyParams);
         line.getUriParams().forEach(
-                (k,v)->{
+                (k, v) -> {
                     if (params.containsKey(k))
                         params.get(k).add(v);
                     else {
                         List<String> list = new ArrayList<>();
                         list.add(v);
-                        params.put(k,list);
+                        params.put(k, list);
                     }
                 });
 
@@ -88,7 +88,7 @@ public class HttpRequestMessage {
         return headers.getHeader(header);
     }
 
-    public HttpHeaders getHeaders(){
+    public HttpHeaders getHeaders() {
         return headers;
     }
 

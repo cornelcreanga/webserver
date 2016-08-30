@@ -13,6 +13,7 @@ public class RangeManager {
 
     /**
      * Obtain a range or throw an exception is the range is invalid
+     *
      * @param rangeValue
      * @param fileLength
      * @return

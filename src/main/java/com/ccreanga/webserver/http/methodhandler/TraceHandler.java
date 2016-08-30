@@ -9,15 +9,11 @@ import com.ccreanga.webserver.http.HttpStatus;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
-import static com.ccreanga.webserver.http.HttpMessageWriter.*;
-import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
-import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
-import static com.google.common.net.HttpHeaders.DATE;
+import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
+import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.google.common.net.HttpHeaders.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class TraceHandler implements HttpMethodHandler {
@@ -25,7 +21,7 @@ public class TraceHandler implements HttpMethodHandler {
     @Override
     public void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         HttpHeaders responseHeaders = new HttpHeaders();
-        writeResponseLine(HttpStatus.OK,out);
+        writeResponseLine(HttpStatus.OK, out);
         responseHeaders.putHeader(CONTENT_TYPE, "message/http");
         String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
         responseHeaders.putHeader(DATE, currentDate.replace("UTC", "GMT"));
@@ -41,13 +37,13 @@ public class TraceHandler implements HttpMethodHandler {
 
         HttpHeaders requestHeaders = request.getHeaders();
         if (requestHeaders.hasHeader("Cookie"))//todo - add basic auth too
-            requestHeaders.putHeader("Cookie","*****REMOVED*****");
+            requestHeaders.putHeader("Cookie", "*****REMOVED*****");
 
-        writeHeaders(request.getHeaders(),body);
+        writeHeaders(request.getHeaders(), body);
 
-        responseHeaders.putHeader(CONTENT_LENGTH,""+body.size());
+        responseHeaders.putHeader(CONTENT_LENGTH, "" + body.size());
 
-        writeHeaders(responseHeaders,out);
+        writeHeaders(responseHeaders, out);
         body.writeTo(out);
     }
 }

@@ -48,15 +48,15 @@ public class HttpHeaders {
     public Map<String, String> getHeaderParams(String header) {
         Map<String, String> headerParams = new LinkedHashMap<String, String>();
         String headerValue = headers.get(header);
-        List<String> params = ParseUtil.split(headerValue, ';',false,100);
+        List<String> params = ParseUtil.split(headerValue, ';', false, 100);
         for (String param : params) {
-            String key = ParseUtil.left(param,'=');
-            String value = ParseUtil.right(param,'=');
-            if (value.length()>0){
+            String key = ParseUtil.left(param, '=');
+            String value = ParseUtil.right(param, '=');
+            if (value.length() > 0) {
                 if (value.startsWith("\""))
                     value = value.substring(1);
                 if (value.endsWith("\""))
-                    value = value.substring(0,value.length()-1);
+                    value = value.substring(0, value.length() - 1);
             }
 
             headerParams.put(key.trim(), value);

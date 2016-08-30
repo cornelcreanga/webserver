@@ -36,7 +36,7 @@ public class ParseUtil {
         boolean lastMatch = false;
         while (i < len) {
             if (str.charAt(i) == separatorChar) {
-                if (++counter>maxNo)
+                if (++counter > maxNo)
                     throw new TooManyEntriesException();
                 if (match || preserveAllTokens) {
                     list.add(str.substring(start, i));
@@ -51,31 +51,31 @@ public class ParseUtil {
             i++;
         }
         if (match || preserveAllTokens && lastMatch) {
-            if (++counter>maxNo)
+            if (++counter > maxNo)
                 throw new TooManyEntriesException();
             list.add(str.substring(start, i));
         }
         return list;
     }
 
-    public static String left(String s,char separator){
+    public static String left(String s, char separator) {
         int index = s.indexOf(separator);
-        return index==-1?s:s.substring(0,index);
+        return index == -1 ? s : s.substring(0, index);
     }
 
-    public static String right(String s,char separator){
+    public static String right(String s, char separator) {
         int index = s.indexOf(separator);
-        return index==-1?"":s.substring(index+1);
+        return index == -1 ? "" : s.substring(index + 1);
     }
 
-    public static Map<String,List<String>> parseFormEncodedParams(String form, int limit) throws TooManyEntriesException {
+    public static Map<String, List<String>> parseFormEncodedParams(String form, int limit) throws TooManyEntriesException {
         List<String> elements = ParseUtil.split(form, '&', false, limit);
         return elements.stream().
                 collect(
                         Collectors.groupingBy(
-                                s-> IOUtil.decodeUTF8(ParseUtil.left(s,'=')),
+                                s -> IOUtil.decodeUTF8(ParseUtil.left(s, '=')),
                                 Collectors.mapping(
-                                        s->IOUtil.decodeUTF8(ParseUtil.right(s,'=')),
+                                        s -> IOUtil.decodeUTF8(ParseUtil.right(s, '=')),
                                         toList()
                                 )
                         )

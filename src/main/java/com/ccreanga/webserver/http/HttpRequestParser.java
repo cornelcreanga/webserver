@@ -16,15 +16,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
 import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
-import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
-import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
-import static com.google.common.net.HttpHeaders.TRANSFER_ENCODING;
-import static java.util.stream.Collectors.toList;
+import static com.google.common.net.HttpHeaders.*;
 
 /**
  * This class does the "hard work" - parsing the http request.
@@ -161,7 +157,7 @@ public class HttpRequestParser {
         String len = httpHeaders.getHeader(CONTENT_LENGTH);
         try {
             if (len != null)
-                length = ParseUtil.parseLong(len,0,Long.MAX_VALUE);
+                length = ParseUtil.parseLong(len, 0, Long.MAX_VALUE);
         } catch (NumberFormatException e) {
             throw new InvalidMessageException("invalid content length value " + len, BAD_REQUEST);
         }
@@ -179,14 +175,14 @@ public class HttpRequestParser {
         }
 
         String contentType = httpHeaders.getHeader(CONTENT_TYPE);
-        Map<String,List<String>> params = new HashMap<>();
-        if (contentType!=null){
-            if (contentType.startsWith("application/x-www-form-urlencoded")){
-                String form = IOUtil.readToken(in,-1,"UTF-8",8*1024*1024);
+        Map<String, List<String>> params = new HashMap<>();
+        if (contentType != null) {
+            if (contentType.startsWith("application/x-www-form-urlencoded")) {
+                String form = IOUtil.readToken(in, -1, "UTF-8", 8 * 1024 * 1024);
                 int limit = 10000;//max 10000 params -todo -config that
                 try {
-                    params = ParseUtil.parseFormEncodedParams(form,limit);
-                }catch (TooManyEntriesException e){
+                    params = ParseUtil.parseFormEncodedParams(form, limit);
+                } catch (TooManyEntriesException e) {
                     throw new InvalidMessageException("too many form params", HttpStatus.BAD_REQUEST);
                 }
             }
@@ -201,7 +197,7 @@ public class HttpRequestParser {
             chunked = true;
         }
 
-        return new HttpRequestMessage(httpRequestLine, httpHeaders,params, enclosed, length, chunked);
+        return new HttpRequestMessage(httpRequestLine, httpHeaders, params, enclosed, length, chunked);
 
     }
 

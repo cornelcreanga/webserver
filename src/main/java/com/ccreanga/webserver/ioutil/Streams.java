@@ -48,16 +48,15 @@ public final class Streams {
      *   copy(pInputStream, pOutputStream, new byte[8192]);
      * </pre>
      *
-     * @param inputStream The input stream, which is being read.
-     * It is guaranteed, that {@link InputStream#close()} is called
-     * on the stream.
-     * @param outputStream The output stream, to which data should
-     * be written. May be null, in which case the input streams
-     * contents are simply discarded.
+     * @param inputStream       The input stream, which is being read.
+     *                          It is guaranteed, that {@link InputStream#close()} is called
+     *                          on the stream.
+     * @param outputStream      The output stream, to which data should
+     *                          be written. May be null, in which case the input streams
+     *                          contents are simply discarded.
      * @param closeOutputStream True guarantees, that {@link OutputStream#close()}
-     * is called on the stream. False indicates, that only
-     * {@link OutputStream#flush()} should be called finally.
-     *
+     *                          is called on the stream. False indicates, that only
+     *                          {@link OutputStream#flush()} should be called finally.
      * @return Number of bytes, which have been copied.
      * @throws IOException An I/O error occurred.
      */
@@ -70,17 +69,17 @@ public final class Streams {
      * Copies the contents of the given {@link InputStream}
      * to the given {@link OutputStream}.
      *
-     * @param inputStream The input stream, which is being read.
-     *   It is guaranteed, that {@link InputStream#close()} is called
-     *   on the stream.
-     * @param outputStream The output stream, to which data should
-     *   be written. May be null, in which case the input streams
-     *   contents are simply discarded.
+     * @param inputStream       The input stream, which is being read.
+     *                          It is guaranteed, that {@link InputStream#close()} is called
+     *                          on the stream.
+     * @param outputStream      The output stream, to which data should
+     *                          be written. May be null, in which case the input streams
+     *                          contents are simply discarded.
      * @param closeOutputStream True guarantees, that {@link OutputStream#close()}
-     *   is called on the stream. False indicates, that only
-     *   {@link OutputStream#flush()} should be called finally.
-     * @param buffer Temporary buffer, which is to be used for
-     *   copying data.
+     *                          is called on the stream. False indicates, that only
+     *                          {@link OutputStream#flush()} should be called finally.
+     * @param buffer            Temporary buffer, which is to be used for
+     *                          copying data.
      * @return Number of bytes, which have been copied.
      * @throws IOException An I/O error occurred.
      */
@@ -92,7 +91,7 @@ public final class Streams {
         InputStream in = inputStream;
         try {
             long total = 0;
-            for (;;) {
+            for (; ; ) {
                 int res = in.read(buffer);
                 if (res == -1) {
                     break;
@@ -123,7 +122,6 @@ public final class Streams {
             }
         }
     }
-
 
 
 }

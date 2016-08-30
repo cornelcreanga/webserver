@@ -7,59 +7,54 @@ import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;
 import com.google.common.escape.Escaper;
 import com.google.common.html.HtmlEscapers;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.ccreanga.webserver.formatters.NumberUtil.fileSizePretty;
 import static com.ccreanga.webserver.ioutil.IOUtil.extractParentResource;
-import static freemarker.template.Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS;
 
 /**
  * Used to generate an html representation for a folder or in case of an error (like Apache does).
  */
 public class HtmlResourceRepresentation implements FileResourceRepresentation {
 
-    private static Template index;
-    private static Template error;
-
-    static {
-        Configuration cfg = new Configuration(DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-        cfg.setClassLoaderForTemplateLoading(ClassLoader.getSystemClassLoader(), "templates");
-        try {
-            index = cfg.getTemplate("index.ftl");
-            error = cfg.getTemplate("error.ftl");
-        } catch (IOException e) {
-            throw new InternalException("i/o error, cannot load templates");
-        }
-
-    }
-
     @Override
     public String folderRepresentation(File folder, File root) throws IOException {
-        StringWriter writer = new StringWriter();
-        Map<String, Object> data = new HashMap<>(2);
-        Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
 
-        data.put("folder", htmlEscaper.escape(folder.getName()));
+        Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html><head>");
+        sb.append("<title>Index of ").append(htmlEscaper.escape(folder.getName())).append("</title>");
+        sb.append("<head><body>");
+        sb.append("<h1>Index of ").append(htmlEscaper.escape(folder.getName())).append("</h1>");
+        sb.append("<table><tr>");
+        sb.append("<th>Name</th>");
+        sb.append("<th>Last modified</th>");
+        sb.append("<th>Size</th>");
+        sb.append("</tr>");
+        sb.append("<tr>");
+        sb.append("<th colspan=\"3\">");
+        sb.append("<hr>");
+        sb.append("</th>");
+        sb.append("</tr>");
+
+        sb.append("");
+        sb.append("");
+
         if (!root.equals(folder)) {
-            data.put("allowBrowsing", "true");
-            data.put("parentFolder", extractParentResource(folder, root));
+            sb.append("<tr><td>");
+            sb.append("<a href=\"").append(extractParentResource(folder, root)).append("\">Go to Parent Directory </a>");
+            sb.append("</td><td align=\"right\">&nbsp;</td><td align=\"right\">&nbsp;</td><tr>");
         }
 
-        List<Map<String, String>> files = FileManager.getInstance().getFolderContent(folder).
+
+        FileManager.getInstance().getFolderContent(folder).
                 stream().
                 sorted((f1, f2) -> {//first directories, after that the files
                     if ((f1.isDirectory()) && (f2.isFile()))
@@ -68,25 +63,23 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
                         return 1;
                     return f1.compareTo(f2);
                 }).
-                map(file -> {
-                    Map<String, String> map = new HashMap<>(4);
-                    map.put("name", htmlEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : ""));
-                    map.put("link", encodeUrl(file.getName()) + (file.isDirectory() ? "/" : ""));
-                    map.put("lastModified", "" + DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT));
-                    map.put("size", file.isDirectory() ? "-" : fileSizePretty(file.length()));
-                    map.put("type", file.isDirectory() ? "folder" : "file");
-                    return map;
-                }).collect(Collectors.toList());
+                forEach(file -> {
 
-        data.put("folderFiles", files);
-        try {
-            index.process(data, writer);
-        } catch (TemplateException e) {
-            //will not appear unless a the template is invalid
-            throw new InternalException(e);
-        }
+                    sb.append("<tr><td>");
+                    sb.append("<a href=\"").append(encodeUrl(file.getName()) + (file.isDirectory() ? "/" : "")).append("\">").append(htmlEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : "")).append("</a>");
+                    sb.append("</td>");
+                    sb.append("<td align=\"right\">").append(DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT)).append("</td>");
+                    sb.append("<td align=\"right\">").append(file.isDirectory() ? "-" : fileSizePretty(file.length())).append("</td>");
+                    sb.append("</tr>");
 
-        return writer.toString();
+                });
+
+        sb.append("<tr>");
+        sb.append("<th colspan=\"3\"><hr></th>");
+        sb.append("</tr>");
+        sb.append("</table></body></html>");
+
+        return sb.toString();
     }
 
     private String encodeUrl(String url) {
@@ -99,19 +92,19 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
 
     @Override
     public String errorRepresentation(HttpStatus status, String extendedReason) throws IOException {
-        Map<String, Object> data = new HashMap<>(3);
-        StringWriter writer = new StringWriter();
-        data.put("statusCode", status.value());
-        data.put("statusReason", status.getReasonPhrase());
-        data.put("extendedReason", extendedReason);
-        try {
-            error.process(data, writer);
-        } catch (TemplateException e) {
-            throw new InternalException(e);
-        } catch (IOException e) {
-            throw e;
-        }
-        return writer.toString();
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html>");
+        sb.append("<head>");
+        sb.append("<title>").append(status.value()).append("-").append(status.getReasonPhrase()).append("</title>");
+        sb.append("</head>");
+        sb.append("<body>");
+        sb.append("<h1>").append(status.getReasonPhrase()).append("</h1>");
+        if (extendedReason.length() > 0)
+            sb.append("<p>").append(extendedReason).append("</p>");
+        sb.append("</body>");
+        sb.append("</html>");
+        return sb.toString();
     }
 
     @Override

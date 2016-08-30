@@ -27,7 +27,7 @@ public class HttpMessageHandler {
      */
     public void handleMessage(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
 
-        if (request.isHTTP1_1() && (request.headerIsEqualWithValue(EXPECT,"100-continue"))){//in future the result will depend on authentication
+        if (request.isHTTP1_1() && (request.headerIsEqualWithValue(EXPECT, "100-continue"))) {//in future the result will depend on authentication
             writeResponseLine(HttpStatus.CONTINUE, out);
             out.flush();
         }

@@ -167,9 +167,9 @@ public class Configuration {
             String string = (String) properties.get(name);
             if (string == null)
                 throw new ConfigurationException("Cannot find the value " + name);
-            return (int)ParseUtil.parseLong(string,min, max);
+            return (int) ParseUtil.parseLong(string, min, max);
         } catch (NumberFormatException e) {
-            throw new ConfigurationException("Error when trying to configure " + name + " - "+e.getMessage());
+            throw new ConfigurationException("Error when trying to configure " + name + " - " + e.getMessage());
         }
     }
 
