@@ -11,9 +11,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
-import static com.google.common.net.HttpHeaders.*;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class TraceHandler implements HttpMethodHandler {

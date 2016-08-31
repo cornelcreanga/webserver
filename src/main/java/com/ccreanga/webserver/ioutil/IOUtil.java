@@ -1,11 +1,10 @@
 package com.ccreanga.webserver.ioutil;
 
 import com.ccreanga.webserver.InternalException;
-import com.google.common.io.Closeables;
-import com.google.common.net.InetAddresses;
 
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
+import java.net.URLDecoder;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -31,7 +30,7 @@ public class IOUtil {
 
     public static void closeSilent(Closeable closeable) {
         try {
-            Closeables.close(closeable, true);
+            closeable.close();
         } catch (IOException e) {/**ignore**/}
     }
 
@@ -44,13 +43,22 @@ public class IOUtil {
     }
 
     public static String getIp(Socket socket) {
-        SocketAddress socketAddress = socket.getRemoteSocketAddress();
-        if (socketAddress instanceof InetSocketAddress) {
-            InetAddress inetAddress = ((InetSocketAddress) socketAddress).getAddress();
-            return InetAddresses.toAddrString(inetAddress);
-        }
-        return "Not an IP socket";
+        return socket.getRemoteSocketAddress().toString();
+    }
 
+    public static long copy(InputStream from, OutputStream to)
+            throws IOException {
+        byte[] buf = new byte[8 * 1024];
+        long total = 0;
+        while (true) {
+            int r = from.read(buf);
+            if (r == -1) {
+                break;
+            }
+            to.write(buf, 0, r);
+            total += r;
+        }
+        return total;
     }
 
     public static long copy(InputStream input, OutputStream output,
@@ -136,6 +144,12 @@ public class IOUtil {
         return s.length() > 0 && s.charAt(s.length() - 1) == '\r' ?
                 s.substring(0, s.length() - 1) :
                 s;
+    }
+
+    public static String getFileExtension(String fullName) {
+        String fileName = new File(fullName).getName();
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
 
 

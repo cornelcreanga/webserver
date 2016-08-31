@@ -10,8 +10,6 @@ import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.logging.LogEntry;
-import com.google.common.base.Preconditions;
-import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +53,7 @@ public class Server implements Runnable {
 
     public Server(Configuration configuration) {
 
-        this.configuration = Preconditions.checkNotNull(configuration);
+        this.configuration = configuration;
         //configure log level
         ch.qos.logback.classic.Logger serverLog = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("serverLog");
         serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
@@ -146,10 +144,9 @@ public class Server implements Runnable {
     public synchronized void stop() {
         serverLog.info("Stopping the server...");
         shouldStop = true;
-        try {
-            //close the socket otherwise the main loop is blocked in serverSocket.accept();
-            Closeables.close(serverSocket, true);
-        } catch (IOException e) {/**ignore**/}
+        //close the socket otherwise the main loop is blocked in serverSocket.accept();
+        IOUtil.closeSilent(serverSocket);
+
     }
 
 

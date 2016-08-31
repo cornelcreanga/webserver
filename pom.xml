@@ -52,7 +52,6 @@
         <skipITs>${skipTests}</skipITs>
         <skipUTs>${skipTests}</skipUTs>
         <fluent-hc.version>4.5.2</fluent-hc.version>
-        <guava.version>19.0</guava.version>
         <httpclient.version>4.5.2</httpclient.version>
         <httpasyncclient.version>4.1.2</httpasyncclient.version>
         <httpcore.version>4.4.5</httpcore.version>
@@ -81,16 +80,11 @@
         </dependency>
         <!-- Log end -->
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
 
         <!--<dependency>-->
-            <!--<groupId>org.yaml</groupId>-->
-            <!--<artifactId>snakeyaml</artifactId>-->
-            <!--<version>${snakeyaml.version}</version>-->
+        <!--<groupId>org.yaml</groupId>-->
+        <!--<artifactId>snakeyaml</artifactId>-->
+        <!--<version>${snakeyaml.version}</version>-->
         <!--</dependency>-->
 
 

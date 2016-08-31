@@ -8,8 +8,8 @@ import com.ccreanga.webserver.http.methodhandler.*;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.ccreanga.webserver.http.HttpHeaders.EXPECT;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
-import static com.google.common.net.HttpHeaders.EXPECT;
 
 /**
  * Finds the proper message handler taking into account the HTTP method.

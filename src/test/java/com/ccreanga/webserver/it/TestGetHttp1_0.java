@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.google.common.net.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
 
 public class TestGetHttp1_0 extends TestParent {

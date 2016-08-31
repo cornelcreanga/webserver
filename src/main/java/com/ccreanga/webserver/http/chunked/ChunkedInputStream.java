@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import static com.ccreanga.webserver.http.HttpHeaders.TRAILER;
 import static com.ccreanga.webserver.ioutil.IOUtil.readLine;
-import static com.google.common.net.HttpHeaders.TRAILER;
 
 public class ChunkedInputStream extends FixedLengthInputStream {
 

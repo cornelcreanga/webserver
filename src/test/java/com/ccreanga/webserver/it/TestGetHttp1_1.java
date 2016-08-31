@@ -1,6 +1,7 @@
 package com.ccreanga.webserver.it;
 
 
+import com.ccreanga.webserver.ParseUtil;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
@@ -9,8 +10,6 @@ import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
 import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.ioutil.IOUtil;
-import com.google.common.escape.Escaper;
-import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
@@ -23,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static com.google.common.net.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
 
 public class TestGetHttp1_1 extends TestParent {
@@ -71,10 +70,10 @@ public class TestGetHttp1_1 extends TestParent {
     public void testFolder(String mime) throws Exception {
         String fileName = "www/folder1";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("folder1"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("folder1"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader("Accept", Mime.getType(mime));
 
@@ -149,10 +148,10 @@ public class TestGetHttp1_1 extends TestParent {
         String fileName = "www/" + resource;
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         String extension = Util.extension(fileName);
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape(resource));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent(resource));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         try (CloseableHttpResponse response = httpclient.execute(request)) {

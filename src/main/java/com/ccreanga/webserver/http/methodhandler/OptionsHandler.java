@@ -9,10 +9,10 @@ import com.ccreanga.webserver.logging.ContextHolder;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.ccreanga.webserver.http.HttpHeaders.ALLOW;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_LENGTH;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
-import static com.google.common.net.HttpHeaders.ALLOW;
-import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
 
 public class OptionsHandler implements HttpMethodHandler {
     @Override

@@ -1,7 +1,6 @@
 package com.ccreanga.webserver.repository;
 
 import com.ccreanga.webserver.InternalException;
-import com.google.common.base.Preconditions;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +31,6 @@ public class FileManager {
      * @throws NotFoundException  - if the file does not exists/it is hidden/it starts with a dot/does not have read permissions
      */
     public File getFile(String fileName) {
-        Preconditions.checkNotNull(fileName);
         if (fileName.contains("../")) {
             throw new ForbiddenException("../ is not allowed");
         }
@@ -55,7 +53,6 @@ public class FileManager {
      * @throws IOException - i/o exception
      */
     public List<File> getFolderContent(File folder) throws IOException {
-        Preconditions.checkNotNull(folder);
         if (!folder.isDirectory())
             throw new InternalException("file " + folder.getName() + " is not a folder");
         File[] file = folder.listFiles();

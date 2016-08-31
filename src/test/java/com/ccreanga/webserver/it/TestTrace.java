@@ -8,9 +8,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import static com.google.common.net.HttpHeaders.EXPECT;
-import static org.junit.Assert.assertEquals;
-
 public class TestTrace extends TestParent {
 
     @Test
@@ -29,9 +26,9 @@ public class TestTrace extends TestParent {
             out.flush();
 
             //Thread.sleep(500);
-            while(true){
+            while (true) {
                 String line = reader.readLine();
-                if (line==null)
+                if (line == null)
                     break;
                 System.out.println(line);
             }

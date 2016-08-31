@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
-import static com.google.common.net.HttpHeaders.*;
 
 public class PostHandler implements HttpMethodHandler {
     @Override

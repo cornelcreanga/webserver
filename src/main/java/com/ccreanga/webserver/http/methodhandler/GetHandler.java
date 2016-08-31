@@ -12,8 +12,6 @@ import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
 import com.ccreanga.webserver.repository.NotFoundException;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +23,10 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 import static com.ccreanga.webserver.http.HttpStatus.PARTIAL_CONTENT;
 import static com.ccreanga.webserver.http.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
-import static com.google.common.net.HttpHeaders.*;
 
 /**
  * Get handler. Right now the RFC's are not entirely implemented (todo - add details)
@@ -100,7 +98,7 @@ public class GetHandler implements HttpMethodHandler {
     private void deliverFile(HttpRequestMessage request, HttpHeaders responseHeaders, File file, Configuration configuration, boolean writeBody, OutputStream out) throws IOException {
 
         String etag = null;
-        String mime = Mime.getType(Files.getFileExtension((file.getName())));
+        String mime = Mime.getType(IOUtil.getFileExtension((file.getName())));
         LocalDateTime modifiedDate = IOUtil.modifiedDateAsUTC(file);
 
         responseHeaders.putHeader(CONTENT_TYPE, mime);
@@ -204,7 +202,7 @@ public class GetHandler implements HttpMethodHandler {
             writeResponseLine(HttpStatus.OK, out);
             writeHeaders(responseHeaders, out);
             if (writeBody) {
-                ByteStreams.copy(new FileInputStream(file), out);
+                IOUtil.copy(new FileInputStream(file), out);
             }
         }
 

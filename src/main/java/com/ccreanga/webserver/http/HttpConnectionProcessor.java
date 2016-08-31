@@ -15,7 +15,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 
-import static com.google.common.net.HttpHeaders.CONNECTION;
+import static com.ccreanga.webserver.http.HttpHeaders.CONNECTION;
 
 public class HttpConnectionProcessor implements ConnectionProcessor {
 

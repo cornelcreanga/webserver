@@ -1,6 +1,5 @@
 package com.ccreanga.webserver.ioutil;
 
-import com.google.common.base.Preconditions;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -17,7 +16,6 @@ public class FixedLengthInputStream extends FilterInputStream {
 
     public FixedLengthInputStream(InputStream in, long limit, boolean prematureEndException) {
         super(in);
-        Preconditions.checkNotNull(in);
         this.limit = limit < 0 ? 0 : limit;
         this.prematureEndException = prematureEndException;
     }

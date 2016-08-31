@@ -1,12 +1,11 @@
 package com.ccreanga.webserver.http.representation;
 
 import com.ccreanga.webserver.InternalException;
+import com.ccreanga.webserver.ParseUtil;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;
-import com.google.common.escape.Escaper;
-import com.google.common.html.HtmlEscapers;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +25,12 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
     @Override
     public String folderRepresentation(File folder, File root) throws IOException {
 
-        Escaper htmlEscaper = HtmlEscapers.htmlEscaper();
         StringBuilder sb = new StringBuilder(1024);
         sb.append("<!DOCTYPE html>");
         sb.append("<html><head>");
-        sb.append("<title>Index of ").append(htmlEscaper.escape(folder.getName())).append("</title>");
+        sb.append("<title>Index of ").append(ParseUtil.escapeHTML(folder.getName())).append("</title>");
         sb.append("<head><body>");
-        sb.append("<h1>Index of ").append(htmlEscaper.escape(folder.getName())).append("</h1>");
+        sb.append("<h1>Index of ").append(ParseUtil.escapeHTML(folder.getName())).append("</h1>");
         sb.append("<table><tr>");
         sb.append("<th>Name</th>");
         sb.append("<th>Last modified</th>");
@@ -66,7 +64,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
                 forEach(file -> {
 
                     sb.append("<tr><td>");
-                    sb.append("<a href=\"").append(encodeUrl(file.getName()) + (file.isDirectory() ? "/" : "")).append("\">").append(htmlEscaper.escape(file.getName()) + (file.isDirectory() ? "/" : "")).append("</a>");
+                    sb.append("<a href=\"").append(encodeUrl(file.getName()) + (file.isDirectory() ? "/" : "")).append("\">").append(ParseUtil.escapeHTML(file.getName()) + (file.isDirectory() ? "/" : "")).append("</a>");
                     sb.append("</td>");
                     sb.append("<td align=\"right\">").append(DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_SHORT)).append("</td>");
                     sb.append("<td align=\"right\">").append(file.isDirectory() ? "-" : fileSizePretty(file.length())).append("</td>");

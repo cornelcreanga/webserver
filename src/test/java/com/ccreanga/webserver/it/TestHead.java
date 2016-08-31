@@ -1,13 +1,12 @@
 package com.ccreanga.webserver.it;
 
+import com.ccreanga.webserver.ParseUtil;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.ioutil.IOUtil;
-import com.google.common.escape.Escaper;
-import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
@@ -18,7 +17,7 @@ import org.junit.Test;
 import java.io.File;
 import java.time.LocalDateTime;
 
-import static com.google.common.net.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
 
 public class TestHead extends TestParent {
@@ -28,10 +27,10 @@ public class TestHead extends TestParent {
         String fileName = "www/file.txt";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         String extension = Util.extension(fileName);
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
 
-        HttpHead request = new HttpHead("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpHead request = new HttpHead("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 

@@ -2,12 +2,9 @@ package com.ccreanga.webserver;
 
 
 import com.ccreanga.webserver.ioutil.IOUtil;
-import com.google.common.base.Preconditions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -15,7 +12,7 @@ import static java.util.stream.Collectors.toList;
 public class ParseUtil {
 
     public static long parseLong(String string, long min, long max) {
-        long value = Preconditions.checkNotNull(Long.parseLong(string));
+        long value = Long.parseLong(string);
         if ((value < min) || (value > max))
             throw new NumberFormatException("expecting a number between " + min + " and " + max + " instead of " + value);
         return value;
@@ -81,6 +78,52 @@ public class ParseUtil {
                         )
                 );
 
+    }
+    public static String escapeHTML(String s) {
+        StringBuilder sb = new StringBuilder((int) (s.length() * 1.1));
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '"')
+                sb.append("&quot;");
+            else if (c == '\\')
+                sb.append("&#39;");
+            else if (c == '&')
+                sb.append("&amp;");
+            else if (c == '<')
+                sb.append("&lt;");
+            else if (c == '>')
+                sb.append("&gt;");
+            else sb.append(c);
+        }
+        return sb.toString();
+
+    }
+
+    public static String escapeURLComponent(final String s) {
+        StringBuilder sb = new StringBuilder((int) (s.length() * 1.1));
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+
+            if (((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9')) ||
+                    (c == '-') || (c == '.') || (c == '_') || (c == '~') || (c == '@') || (c == ':') ||
+                    (c == '!') || (c == '$') || (c == '&') || (c == '\'') || (c == '(') || (c == ')') || (c == '*') || (c == '+') || (c == ',') || (c == ';') || (c == '=')
+                    )
+                sb.append(c);
+            else if (c == ' ')
+                sb.append("%20");
+            else {
+                byte[] bytes = ("" + c).getBytes(StandardCharsets.UTF_8);
+                for (byte b : bytes) {
+                    sb.append('%');
+                    int upper = (((int) b) >> 4) & 0xf;
+                    sb.append(Integer.toHexString(upper).toUpperCase(Locale.US));
+                    int lower = ((int) b) & 0xf;
+                    sb.append(Integer.toHexString(lower).toUpperCase(Locale.US));
+                }
+            }
+        }
+        return sb.toString();
     }
 
 }

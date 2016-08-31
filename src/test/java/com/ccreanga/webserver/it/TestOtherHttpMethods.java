@@ -3,12 +3,11 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.*;
-import org.junit.Test;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.IOException;
 
-import static com.google.common.net.HttpHeaders.ALLOW;
 import static org.junit.Assert.assertEquals;
 
 public class TestOtherHttpMethods extends TestParent {

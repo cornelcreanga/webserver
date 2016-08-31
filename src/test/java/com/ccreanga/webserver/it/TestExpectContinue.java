@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import static com.google.common.net.HttpHeaders.EXPECT;
+import static com.ccreanga.webserver.http.HttpHeaders.EXPECT;
 import static org.junit.Assert.assertEquals;
 
 public class TestExpectContinue extends TestParent {
@@ -23,7 +23,7 @@ public class TestExpectContinue extends TestParent {
 
             out.write("GET /file.txt HTTP/1.1\n".getBytes());
             out.write("Host: test.com\n".getBytes());
-            out.write((EXPECT+": 100-continue\n").getBytes());
+            out.write((EXPECT + ": 100-continue\n").getBytes());
             out.write("\n".getBytes());
             out.flush();
 

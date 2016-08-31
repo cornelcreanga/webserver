@@ -1,11 +1,10 @@
 package com.ccreanga.webserver.it;
 
+import com.ccreanga.webserver.ParseUtil;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
-import com.google.common.escape.Escaper;
-import com.google.common.net.UrlEscapers;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
@@ -16,16 +15,16 @@ import org.junit.Test;
 import java.io.File;
 import java.time.Instant;
 
-import static com.google.common.net.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static org.junit.Assert.assertEquals;
 
 public class TestGetRange extends TestParent {
 
     @Test
     public void testRangePartialContent() throws Exception {
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(RANGE, "bytes=1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
@@ -35,9 +34,9 @@ public class TestGetRange extends TestParent {
 
     @Test
     public void testRangeInvalid1() throws Exception {
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(RANGE, "bytes=-1-5");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
@@ -47,9 +46,9 @@ public class TestGetRange extends TestParent {
 
     @Test
     public void testMultiRangeIsNotAccepted() throws Exception {
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(RANGE, "bytes=1-5,8-11");
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
@@ -60,10 +59,10 @@ public class TestGetRange extends TestParent {
     @Test
     public void testIfRangeEtagPartialContent() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
+
         String etag = EtagManager.getInstance().getFileEtag(file, EtagManager.GZIP_EXT, true);
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_RANGE, etag);
         request.addHeader(RANGE, "bytes=1-5");
@@ -74,9 +73,9 @@ public class TestGetRange extends TestParent {
     @Test
     public void testIfRangeModifiedPartialContent() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
         request.addHeader(IF_RANGE, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_RFC822));
@@ -88,9 +87,9 @@ public class TestGetRange extends TestParent {
     @Test
     public void testIfRangeModifiedOk() throws Exception {
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
 
         request.addHeader(IF_RANGE, DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()).minusSeconds(100), DateUtil.FORMATTER_RFC822));
@@ -103,10 +102,10 @@ public class TestGetRange extends TestParent {
     public void testIfRangeInvalid() throws Exception {
         //todo - check if all thre response headers are ok! it might not be the case, this test takes too much seconds
         File file = new File(ClassLoader.getSystemResource("www/file.txt").toURI());
-        Escaper urlPathEscaper = UrlEscapers.urlPathSegmentEscaper();
+
         String etag = EtagManager.getInstance().getFileEtag(file, EtagManager.GZIP_EXT, true);
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + urlPathEscaper.escape("file.txt"));
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("file.txt"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(IF_RANGE, etag);
         request.addHeader(RANGE, "bytes=d1-5");

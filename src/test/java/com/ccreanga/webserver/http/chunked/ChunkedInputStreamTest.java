@@ -1,13 +1,12 @@
 package com.ccreanga.webserver.http.chunked;
 
+import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.http.HttpHeaders;
-import com.google.common.io.CharStreams;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
@@ -32,7 +31,7 @@ public class ChunkedInputStreamTest {
         headers.appendHeader("Trailer", "some-footer");
         headers.appendHeader("Trailer", "another-footer");
         ChunkedInputStream stream = new ChunkedInputStream(in, headers, 1000, 100, 10);
-        String string = CharStreams.toString(new InputStreamReader(stream, "UTF-8"));
+        String string = Util.readAsUtfString(stream);
         assertEquals(string, initial);
         assertEquals(headers.getAllHeadersMap().size(), 3);
         assertEquals(headers.getHeader("some-footer"), "some-value");
@@ -54,7 +53,7 @@ public class ChunkedInputStreamTest {
 
         boolean error = false;
         try {
-            String string = CharStreams.toString(new InputStreamReader(stream, "UTF-8"));
+            String string = Util.readAsUtfString(stream);
         } catch (ChunkedParseException e) {
             error = true;
         }

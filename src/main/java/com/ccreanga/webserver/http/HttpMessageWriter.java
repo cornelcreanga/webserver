@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static com.google.common.net.HttpHeaders.CONTENT_LENGTH;
-import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_LENGTH;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 
 public class HttpMessageWriter {
     private static final byte[] CRLF = {0x0d, 0x0a};

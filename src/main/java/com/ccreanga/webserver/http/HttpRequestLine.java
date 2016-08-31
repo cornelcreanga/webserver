@@ -1,7 +1,6 @@
 package com.ccreanga.webserver.http;
 
-import com.google.common.collect.ImmutableMap;
-
+import java.util.Collections;
 import java.util.Map;
 
 public class HttpRequestLine {
@@ -21,7 +20,7 @@ public class HttpRequestLine {
         this.method = method;
         this.uri = uri;
         this.version = version;
-        this.uriParams = ImmutableMap.copyOf(uriParams);
+        this.uriParams = Collections.unmodifiableMap(uriParams);
     }
 
     public Map<String, String> getUriParams() {

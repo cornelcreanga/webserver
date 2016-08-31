@@ -1,11 +1,9 @@
 package com.ccreanga.webserver.http.chunked;
 
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
-
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 /**
@@ -41,7 +39,7 @@ public class ChunkedOutputStream extends OutputStream {
 
 
     public ChunkedOutputStream(OutputStream stream, Function<byte[], byte[]> extensionBuilder) {
-        this.stream = Preconditions.checkNotNull(stream);
+        this.stream = stream;
         this.extensionBuilder = extensionBuilder;
     }
 
@@ -54,7 +52,7 @@ public class ChunkedOutputStream extends OutputStream {
         if (closed) {
             throw new IllegalStateException("Output stream already closed");
         }
-        byte[] chunkHeader = (Integer.toHexString(len) + "\r\n").getBytes(Charsets.ISO_8859_1);
+        byte[] chunkHeader = (Integer.toHexString(len) + "\r\n").getBytes(StandardCharsets.ISO_8859_1);
         stream.write(chunkHeader, 0, chunkHeader.length);
         if (extensionBuilder != null) {
             byte[] extension = extensionBuilder.apply(b);

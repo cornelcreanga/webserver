@@ -17,10 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
 import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
-import static com.google.common.net.HttpHeaders.*;
 
 /**
  * This class does the "hard work" - parsing the http request.
