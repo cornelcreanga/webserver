@@ -1,15 +1,18 @@
 package com.ccreanga.webserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.*;
+
+import static com.ccreanga.webserver.Server.accessLog;
+import static com.ccreanga.webserver.Server.serverLog;
 
 
 public class Configuration {
 
-    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+
     public static final String ETAG_NONE = "none";
     public static final String ETAG_WEAK = "weak";
     public static final String ETAG_STRONG = "strong"; //not used yet
@@ -159,7 +162,20 @@ public class Configuration {
 
         verbose = Boolean.valueOf((String) properties.get("verbose"));
 
+        FileHandler fileHandler = null;
+        try {
+            fileHandler = new FileHandler("access.log",true);
+        } catch (IOException e) {
+            throw new ConfigurationException("cannot create the access log file, message is "+e.getMessage());
+        }
 
+        fileHandler.setFormatter(new SimpleFormatter("%5$s%6$s%n"));
+        fileHandler.setLevel(Level.INFO);
+        accessLog.setLevel(Level.INFO);
+        accessLog.addHandler(fileHandler);
+
+        serverLog.getHandlers()[0].setLevel(verbose ? Level.FINE : Level.INFO);
+        serverLog.setLevel(verbose ? Level.FINE : Level.INFO);
     }
 
     private int parseInt(String name, int min, int max) {

@@ -12,8 +12,6 @@ import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
 import com.ccreanga.webserver.repository.ForbiddenException;
 import com.ccreanga.webserver.repository.NotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +31,6 @@ import static com.ccreanga.webserver.http.HttpStatus.REQUESTED_RANGE_NOT_SATISFI
  */
 public class GetHandler implements HttpMethodHandler {
 
-    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
     private boolean writeBody;
 
 

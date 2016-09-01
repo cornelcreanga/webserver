@@ -1,10 +1,9 @@
 package com.ccreanga.webserver;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.ccreanga.webserver.Server.serverLog;
 
 public class ServerShutDownHook implements Runnable {
-    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
 
     private Server server;
 

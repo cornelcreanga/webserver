@@ -1,6 +1,5 @@
 package com.ccreanga.webserver;
 
-import ch.qos.logback.classic.Level;
 import com.ccreanga.webserver.formatters.DateUtil;
 import com.ccreanga.webserver.http.HttpConnectionProcessor;
 import com.ccreanga.webserver.http.HttpHeaders;
@@ -10,8 +9,6 @@ import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.logging.LogEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,6 +17,10 @@ import java.net.Socket;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
 
@@ -31,11 +32,11 @@ public class Server implements Runnable {
     /**
      * Used to log messages to console
      */
-    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
+    public static final Logger serverLog = Logger.getLogger("serverLog");
     /**
      * Used for building the access log
      */
-    private static final Logger accessLog = LoggerFactory.getLogger("accessLog");
+    public static final Logger accessLog = Logger.getLogger("accessLog");
 
     private boolean shouldStop = false;
     /**
@@ -54,9 +55,6 @@ public class Server implements Runnable {
     public Server(Configuration configuration) {
 
         this.configuration = configuration;
-        //configure log level
-        ch.qos.logback.classic.Logger serverLog = (ch.qos.logback.classic.Logger) org.slf4j.LoggerFactory.getLogger("serverLog");
-        serverLog.setLevel(configuration.isVerbose() ? Level.TRACE : Level.INFO);
     }
 
     private void initContext(UUID uuid, String ip) {
@@ -91,7 +89,7 @@ public class Server implements Runnable {
                                 UUID uuid = UUID.randomUUID();
                                 String ip = IOUtil.getIp(socket);
                                 initContext(uuid, ip);
-                                serverLog.trace("Connection from ip " + ip + " started, uuid=" + uuid);
+                                serverLog.fine("Connection from ip " + ip + " started, uuid=" + uuid);
 
                                 ConnectionProcessor connectionProcessor = new HttpConnectionProcessor();
                                 connectionProcessor.handleConnection(socket, configuration);
@@ -118,13 +116,13 @@ public class Server implements Runnable {
 
                     }
                 } catch (IOException e) {
-                    serverLog.trace(e.getMessage());
+                    serverLog.fine(e.getMessage());
                 }
             }
 
         } catch (IOException e) {
             //we cannot create the serversocket, we'll shutdown
-            serverLog.error("Fatal error: " + e.getMessage());
+            serverLog.severe("Fatal error: " + e.getMessage());
         } finally {
             IOUtil.closeSilent(serverSocket);
             threadPool.shutdown();
@@ -153,6 +151,15 @@ public class Server implements Runnable {
     public static void main(String[] args) {
 
         Server server = null;
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new SimpleFormatter("%5$s%6$s%n"));
+        consoleHandler.setLevel(Level.INFO);
+        serverLog.setUseParentHandlers(false);
+        accessLog.setUseParentHandlers(false);
+        serverLog.addHandler(consoleHandler);
+        serverLog.setLevel(Level.INFO);
+
+
         try {
             Properties properties = null;
             //if the properties files is not passed as a parameter will use the default values
@@ -161,7 +168,7 @@ public class Server implements Runnable {
                     properties = new Properties();
                     properties.load(new FileReader(args[0]));
                 } catch (IOException e) {
-                    serverLog.error("cannot load file " + args[0] + ", error is:" + e.getMessage());
+                    serverLog.severe("cannot load file " + args[0] + ", error is:" + e.getMessage());
                     System.exit(-1);
                 }
             } else {
@@ -186,8 +193,8 @@ public class Server implements Runnable {
             try {
                 configuration = new Configuration(properties);
             } catch (ConfigurationException e) {
-                serverLog.error("configuration error, cannot start the server");
-                serverLog.error(e.getMessage());
+                serverLog.severe("configuration error, cannot start the server");
+                serverLog.severe(e.getMessage());
                 System.exit(-1);
             }
 
@@ -198,7 +205,7 @@ public class Server implements Runnable {
         } catch (InternalException e) {
             //internal exception should never happen unless something unexpected happens
             // (like having a corrupted jar without templates or an internal bug etc)
-            serverLog.error(e.getMessage());
+            serverLog.severe(e.getMessage());
             if (server != null)
                 server.stop();
         }

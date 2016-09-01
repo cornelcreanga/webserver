@@ -7,8 +7,6 @@ import com.ccreanga.webserver.TooManyEntriesException;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ccreanga.webserver.Server.serverLog;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
@@ -28,9 +27,6 @@ import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
  * using the Configuration.getRequestMaxLines, Configuration.getRequestMaxLineLength, Configuration.getRequestMaxHeaders values)
  */
 public class HttpRequestParser {
-
-    private static final Logger serverLog = LoggerFactory.getLogger("serverLog");
-
 
     public static HttpRequestLine consumeRequestMethod(InputStream in, int lineMaxLength, int uriMaxLength) throws IOException, InvalidMessageException {
         String line;
@@ -49,7 +45,7 @@ public class HttpRequestParser {
         }
 
 
-        serverLog.trace("Connection " + ContextHolder.get().getUuid() + " : " + line);
+        serverLog.fine("Connection " + ContextHolder.get().getUuid() + " : " + line);
         ContextHolder.get().setUrl(line);
         int index = line.indexOf(' ');
         if (index == -1)

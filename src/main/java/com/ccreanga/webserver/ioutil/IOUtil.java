@@ -30,7 +30,8 @@ public class IOUtil {
 
     public static void closeSilent(Closeable closeable) {
         try {
-            closeable.close();
+            if (closeable!=null)
+                closeable.close();
         } catch (IOException e) {/**ignore**/}
     }
 

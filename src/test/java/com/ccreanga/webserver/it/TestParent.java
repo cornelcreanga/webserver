@@ -3,6 +3,7 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
+import com.ccreanga.webserver.SimpleFormatter;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.AfterClass;
@@ -10,6 +11,11 @@ import org.junit.BeforeClass;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+
+import static com.ccreanga.webserver.Server.accessLog;
+import static com.ccreanga.webserver.Server.serverLog;
 
 public abstract class TestParent {
 
@@ -41,6 +47,13 @@ public abstract class TestParent {
         properties.put("requestMaxHeaders", "64");
 
         properties.put("verbose", "true");
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new SimpleFormatter("%5$s%6$s%n"));
+        consoleHandler.setLevel(Level.INFO);
+        serverLog.setUseParentHandlers(false);
+        accessLog.setUseParentHandlers(false);
+        serverLog.addHandler(consoleHandler);
+        serverLog.setLevel(Level.INFO);
         configuration = new Configuration(properties);
 
         server = new Server(configuration);

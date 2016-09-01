@@ -1,17 +1,14 @@
 package com.ccreanga.webserver.http;
 
-
-import com.ccreanga.webserver.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
+
+import static com.ccreanga.webserver.Server.serverLog;
 
 /**
  * Map of mime types
  */
 public class Mime {
-    private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+
     private static Properties properties = new Properties();
     private static String applicationStream = "application/octet-stream";
 
@@ -21,7 +18,7 @@ public class Mime {
         try {
             properties.load(ClassLoader.getSystemResourceAsStream(MIME_PROPERTIES));
         } catch (Exception e) {
-            log.error("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
+            serverLog.severe("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
             System.exit(-1);
         }
     }

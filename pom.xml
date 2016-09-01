@@ -59,27 +59,6 @@
     </properties>
 
     <dependencies>
-        <!-- Log start -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j-api.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback-core.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback-classic.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <!-- Log end -->
-
 
         <!--<dependency>-->
         <!--<groupId>org.yaml</groupId>-->
