@@ -3,7 +3,7 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
-import com.ccreanga.webserver.SimpleFormatter;
+import com.ccreanga.webserver.common.SimpleFormatter;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.AfterClass;

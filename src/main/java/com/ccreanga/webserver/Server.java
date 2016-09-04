@@ -1,6 +1,7 @@
 package com.ccreanga.webserver;
 
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.SimpleFormatter;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpConnectionProcessor;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpMessageWriter;
@@ -22,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_LOG;
+import static com.ccreanga.webserver.common.DateUtil.FORMATTER_LOG;
 
 /**
  * Main server class

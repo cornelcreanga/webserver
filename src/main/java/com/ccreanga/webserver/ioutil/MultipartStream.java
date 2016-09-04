@@ -18,6 +18,7 @@ package com.ccreanga.webserver.ioutil;
 
 import java.io.*;
 
+import static com.ccreanga.webserver.common.Constants.*;
 import static java.lang.String.format;
 
 /**
@@ -77,19 +78,13 @@ import static java.lang.String.format;
  */
 public class MultipartStream {
 
-    public static final byte CR = 0x0D;
-    public static final byte LF = 0x0A;
 
-    /**
-     * The dash (-) ASCII character value.
-     */
-    public static final byte DASH = 0x2D;
-    public static final int HEADER_PART_SIZE_MAX = 10240;
-    protected static final int DEFAULT_BUFSIZE = 4096;
-    protected static final byte[] HEADER_SEPARATOR = {CR, LF, CR, LF};
-    protected static final byte[] FIELD_SEPARATOR = {CR, LF};
-    protected static final byte[] STREAM_TERMINATOR = {DASH, DASH};
-    protected static final byte[] BOUNDARY_PREFIX = {CR, LF, DASH, DASH};
+    private static final int HEADER_PART_SIZE_MAX = 10240;
+    private static final int DEFAULT_BUFSIZE = 4096;
+    private static final byte[] HEADER_SEPARATOR = {CR, LF, CR, LF};
+    private static final byte[] FIELD_SEPARATOR = CRLF;
+    private static final byte[] STREAM_TERMINATOR = {DASH, DASH};
+    private static final byte[] BOUNDARY_PREFIX = {CR, LF, DASH, DASH};
 
     // ----------------------------------------------------------- Data members
 
@@ -115,9 +110,7 @@ public class MultipartStream {
     private String headerEncoding;
 
 
-    public MultipartStream(InputStream input,
-                           byte[] boundary,
-                           int bufSize) {
+    public MultipartStream(InputStream input, byte[] boundary, int bufSize) {
 
         if (boundary == null) {
             throw new IllegalArgumentException("boundary may not be null");
@@ -144,8 +137,7 @@ public class MultipartStream {
         tail = 0;
     }
 
-    public MultipartStream(InputStream input,
-                           byte[] boundary) {
+    public MultipartStream(InputStream input, byte[] boundary) {
         this(input, boundary, DEFAULT_BUFSIZE);
     }
 
@@ -297,9 +289,8 @@ public class MultipartStream {
         return headers;
     }
 
-    public int readBodyData(OutputStream output)
-            throws MalformedStreamException, IOException {
-        return (int) Streams.copy(newInputStream(), output, false); // N.B. Streams.copy closes the input stream
+    public long readBodyData(OutputStream output) throws  IOException {
+        return IOUtil.copy(newInputStream(), output);
     }
 
     /**
@@ -322,7 +313,7 @@ public class MultipartStream {
      * @throws MalformedStreamException if the stream ends unexpectedly.
      * @throws IOException              if an i/o error occurs.
      */
-    public int discardBodyData() throws MalformedStreamException, IOException {
+    public long discardBodyData() throws MalformedStreamException, IOException {
         return readBodyData(null);
     }
 
@@ -355,19 +346,7 @@ public class MultipartStream {
         }
     }
 
-    /**
-     * Compares <code>count</code> first bytes in the arrays
-     * <code>a</code> and <code>b</code>.
-     *
-     * @param a     The first array to compare.
-     * @param b     The second array to compare.
-     * @param count How many bytes should be compared.
-     * @return <code>true</code> if <code>count</code> first bytes in arrays
-     * <code>a</code> and <code>b</code> are equal.
-     */
-    public static boolean arrayequals(byte[] a,
-                                      byte[] b,
-                                      int count) {
+    public static boolean arrayequals(byte[] a, byte[] b, int count) {
         for (int i = 0; i < count; i++) {
             if (a[i] != b[i]) {
                 return false;
@@ -718,11 +697,6 @@ public class MultipartStream {
             }
         }
 
-        /**
-         * Returns, whether the stream is closed.
-         *
-         * @return True, if the stream is closed, otherwise false.
-         */
         public boolean isClosed() {
             return closed;
         }

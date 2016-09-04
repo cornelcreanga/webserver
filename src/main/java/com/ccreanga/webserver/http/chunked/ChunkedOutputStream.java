@@ -6,23 +6,29 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
+import static com.ccreanga.webserver.common.Constants.CRLF;
+
 /**
- * todo - format me
+ *
+ * <p>
  * Chunked streaming enables content streams of unknown size to be transferred as a sequence of length-delimited buffers, which enables the sender to
  * retain connection persistence and the recipient to know when it has received the entire message.
- * Structure
- * chunked-body = *chunk
- * last-chunk
- * trailer-part
- * CRLF
- * chunk chunk-size
- * last-chunk = chunk-size [ chunk-ext ] CRLF
- * chunk-data CRLF
- * = 1*HEXDIG
- * = 1*("0") [ chunk-ext ] CRLF
- * chunk-data = 1*OCTET ; a sequence of chunk-size octets
- * The chunk-size field is a string of hex digits indicating the size of the chunk-data in octets. The chunked transfer coding is complete
- * when a chunk with a chunk-size of zero is received, possibly followed by a trailer, and finally terminated by an empty line.
+ * </p>
+ *
+ * <p>Structure</p>
+ * <p>chunked-body = *chunk</p>
+ * <p>last-chunk</p>
+ * <p>trailer-part</p>
+ * <p>CRLF</p>
+ * <p>chunk chunk-size</p>
+ * <p>last-chunk = chunk-size [ chunk-ext ] CRLF</p>
+ * <p>chunk-data CRLF</p>
+ * <p>= 1*HEXDIG</p>
+ * <p>= 1*("0") [ chunk-ext ] CRLF</p>
+ * <p>chunk-data = 1*OCTET ; a sequence of chunk-size octets</p>
+ * <p>The chunk-size field is a string of hex digits indicating the size of the chunk-data in octets. The chunked transfer coding is complete
+ * when a chunk with a chunk-size of zero is received, possibly followed by a trailer, and finally terminated by an empty line.</p>
+ *
  */
 public class ChunkedOutputStream extends OutputStream {
 
@@ -93,8 +99,7 @@ public class ChunkedOutputStream extends OutputStream {
     }
 
     private void writeCRLF(OutputStream out) throws IOException {
-        out.write(13);
-        out.write(10);
+        out.write(CRLF);
     }
 
 }

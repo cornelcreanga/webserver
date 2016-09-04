@@ -1,5 +1,7 @@
 package com.ccreanga.webserver.http;
 
+import com.ccreanga.webserver.InternalException;
+
 import java.util.Properties;
 
 import static com.ccreanga.webserver.Server.serverLog;
@@ -18,8 +20,7 @@ public class Mime {
         try {
             properties.load(ClassLoader.getSystemResourceAsStream(MIME_PROPERTIES));
         } catch (Exception e) {
-            serverLog.severe("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
-            System.exit(-1);
+            throw new InternalException("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
         }
     }
 

@@ -1,7 +1,7 @@
 package com.ccreanga.webserver.http;
 
 
-import com.ccreanga.webserver.ParseUtil;
+import com.ccreanga.webserver.common.StringUtil;
 
 import java.util.*;
 
@@ -134,10 +134,10 @@ public class HttpHeaders {
     public Map<String, String> getHeaderParams(String header) {
         Map<String, String> headerParams = new LinkedHashMap<String, String>();
         String headerValue = headers.get(header);
-        List<String> params = ParseUtil.split(headerValue, ';', false, 100);
+        List<String> params = StringUtil.split(headerValue, ';', false, 100);
         for (String param : params) {
-            String key = ParseUtil.left(param, '=');
-            String value = ParseUtil.right(param, '=');
+            String key = StringUtil.left(param, '=');
+            String value = StringUtil.right(param, '=');
             if (value.length() > 0) {
                 if (value.startsWith("\""))
                     value = value.substring(1);

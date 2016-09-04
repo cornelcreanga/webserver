@@ -1,8 +1,8 @@
 package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.ParseUtil;
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.StringUtil;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpRequestParser;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
@@ -46,7 +46,7 @@ public class PostHandler implements HttpMethodHandler {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "multipart/form-data without boundary", out);
                 return;
             }
-            String boundary = ParseUtil.right(contentType.substring(index + 1), '=');
+            String boundary = StringUtil.right(contentType.substring(index + 1), '=');
             if (boundary.length() == 0) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "boundary value is missing", out);
                 return;

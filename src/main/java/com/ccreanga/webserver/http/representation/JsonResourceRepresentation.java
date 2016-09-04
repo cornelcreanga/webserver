@@ -1,6 +1,6 @@
 package com.ccreanga.webserver.http.representation;
 
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.repository.FileManager;

@@ -2,7 +2,7 @@ package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.etag.EtagManager;
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.*;
 import com.ccreanga.webserver.http.chunked.ChunkedOutputStream;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 import static com.ccreanga.webserver.http.HttpStatus.PARTIAL_CONTENT;

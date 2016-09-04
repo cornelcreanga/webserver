@@ -1,6 +1,6 @@
 package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.DateUtil;
 
 import java.time.LocalDateTime;
 

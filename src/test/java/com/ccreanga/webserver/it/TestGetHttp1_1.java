@@ -1,10 +1,10 @@
 package com.ccreanga.webserver.it;
 
 
-import com.ccreanga.webserver.ParseUtil;
+import com.ccreanga.webserver.common.StringUtil;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.etag.EtagManager;
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
@@ -73,7 +73,7 @@ public class TestGetHttp1_1 extends TestParent {
 
 
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent("folder1"));
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + StringUtil.escapeURLComponent("folder1"));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader("Accept", Mime.getType(mime));
 
@@ -151,7 +151,7 @@ public class TestGetHttp1_1 extends TestParent {
 
 
 
-        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + ParseUtil.escapeURLComponent(resource));
+        HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + StringUtil.escapeURLComponent(resource));
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         try (CloseableHttpResponse response = httpclient.execute(request)) {

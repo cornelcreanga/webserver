@@ -2,7 +2,7 @@ package com.ccreanga.webserver.http;
 
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.ParseUtil;
+import com.ccreanga.webserver.common.StringUtil;
 import com.ccreanga.webserver.TooManyEntriesException;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
@@ -153,7 +153,7 @@ public class HttpRequestParser {
         String len = httpHeaders.getHeader(CONTENT_LENGTH);
         try {
             if (len != null)
-                length = ParseUtil.parseLong(len, 0, Long.MAX_VALUE);
+                length = StringUtil.parseLong(len, 0, Long.MAX_VALUE);
         } catch (NumberFormatException e) {
             throw new InvalidMessageException("invalid content length value " + len, BAD_REQUEST);
         }
@@ -177,7 +177,7 @@ public class HttpRequestParser {
                 String form = IOUtil.readToken(in, -1, "UTF-8", 8 * 1024 * 1024);
                 int limit = 10000;//max 10000 params -todo -config that
                 try {
-                    params = ParseUtil.parseFormEncodedParams(form, limit);
+                    params = StringUtil.parseFormEncodedParams(form, limit);
                 } catch (TooManyEntriesException e) {
                     throw new InvalidMessageException("too many form params", HttpStatus.BAD_REQUEST);
                 }

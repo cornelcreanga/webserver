@@ -47,28 +47,25 @@ public class IOUtil {
         return socket.getRemoteSocketAddress().toString();
     }
 
-    public static long copy(InputStream from, OutputStream to)
-            throws IOException {
-        byte[] buf = new byte[8 * 1024];
-        long total = 0;
-        while (true) {
-            int r = from.read(buf);
-            if (r == -1) {
-                break;
-            }
-            to.write(buf, 0, r);
-            total += r;
-        }
-        return total;
+    public static long copy(InputStream from, OutputStream to, int bufferSize) throws IOException {
+        return copy(from, to, -1,-1,bufferSize);
     }
 
-    public static long copy(InputStream input, OutputStream output,
-                            long inputOffset, long length) throws IOException {
 
-        byte[] buffer = new byte[8 * 1024];
+    public static long copy(InputStream from, OutputStream to) throws IOException {
+        return copy(from, to, -1,-1);
+    }
+
+    public static long copy(InputStream from, OutputStream to, long inputOffset, long length) throws IOException {
+        return copy(from, to, inputOffset,length,8*1024);
+    }
+
+    public static long copy(InputStream from, OutputStream to, long inputOffset, long length, int bufferSize) throws IOException {
+
+        byte[] buffer = new byte[bufferSize];
 
         if (inputOffset > 0) {
-            long skipped = input.skip(inputOffset);
+            long skipped = from.skip(inputOffset);
             if (skipped != inputOffset) {
                 throw new EOFException("Bytes to skip: " + inputOffset + " actual: " + skipped);
             }
@@ -84,8 +81,8 @@ public class IOUtil {
         }
         int read;
         long totalRead = 0;
-        while (bytesToRead > 0 && -1 != (read = input.read(buffer, 0, bytesToRead))) {
-            output.write(buffer, 0, read);
+        while (bytesToRead > 0 && -1 != (read = from.read(buffer, 0, bytesToRead))) {
+            to.write(buffer, 0, read);
             totalRead += read;
             if (length > 0) {
                 bytesToRead = (int) Math.min(length - totalRead, bufferLength);

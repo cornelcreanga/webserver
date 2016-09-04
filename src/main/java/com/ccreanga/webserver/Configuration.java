@@ -1,6 +1,8 @@
 package com.ccreanga.webserver;
 
 
+import com.ccreanga.webserver.common.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -169,7 +171,7 @@ public class Configuration {
             throw new ConfigurationException("cannot create the access log file, message is "+e.getMessage());
         }
 
-        fileHandler.setFormatter(new SimpleFormatter("%5$s%6$s%n"));
+        fileHandler.setFormatter(new com.ccreanga.webserver.common.SimpleFormatter("%5$s%6$s%n"));
         fileHandler.setLevel(Level.INFO);
         accessLog.setLevel(Level.INFO);
         accessLog.addHandler(fileHandler);
@@ -183,7 +185,7 @@ public class Configuration {
             String string = (String) properties.get(name);
             if (string == null)
                 throw new ConfigurationException("Cannot find the value " + name);
-            return (int) ParseUtil.parseLong(string, min, max);
+            return (int) StringUtil.parseLong(string, min, max);
         } catch (NumberFormatException e) {
             throw new ConfigurationException("Error when trying to configure " + name + " - " + e.getMessage());
         }

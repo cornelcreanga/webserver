@@ -52,12 +52,7 @@ public class RangeManager {
         } catch (NumberFormatException nfe) {
             throw new RangeException("invalid range values " + rangeValue);
         }
-        /**
-         * 500-600,601-999
-         * bytes=-500
-         Or:
-         bytes=9500-
-         */
+
     }
 
 }

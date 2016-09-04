@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.formatters;
+package com.ccreanga.webserver.common;
 
 import java.text.DecimalFormat;
 

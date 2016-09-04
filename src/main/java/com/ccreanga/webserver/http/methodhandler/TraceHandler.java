@@ -1,7 +1,7 @@
 package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.formatters.DateUtil;
+import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
@@ -10,7 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static com.ccreanga.webserver.formatters.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;

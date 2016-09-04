@@ -1,6 +1,7 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.common;
 
 
+import com.ccreanga.webserver.TooManyEntriesException;
 import com.ccreanga.webserver.ioutil.IOUtil;
 
 import java.nio.charset.StandardCharsets;
@@ -9,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
-public class ParseUtil {
+public class StringUtil {
 
     public static long parseLong(String string, long min, long max) {
         long value = Long.parseLong(string);
@@ -66,13 +67,13 @@ public class ParseUtil {
     }
 
     public static Map<String, List<String>> parseFormEncodedParams(String form, int limit) throws TooManyEntriesException {
-        List<String> elements = ParseUtil.split(form, '&', false, limit);
+        List<String> elements = StringUtil.split(form, '&', false, limit);
         return elements.stream().
                 collect(
                         Collectors.groupingBy(
-                                s -> IOUtil.decodeUTF8(ParseUtil.left(s, '=')),
+                                s -> IOUtil.decodeUTF8(StringUtil.left(s, '=')),
                                 Collectors.mapping(
-                                        s -> IOUtil.decodeUTF8(ParseUtil.right(s, '=')),
+                                        s -> IOUtil.decodeUTF8(StringUtil.right(s, '=')),
                                         toList()
                                 )
                         )

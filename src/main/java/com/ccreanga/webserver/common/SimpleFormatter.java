@@ -1,4 +1,4 @@
-package com.ccreanga.webserver;
+package com.ccreanga.webserver.common;
 
 import java.io.*;
 import java.util.Date;
