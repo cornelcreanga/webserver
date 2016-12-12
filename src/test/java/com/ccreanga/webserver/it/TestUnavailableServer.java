@@ -3,6 +3,7 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
+import com.ccreanga.webserver.common.SimpleFormatter;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
@@ -17,7 +18,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
+import static com.ccreanga.webserver.Server.accessLog;
+import static com.ccreanga.webserver.Server.serverLog;
 import static org.junit.Assert.assertTrue;
 
 public class TestUnavailableServer {
@@ -32,6 +37,8 @@ public class TestUnavailableServer {
         Properties properties = new Properties();
         properties.put("serverPort", port);
         properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
+        properties.put("rootFolderWritable", "true");
+
         properties.put("serverInitialThreads", "1");
         properties.put("serverMaxThreads", "1");
 
@@ -46,6 +53,14 @@ public class TestUnavailableServer {
         properties.put("requestMaxHeaders", "64");
 
         properties.put("verbose", "false");
+
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new SimpleFormatter("%5$s%6$s%n"));
+        consoleHandler.setLevel(Level.INFO);
+        serverLog.setUseParentHandlers(false);
+        accessLog.setUseParentHandlers(false);
+        serverLog.addHandler(consoleHandler);
+        serverLog.setLevel(Level.INFO);
 
         Server server = new Server(new Configuration(properties));
         CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()

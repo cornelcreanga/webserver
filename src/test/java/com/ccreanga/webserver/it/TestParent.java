@@ -3,7 +3,13 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
+import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.common.SimpleFormatter;
+import com.ccreanga.webserver.http.HttpStatus;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.AfterClass;
@@ -16,6 +22,7 @@ import java.util.logging.Level;
 
 import static com.ccreanga.webserver.Server.accessLog;
 import static com.ccreanga.webserver.Server.serverLog;
+import static org.junit.Assert.assertEquals;
 
 public abstract class TestParent {
 
@@ -33,6 +40,8 @@ public abstract class TestParent {
         Properties properties = new Properties();
         properties.put("serverPort", port);
         properties.put("serverRootFolder", ClassLoader.getSystemResource("www").getPath());
+        properties.put("rootFolderWritable", "true");
+
         properties.put("serverInitialThreads", "128");
         properties.put("serverMaxThreads", "1000");
 
@@ -76,6 +85,18 @@ public abstract class TestParent {
         server.stop();
         while (!server.isStopped()) ;
 //        while (!server.isStopped());
+    }
+
+    protected void checkForStatus(HttpUriRequest request, HttpStatus status, String content) throws Exception {
+        try (CloseableHttpResponse response = httpclient.execute(request)) {
+            StatusLine statusLine = response.getStatusLine();
+            HttpEntity entity = response.getEntity();
+            String entityContent = Util.readAsUtfString(entity.getContent());
+
+            assertEquals(statusLine.getStatusCode(), status.value());
+            assertEquals(entityContent, content);
+
+        }
     }
 
 }

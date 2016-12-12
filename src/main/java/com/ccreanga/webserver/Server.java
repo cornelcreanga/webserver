@@ -177,6 +177,8 @@ public class Server implements Runnable {
                 properties = new Properties();
                 properties.put("serverPort", "8082");
                 properties.put("serverRootFolder", "/var/www/html");
+                properties.put("rootFolderWritable", "true");
+
                 properties.put("serverInitialThreads", "128");
                 properties.put("serverMaxThreads", "1000");
                 properties.put("requestTimeoutSeconds", "5");

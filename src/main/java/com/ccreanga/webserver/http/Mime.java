@@ -12,9 +12,12 @@ import static com.ccreanga.webserver.Server.serverLog;
 public class Mime {
 
     private static Properties properties = new Properties();
+    private static Properties reverted = new Properties();
     private static String applicationStream = "application/octet-stream";
 
     public static final String MIME_PROPERTIES = "mime.properties";
+    public static final String REVERTED_PROPERTIES = "reverted.properties";
+
 
     static {
         try {
@@ -22,6 +25,12 @@ public class Mime {
         } catch (Exception e) {
             throw new InternalException("cannot load the " + MIME_PROPERTIES + " file (corrupted archive)");
         }
+        try {
+            reverted.load(ClassLoader.getSystemResourceAsStream(REVERTED_PROPERTIES));
+        } catch (Exception e) {
+            throw new InternalException("cannot load the " + REVERTED_PROPERTIES + " file (corrupted archive)");
+        }
+
     }
 
     public static String getType(String extension) {
@@ -32,4 +41,9 @@ public class Mime {
             type = applicationStream;
         return type;
     }
+
+    public static String getExtension(String type) {
+        return (String) reverted.get(type);
+    }
+
 }

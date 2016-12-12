@@ -27,6 +27,11 @@ public class Configuration {
      * Server root folder
      */
     private String serverRootFolder;
+
+    /**
+     * Is it possible to create resources inside of the root folder?
+     */
+    private boolean rootFolderWritable;
     /**
      * Initial no of threads, it should belong in [1..1024]
      */
@@ -122,6 +127,10 @@ public class Configuration {
         return requestMaxHeaders;
     }
 
+    public boolean isRootFolderWritable() {
+        return rootFolderWritable;
+    }
+
     private void load() {
         serverPort = parseInt("serverPort", 1, 65535);
         serverRootFolder = (String) properties.get("serverRootFolder");
@@ -152,19 +161,16 @@ public class Configuration {
         if ((!requestEtag.equals(ETAG_NONE)) && (!requestEtag.equals(ETAG_WEAK)))
             throw new IllegalArgumentException("unknown etag:" + requestEtag + "; it should be none or weak");
 
-
+        rootFolderWritable = parseBoolean("rootFolderWritable");
         requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8 * 1204);
 
         requestMessageBodyMaxSize = parseInt("requestMessageBodyMaxSize", 256, 1073741824);
         requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10 * 1024);
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
-        if (properties.get("verbose") == null)
-            throw new ConfigurationException("missing verbose value");
+        verbose = parseBoolean("verbose");
 
-        verbose = Boolean.valueOf((String) properties.get("verbose"));
-
-        FileHandler fileHandler = null;
+        FileHandler fileHandler;
         try {
             fileHandler = new FileHandler("access.log",true);
         } catch (IOException e) {
@@ -189,6 +195,12 @@ public class Configuration {
         } catch (NumberFormatException e) {
             throw new ConfigurationException("Error when trying to configure " + name + " - " + e.getMessage());
         }
+    }
+    private Boolean parseBoolean(String name) {
+            String string = (String) properties.get(name);
+            if (string == null)
+                throw new ConfigurationException("Cannot find the value " + name);
+            return Boolean.valueOf(string);
     }
 
 

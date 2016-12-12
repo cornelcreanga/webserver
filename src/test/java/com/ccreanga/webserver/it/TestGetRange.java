@@ -113,17 +113,6 @@ public class TestGetRange extends TestParent {
         checkForStatus(request, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "");
     }
 
-    private void checkForStatus(HttpGet request, HttpStatus status, String content) throws Exception {
-        try (CloseableHttpResponse response = httpclient.execute(request)) {
-            StatusLine statusLine = response.getStatusLine();
-            HttpEntity entity = response.getEntity();
-            String entityContent = Util.readAsUtfString(entity.getContent());
-
-            assertEquals(statusLine.getStatusCode(), status.value());
-            assertEquals(entityContent, content);
-
-        }
-    }
 
 
 }

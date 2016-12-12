@@ -170,21 +170,6 @@ public class HttpRequestParser {
 
         }
 
-        String contentType = httpHeaders.getHeader(CONTENT_TYPE);
-        Map<String, List<String>> params = new HashMap<>();
-        if (contentType != null) {
-            if (contentType.startsWith("application/x-www-form-urlencoded")) {
-                String form = IOUtil.readToken(in, -1, "UTF-8", 8 * 1024 * 1024);
-                int limit = 10000;//max 10000 params -todo -config that
-                try {
-                    params = StringUtil.parseFormEncodedParams(form, limit);
-                } catch (TooManyEntriesException e) {
-                    throw new InvalidMessageException("too many form params", HttpStatus.BAD_REQUEST);
-                }
-            }
-        }
-
-        //todo - add tests for x-www-form-urlencoded
 
         InputStream enclosed = in;
         boolean chunked = false;
@@ -193,7 +178,7 @@ public class HttpRequestParser {
             chunked = true;
         }
 
-        return new HttpRequestMessage(httpRequestLine, httpHeaders, params, enclosed, length, chunked);
+        return new HttpRequestMessage(httpRequestLine, httpHeaders, enclosed, length, chunked);
 
     }
 

@@ -14,25 +14,25 @@ public class HttpRequestMessage {
     private HttpMethod method;
     private HttpHeaders headers;
     private String uri;
-    private Map<String, List<String>> params;
+    private Map<String, List<String>> uriParams;
     private HttpVersion version;
     private InputStream body;//it makes sense only for put/post request. it can be too large to be kept in the RAM
     private long length;//body length; makes sense only when chunk=false; -1 otherwise
     private boolean chunked;
 
-    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, Map<String, List<String>> bodyParams, InputStream body, long length, boolean chunked) {
+    public HttpRequestMessage(HttpRequestLine line, HttpHeaders headers, InputStream body, long length, boolean chunked) {
         this.method = line.getMethod();
         this.headers = headers;
         this.uri = line.getUri();
-        this.params = new HashMap<>(bodyParams);
+        this.uriParams = new HashMap<>();
         line.getUriParams().forEach(
                 (k, v) -> {
-                    if (params.containsKey(k))
-                        params.get(k).add(v);
+                    if (uriParams.containsKey(k))
+                        uriParams.get(k).add(v);
                     else {
                         List<String> list = new ArrayList<>();
                         list.add(v);
-                        params.put(k, list);
+                        uriParams.put(k, list);
                     }
                 });
 
@@ -96,7 +96,7 @@ public class HttpRequestMessage {
         return uri;
     }
 
-    public Map<String, List<String>> getAllParams() {
-        return params;
+    public Map<String, List<String>> getUriParams() {
+        return uriParams;
     }
 }
