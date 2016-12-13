@@ -1,10 +1,10 @@
 package com.ccreanga.webserver.it;
 
 
-import com.ccreanga.webserver.common.StringUtil;
 import com.ccreanga.webserver.Util;
-import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.common.StringUtil;
+import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
@@ -70,7 +70,6 @@ public class TestGetHttp1_1 extends TestParent {
     public void testFolder(String mime) throws Exception {
         String fileName = "www/folder1";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
-
 
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + StringUtil.escapeURLComponent("folder1"));
@@ -148,7 +147,6 @@ public class TestGetHttp1_1 extends TestParent {
         String fileName = "www/" + resource;
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         String extension = Util.extension(fileName);
-
 
 
         HttpGet request = new HttpGet("http://" + host + ":" + port + "/" + StringUtil.escapeURLComponent(resource));

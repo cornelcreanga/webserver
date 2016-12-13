@@ -1,9 +1,9 @@
 package com.ccreanga.webserver.it;
 
-import com.ccreanga.webserver.common.StringUtil;
 import com.ccreanga.webserver.Util;
-import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.common.StringUtil;
+import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.ioutil.IOUtil;
@@ -27,7 +27,6 @@ public class TestHead extends TestParent {
         String fileName = "www/file.txt";
         File file = new File(ClassLoader.getSystemResource(fileName).toURI());
         String extension = Util.extension(fileName);
-
 
 
         HttpHead request = new HttpHead("http://" + host + ":" + port + "/" + StringUtil.escapeURLComponent("file.txt"));

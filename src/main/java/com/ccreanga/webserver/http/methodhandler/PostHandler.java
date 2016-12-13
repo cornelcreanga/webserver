@@ -135,7 +135,10 @@ public class PostHandler implements HttpMethodHandler {
             }
         }
         try(FileOutputStream outputStream = new FileOutputStream(file);){
-            IOUtil.copy(request.getBody(),outputStream,0,request.getLength());
+            if (!request.isChunked())
+                IOUtil.copy(request.getBody(),outputStream,0,request.getLength());
+            else
+                IOUtil.copy(request.getBody(),outputStream);
         }catch (Exception e){
             //todo
             writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);

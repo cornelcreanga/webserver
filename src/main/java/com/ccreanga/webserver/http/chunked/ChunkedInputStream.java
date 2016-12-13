@@ -29,7 +29,7 @@ public class ChunkedInputStream extends FixedLengthInputStream {
      *                headers will be added, or null if they are to be discarded
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedInputStream(InputStream in, HttpHeaders headers, int maxBodySize, int lineMaxNo, int headerMaxNo) {
+    public ChunkedInputStream(InputStream in, HttpHeaders headers, long maxBodySize, int lineMaxNo, int headerMaxNo) {
         super(new LimitedInputStream(in, maxBodySize), 0, true);
         this.headers = headers;
         this.headerMaxNo = headerMaxNo;
@@ -95,8 +95,7 @@ public class ChunkedInputStream extends FixedLengthInputStream {
         try {
             return Long.parseLong(line, 16); // throws NFE
         } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException(
-                    "invalid chunk size line: \"" + line + "\"");
+            throw new IllegalArgumentException("invalid chunk size line: \"" + line + "\"");
         }
     }
 }

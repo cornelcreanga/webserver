@@ -29,9 +29,15 @@ public class Configuration {
     private String serverRootFolder;
 
     /**
-     * Is it possible to create resources inside of the root folder?
+     * Is the root folder writable? Can we upload files into it?
      */
     private boolean rootFolderWritable;
+
+    /**
+     * Maximum size for request body
+     */
+    private long bodyMaximumSize;
+
     /**
      * Initial no of threads, it should belong in [1..1024]
      */
@@ -64,7 +70,10 @@ public class Configuration {
      * The maximum amount of headers, it should belong in [8..65535]
      */
 
-    private int requestMessageBodyMaxSize;
+    /**
+     * Maximum amount of request body size. Makes sense for PUT/POST requests. It should belong in [1048576..17179869184] (1mb-16gb)
+     */
+    private long requestMessageBodyMaxSize;
 
     private int requestURIMaxSize;
 
@@ -115,7 +124,7 @@ public class Configuration {
         return requestMaxLineLength;
     }
 
-    public int getRequestMessageBodyMaxSize() {
+    public long getRequestMessageBodyMaxSize() {
         return requestMessageBodyMaxSize;
     }
 
@@ -164,7 +173,7 @@ public class Configuration {
         rootFolderWritable = parseBoolean("rootFolderWritable");
         requestURIMaxSize = parseInt("requestURIMaxSize", 256, 8 * 1204);
 
-        requestMessageBodyMaxSize = parseInt("requestMessageBodyMaxSize", 256, 1073741824);
+        requestMessageBodyMaxSize = parseLong("requestMessageBodyMaxSize", 1048576, 17179869184L);
         requestMaxLineLength = parseInt("requestMaxLineLength", 256, 10 * 1024);
         requestMaxHeaders = parseInt("requestMaxHeaders", 8, 65535);
 
@@ -187,15 +196,19 @@ public class Configuration {
     }
 
     private int parseInt(String name, int min, int max) {
+        return (int)parseLong(name,min,max);
+    }
+    private long parseLong(String name, long min, long max) {
         try {
             String string = (String) properties.get(name);
             if (string == null)
                 throw new ConfigurationException("Cannot find the value " + name);
-            return (int) StringUtil.parseLong(string, min, max);
+            return StringUtil.parseLong(string, min, max);
         } catch (NumberFormatException e) {
             throw new ConfigurationException("Error when trying to configure " + name + " - " + e.getMessage());
         }
     }
+
     private Boolean parseBoolean(String name) {
             String string = (String) properties.get(name);
             if (string == null)

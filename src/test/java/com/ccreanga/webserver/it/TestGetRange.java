@@ -1,14 +1,10 @@
 package com.ccreanga.webserver.it;
 
-import com.ccreanga.webserver.common.StringUtil;
-import com.ccreanga.webserver.Util;
-import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.common.StringUtil;
+import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.http.HttpStatus;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 
@@ -16,7 +12,6 @@ import java.io.File;
 import java.time.Instant;
 
 import static com.ccreanga.webserver.http.HttpHeaders.*;
-import static org.junit.Assert.assertEquals;
 
 public class TestGetRange extends TestParent {
 
@@ -112,7 +107,6 @@ public class TestGetRange extends TestParent {
         request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         checkForStatus(request, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "");
     }
-
 
 
 }

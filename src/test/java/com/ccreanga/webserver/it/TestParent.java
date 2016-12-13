@@ -51,7 +51,7 @@ public abstract class TestParent {
         properties.put("requestEtag", "weak");
 
         properties.put("requestURIMaxSize", "8000");
-        properties.put("requestMessageBodyMaxSize", "15000");
+        properties.put("requestMessageBodyMaxSize", "150000000");
         properties.put("requestMaxLineLength", "10000");
         properties.put("requestMaxHeaders", "64");
 
@@ -84,7 +84,6 @@ public abstract class TestParent {
         httpclientNoDecompression.close();
         server.stop();
         while (!server.isStopped()) ;
-//        while (!server.isStopped());
     }
 
     protected void checkForStatus(HttpUriRequest request, HttpStatus status, String content) throws Exception {
@@ -96,6 +95,13 @@ public abstract class TestParent {
             assertEquals(statusLine.getStatusCode(), status.value());
             assertEquals(entityContent, content);
 
+        }
+    }
+
+    protected void checkForStatus(HttpUriRequest request, HttpStatus status) throws Exception {
+        try (CloseableHttpResponse response = httpclient.execute(request)) {
+            StatusLine statusLine = response.getStatusLine();
+            assertEquals(statusLine.getStatusCode(), status.value());
         }
     }
 
