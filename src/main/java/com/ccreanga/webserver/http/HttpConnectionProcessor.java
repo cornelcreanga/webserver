@@ -59,7 +59,16 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 if (responseSyntaxCorrect) {
                     //we can handle the message now
                     HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
-                    httpMessageHandler.handleMessage(request, configuration, output);
+                    try{
+                        httpMessageHandler.handleMessage(request, configuration, output);
+                    } catch (LimitedInputStream.LengthExceededException e) {
+                        ContextHolder.get().setStatusCode(HttpStatus.PAYLOAD_TOO_LARGE.toString());
+                        ContextHolder.get().setContentLength("-");
+                        HttpMessageWriter.writeResponseLine(HttpStatus.PAYLOAD_TOO_LARGE, output);
+                        serverLog.fine("Connection " + ContextHolder.get().getUuid() + " request was too large and will be closed, responded with " + ContextHolder.get().getStatusCode());
+                        ContextHolder.get().setUrl("request message is too long");
+                        shouldKeepConnectionOpen = false;
+                    }
                     serverLog.fine("Connection " + ContextHolder.get().getUuid() + " responded with " + ContextHolder.get().getStatusCode());
                     //after the message is handled decide if we should close the connection or not
                     if ((request.headerIsEqualWithValue(CONNECTION, "close")) ||

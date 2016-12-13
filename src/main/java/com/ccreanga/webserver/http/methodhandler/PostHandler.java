@@ -15,12 +15,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
 public class PostHandler implements HttpMethodHandler {
+
+    public static final Logger serverLog = Logger.getLogger("serverLog");
+
     @Override
     public void handleResponse(HttpRequestMessage request, Configuration cfg, OutputStream out) throws IOException {
 
@@ -139,8 +143,9 @@ public class PostHandler implements HttpMethodHandler {
                 IOUtil.copy(request.getBody(),outputStream,0,request.getLength());
             else
                 IOUtil.copy(request.getBody(),outputStream);
-        }catch (Exception e){
-            //todo
+        }catch (IOException e){
+            //todo - remove file
+            serverLog.warning("Connection " + ContextHolder.get().getUuid()+", message "+e.getMessage());
             writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
             return;
         }

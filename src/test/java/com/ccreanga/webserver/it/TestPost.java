@@ -31,9 +31,6 @@ public class TestPost extends TestParent {
         for (int i = 0; i < 10000; i++)
             text.append("test").append(i);
 
-        System.out.println(text.length());
-
-
         InputStreamEntity reqEntity = new InputStreamEntity(
                 new ByteArrayInputStream(text.toString().getBytes()), -1, ContentType.APPLICATION_OCTET_STREAM);
 
