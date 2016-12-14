@@ -48,7 +48,7 @@ public class TestUnavailableServer {
         properties.put("requestEtag", "weak");
 
         properties.put("requestURIMaxSize", "8000");
-        properties.put("requestMessageBodyMaxSize", "15000");
+        properties.put("requestMessageBodyMaxSize", "15000000");
         properties.put("requestMaxLineLength", "10000");
         properties.put("requestMaxHeaders", "64");
 

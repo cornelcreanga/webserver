@@ -7,25 +7,26 @@ import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.util.Base64;
 
-import static com.ccreanga.webserver.http.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-public class TestPost extends TestParent {
+public class TestPut extends TestParent {
 
 
     @Test
-    public void testPostChunkedBody() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+    public void testPutChunkedBody() throws Exception {
+        String uri = "/cucu/file_put.txt";
+        HttpPut request = new HttpPut("http://" + host + ":" + port + uri);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
         StringBuilder text = new StringBuilder();
@@ -41,15 +42,11 @@ public class TestPost extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
             HttpEntity entity = response.getEntity();
-            String entityContent = Util.readAsUtfString(entity.getContent());
 
-            assertEquals(statusLine.getStatusCode(), HttpStatus.CREATED.value());
-            assertEquals(entityContent, "");
-            assertNotNull(response.getFirstHeader(LOCATION));
-            String location = response.getFirstHeader(LOCATION).getValue();
-            assertNotNull(location);
+            assertEquals(statusLine.getStatusCode(), HttpStatus.NO_CONTENT.value());
+            assertNull(entity);
 
-            HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
+            HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
             request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
@@ -65,9 +62,9 @@ public class TestPost extends TestParent {
 
 
     @Test
-    public void testPostSimpleBody() throws Exception {
-
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/சுப்ரமணிய/");
+    public void testPutSimpleBody() throws Exception {
+        String uri = "/சுப்ரமணிய/cucu.txt";
+        HttpPut request = new HttpPut("http://" + host + ":" + port + uri);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
         final String text = "test text";
@@ -77,16 +74,11 @@ public class TestPost extends TestParent {
         try (CloseableHttpResponse response = httpclient.execute(request)) {
             StatusLine statusLine = response.getStatusLine();
             HttpEntity entity = response.getEntity();
-            String entityContent = Util.readAsUtfString(entity.getContent());
 
-            assertEquals(statusLine.getStatusCode(), HttpStatus.CREATED.value());
-            assertEquals(entityContent, "");
-            assertNotNull(response.getFirstHeader(LOCATION));
-            String location = response.getFirstHeader(LOCATION).getValue();
-            assertNotNull(location);
-            location = new String(Base64.getDecoder().decode(location));
+            assertEquals(statusLine.getStatusCode(), HttpStatus.NO_CONTENT.value());
+            assertNull(entity);
 
-            HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
+            HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
             request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {

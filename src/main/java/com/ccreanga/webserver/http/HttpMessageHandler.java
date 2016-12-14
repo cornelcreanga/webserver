@@ -44,7 +44,7 @@ public class HttpMessageHandler {
                 new PostHandler().handleResponse(request, configuration, out);
                 return;
             case PUT:
-                new NotSupportedHandler().handleResponse(request, configuration, out);
+                new PutHandler().handleResponse(request, configuration, out);
                 return;
             case DELETE:
                 new NotSupportedHandler().handleResponse(request, configuration, out);

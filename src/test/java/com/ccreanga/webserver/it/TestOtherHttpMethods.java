@@ -13,12 +13,6 @@ import static org.junit.Assert.assertEquals;
 
 public class TestOtherHttpMethods extends TestParent {
 
-
-    @Test
-    public void testPut() throws IOException {
-        testNotImplemented(new HttpPut("http://" + host + ":" + port + "/"));
-    }
-
     @Test
     public void testPatch() throws IOException {
         testNotImplemented(new HttpPatch("http://" + host + ":" + port + "/"));

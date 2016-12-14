@@ -13,7 +13,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
+import java.io.*;
+import java.net.Socket;
 
 import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
@@ -91,5 +92,30 @@ public class TestPostInvalidRequests extends TestParent {
         checkForStatus(request, HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    public void testPostInvalidCharName() throws Exception {
 
+        try (Socket socket = new Socket(host, Integer.parseInt(port))) {
+            socket.setSoTimeout(30000);
+            InputStream in = socket.getInputStream();
+            OutputStream out = socket.getOutputStream();
+            out.write("POST /cucu/puc\u0000u HTTP/1.1\n".getBytes());
+            out.write("Host: localhost\n".getBytes());
+
+            out.write("Accept: */*\n".getBytes());
+            out.write("Content-Type: text/plain\n".getBytes());
+            out.write("Content-Length: 35\n\n".getBytes());
+            out.write("{\"username\":\"xyz\",\"password\":\"xyz\"}".getBytes());
+
+            out.flush();
+            Thread.sleep(2000);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+
+            String line = reader.readLine();
+            assertEquals(line, "HTTP/1.1 400 Bad Request");
+        }
+
+
+    }
 }
