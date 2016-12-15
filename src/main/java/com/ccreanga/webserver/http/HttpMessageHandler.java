@@ -47,7 +47,7 @@ public class HttpMessageHandler {
                 new PutHandler().handleResponse(request, configuration, out);
                 return;
             case DELETE:
-                new NotSupportedHandler().handleResponse(request, configuration, out);
+                new DeleteHandler().handleResponse(request, configuration, out);
                 return;
             case CONNECT:
                 return;

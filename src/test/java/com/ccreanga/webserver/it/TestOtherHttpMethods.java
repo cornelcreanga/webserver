@@ -19,11 +19,6 @@ public class TestOtherHttpMethods extends TestParent {
     }
 
     @Test
-    public void testDelete() throws IOException {
-        testNotImplemented(new HttpDelete("http://" + host + ":" + port + "/"));
-    }
-
-    @Test
     public void testOptions() throws IOException {
         HttpOptions request = new HttpOptions("http://" + host + ":" + port + "/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
