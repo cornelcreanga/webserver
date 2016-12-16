@@ -58,4 +58,14 @@ public class FileUtil {
         return StringUtil.bytesToHex(Files.readAllBytes(md5.toPath()));
     }
 
+    public static void removeMd5(File file) throws IOException{
+        String name = file.getName();
+        int last = name.lastIndexOf('.');
+        if (last!=-1)
+            name = name.substring(0,last);
+        File md5 = new File(file.getParent()+File.separator+"."+name+".md5");
+        if (md5.exists())
+            md5.delete();
+    }
+
 }

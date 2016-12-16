@@ -111,19 +111,26 @@ public class PutHandler implements HttpMethodHandler {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
                 return;
             }
-            try (FileOutputStream outputStream = new FileOutputStream(file);) {
+            String tempFileName = file.getPath()+"-temp";
+            File tempFile = new File(tempFileName);
+            try (FileOutputStream outputStream = new FileOutputStream(tempFileName);) {
                 if (!request.isChunked())
                     IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
                 else
                     IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
             } catch (IOException e) {
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-                boolean removed = file.delete();
+                boolean removed = tempFile.delete();
                 if (!removed)
-                    serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't remove " + file.getPath());
+                    serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't remove " + tempFileName);
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);//todo - refine
                 return;
             }
+
+            if (file.exists())
+                file.delete();//todo
+            tempFile.renameTo(file);//todo
+
             FileUtil.createMD5file(file,md);
             writeResponseLine(HttpStatus.NO_CONTENT, out);
 
