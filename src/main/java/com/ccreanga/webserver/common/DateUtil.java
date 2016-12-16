@@ -20,6 +20,7 @@ public class DateUtil {
     private static DateTimeFormatter FORMATTER_C_ASCTIME_ONE_DAY_DIGIT = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy");
     public static DateTimeFormatter FORMATTER_LOG = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm:ss");
     public static DateTimeFormatter FORMATTER_SHORT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public static DateTimeFormatter FORMATTER_LONG = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     public static LocalDateTime parseRfc2161CompliantDate(String date) {

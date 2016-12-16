@@ -6,6 +6,7 @@ import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.ioutil.FileUtil;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
@@ -17,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -145,12 +148,21 @@ public class PostHandler implements HttpMethodHandler {
                 return;
             }
 
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                serverLog.severe("Connection " + ContextHolder.get().getUuid() + ", message is " + e.getMessage());
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
+                return;
+            }
+
             File file = path.toFile();
             try (FileOutputStream outputStream = new FileOutputStream(file);) {
                 if (!request.isChunked())
-                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength());
+                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
                 else
-                    IOUtil.copy(request.getBody(), outputStream);
+                    IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
             } catch (IOException e) {
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
                 boolean removed = file.delete();
@@ -159,7 +171,7 @@ public class PostHandler implements HttpMethodHandler {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);//todo - refine
                 return;
             }
-
+            FileUtil.createMD5file(file,md);
             writeResponseLine(HttpStatus.CREATED, out);
 
             responseHeaders.putHeader(LOCATION, new String(Base64.getEncoder().encode((uri + file.getName()).getBytes("UTF-8"))));

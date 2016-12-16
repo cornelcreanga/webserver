@@ -11,6 +11,7 @@ import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.logging.LogEntry;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -77,6 +78,11 @@ public class Server implements Runnable {
         try {
             serverSocket = new ServerSocket(configuration.getServerPort());
             serverLog.info("Server started,listening on " + configuration.getServerPort() + ". Files will be served from " + configuration.getServerRootFolder());
+            File file = new File(configuration.getServerRootFolder());
+            if (!file.exists() || !file.isDirectory())
+                serverLog.warning("root folder does not exists yet...");
+            if (file.isDirectory() && !file.canWrite() && configuration.isRootFolderWritable())
+                serverLog.warning("root folder was configured writable but it does not have yet the required permissions...");
             isReady = true;
             while (!shouldStop) {
                 try {

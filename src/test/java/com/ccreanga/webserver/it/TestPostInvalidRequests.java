@@ -29,8 +29,8 @@ public class TestPostInvalidRequests extends TestParent {
         HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
-        StringBuilder text = new StringBuilder();
-        for (int i = 0; i < 1024*1024*32+1000; i++)
+        StringBuilder text = new StringBuilder(1024*1024*16+2000);
+        for (int i = 0; i < 1024*1024*16+1000; i++)
             text.append('c');
 
         InputStreamEntity reqEntity = new InputStreamEntity(

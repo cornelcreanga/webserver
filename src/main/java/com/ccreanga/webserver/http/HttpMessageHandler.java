@@ -52,7 +52,7 @@ public class HttpMessageHandler {
             case CONNECT:
                 return;
             case PATCH:
-                new NotSupportedHandler().handleResponse(request, configuration, out);
+                new PatchHandler().handleResponse(request, configuration, out);
                 return;
             case TRACE:
                 new TraceHandler().handleResponse(request, configuration, out);

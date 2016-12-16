@@ -99,4 +99,13 @@ public class HttpRequestMessage {
     public Map<String, List<String>> getUriParams() {
         return uriParams;
     }
+
+    public String getSingleParam(String param){
+        if ((uriParams==null) || (!uriParams.containsKey(param)))
+            return null;
+        List<String> values = uriParams.get(param);
+        if (values.size()!=1)
+            return null;
+        return values.get(0);
+    }
 }

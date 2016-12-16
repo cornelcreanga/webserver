@@ -48,7 +48,7 @@ public class TestPost extends TestParent {
             assertNotNull(response.getFirstHeader(LOCATION));
             String location = response.getFirstHeader(LOCATION).getValue();
             assertNotNull(location);
-
+            location = new String(Base64.getDecoder().decode(location));
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
             request.addHeader(ACCEPT_ENCODING, "gzip,deflate");

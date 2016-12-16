@@ -5,11 +5,14 @@ import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
+import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -71,11 +74,25 @@ public class DeleteHandler implements HttpMethodHandler {
                             notDeleted.add(f);
                     });
 
-            //todo - add list of not deleted
-            writeResponseLine(HttpStatus.NO_CONTENT, out);
+            writeResponseLine(HttpStatus.OK, out);
+            byte[] body = null;
+            String len = "0";
+            if (!notDeleted.isEmpty()) {
+                FileResourceRepresentation representation =
+                        RepresentationManager.getInstance().getRepresentation(request.getHeader(ACCEPT));
 
+                String list = representation.nonDeletedFiles(notDeleted);
+                body = list.getBytes(StandardCharsets.UTF_8);
+                len = String.valueOf(body.length);
+                responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
+                ContextHolder.get().setContentLength(len);
+            }
+            responseHeaders.putHeader(CONTENT_LENGTH, len);
             writeHeaders(responseHeaders, out);
-            ContextHolder.get().setContentLength("-");
+            if (!notDeleted.isEmpty())
+                out.write(body);
+
+            ContextHolder.get().setContentLength(len);
 
         } catch (InvalidPathException e) {
             serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());

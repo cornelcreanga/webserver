@@ -94,6 +94,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
         } catch (SocketTimeoutException e) {
             serverLog.fine("Connection " + ContextHolder.get().getUuid() + " was closed due to timeout");
         } catch (IOException e) {
+            e.printStackTrace();
             serverLog.fine("Connection " + ContextHolder.get().getUuid() + " was closed because of an I/O error: " + e.getMessage());
         }
 

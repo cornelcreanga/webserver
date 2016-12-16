@@ -2,10 +2,12 @@ package com.ccreanga.webserver.http.methodhandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.common.StringUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.ioutil.FileUtil;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
@@ -17,6 +19,8 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -95,16 +99,23 @@ public class PutHandler implements HttpMethodHandler {
                 }
             } catch (IOException e) {
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + uri);
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);
                 return;
             }
 
-
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                serverLog.severe("Connection " + ContextHolder.get().getUuid() + ", message is " + e.getMessage());
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
+                return;
+            }
             try (FileOutputStream outputStream = new FileOutputStream(file);) {
                 if (!request.isChunked())
-                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength());
+                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
                 else
-                    IOUtil.copy(request.getBody(), outputStream);
+                    IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
             } catch (IOException e) {
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
                 boolean removed = file.delete();
@@ -113,7 +124,7 @@ public class PutHandler implements HttpMethodHandler {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);//todo - refine
                 return;
             }
-
+            FileUtil.createMD5file(file,md);
             writeResponseLine(HttpStatus.NO_CONTENT, out);
 
             writeHeaders(responseHeaders, out);

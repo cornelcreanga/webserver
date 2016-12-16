@@ -5,6 +5,7 @@ import com.ccreanga.webserver.InternalException;
 import java.io.*;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -48,7 +49,7 @@ public class IOUtil {
     }
 
     public static long copy(InputStream from, OutputStream to, int bufferSize) throws IOException {
-        return copy(from, to, -1,-1,bufferSize);
+        return copy(from, to, -1,-1,bufferSize,null);
     }
 
 
@@ -57,10 +58,10 @@ public class IOUtil {
     }
 
     public static long copy(InputStream from, OutputStream to, long inputOffset, long length) throws IOException {
-        return copy(from, to, inputOffset,length,8*1024);
+        return copy(from, to, inputOffset,length,8*1024,null);
     }
 
-    public static long copy(InputStream from, OutputStream to, long inputOffset, long length, int bufferSize) throws IOException {
+    public static long copy(InputStream from, OutputStream to, long inputOffset, long length, int bufferSize,MessageDigest md) throws IOException {
 
         byte[] buffer = new byte[bufferSize];
 
@@ -83,6 +84,8 @@ public class IOUtil {
         long totalRead = 0;
         while (bytesToRead > 0 && -1 != (read = from.read(buffer, 0, bytesToRead))) {
             to.write(buffer, 0, read);
+            if (md!=null)
+                md.update(buffer,0,read);
             totalRead += read;
             if (length > 0) {
                 bytesToRead = (int) Math.min(length - totalRead, bufferLength);

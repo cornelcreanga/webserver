@@ -18,7 +18,7 @@ public class OptionsHandler implements HttpMethodHandler {
     @Override
     public void handleResponse(HttpRequestMessage request, Configuration configuration, OutputStream out) throws IOException {
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.putHeader(ALLOW, "GET, HEAD, OPTIONS,PUT,POST,DELETE");
+        responseHeaders.putHeader(ALLOW, "GET, HEAD, OPTIONS,PUT,POST,DELETE,PATCH");
         responseHeaders.putHeader(CONTENT_LENGTH, "0");
         writeResponseLine(HttpStatus.OK, out);
         writeHeaders(responseHeaders, out);

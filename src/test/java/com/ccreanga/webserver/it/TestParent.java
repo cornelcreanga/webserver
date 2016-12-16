@@ -51,7 +51,7 @@ public abstract class TestParent {
         properties.put("requestEtag", "weak");
 
         properties.put("requestURIMaxSize", "8000");
-        properties.put("requestMessageBodyMaxSize", ""+1024*1024*32);
+        properties.put("requestMessageBodyMaxSize", ""+1024*1024*16);
         properties.put("requestMaxLineLength", "10000");
         properties.put("requestMaxHeaders", "64");
 
