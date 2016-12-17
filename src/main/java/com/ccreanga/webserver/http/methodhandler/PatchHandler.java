@@ -25,6 +25,7 @@ import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeErrorResponse;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.*;
 
 public class PatchHandler implements HttpMethodHandler {
 
@@ -38,36 +39,19 @@ public class PatchHandler implements HttpMethodHandler {
         responseHeaders.putHeader(CONNECTION, "Keep-Alive");
         responseHeaders.putHeader(VARY, "Accept-Encoding");
 
-        //http://www8.org/w8-papers/5c-protocols/key/key.html
-        if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
-            return;
-        }
+        if (!hostHeaderIsPresent(request, out, responseHeaders)) return;
 
-        if (request.getUri().contains("..")) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.FORBIDDEN, ".. is not allowed", out);
-            return;
-        }
+        if (uriContainsIllegalPath(request, out, responseHeaders)) return;
 
-
-        if (!cfg.isRootFolderWritable()) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "the root folder is configured read only", out);
-            return;
-        }
+        if (!rootFolderIsWritable(request, cfg, out, responseHeaders)) return;
 
         String uri = request.getUri();
         Path path = Paths.get(cfg.getServerRootFolder() + uri);
         File file = path.toFile();
 
-        MessageDigest md;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            serverLog.severe("Connection " + ContextHolder.get().getUuid() + ", message is " + e.getMessage());
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
+        MessageDigest md = instantiateMD5(request,out,responseHeaders);
+        if (md==null)
             return;
-        }
-
 
         String command = request.getHeader("X-UPDATE");
         if ((command!=null) && (command.startsWith("APPEND"))){
@@ -75,31 +59,14 @@ public class PatchHandler implements HttpMethodHandler {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot patch a folder", out);
                 return;
             }
-            try {
-                if (!path.getParent().toFile().exists()) {
-                    Files.createDirectories(path.getParent());
-                }
-            } catch (IOException e) {
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + uri);
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);
-                return;
-            }
+
+            if (!createFolderHierarchy(request, out, responseHeaders, path)) return;
+
             String tempFileName = file.getPath()+"-temp";
             File tempFile = new File(tempFileName);
-            try (FileOutputStream outputStream = new FileOutputStream(tempFile,true)) {
-                if (!request.isChunked())
-                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
-                else
-                    IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
-            } catch (IOException e) {
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-                boolean removed = tempFile.delete();
-                if (!removed)
-                    serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't remove " + tempFileName);
 
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
-                return;
-            }
+            if (!copyRequestBody(request, out, responseHeaders, md,true, tempFile)) return;
+
             try(FileInputStream inStream = new FileInputStream(tempFile);FileOutputStream outStream = new FileOutputStream(file,true)){
                 IOUtil.copy(inStream,outStream);
             }catch (IOException e) {
@@ -134,25 +101,18 @@ public class PatchHandler implements HttpMethodHandler {
             }
 
             String tempFileName = file.getPath()+"-temp";
+            File tempFile = new File(tempFileName);
 
             try(FileInputStream inStream = new FileInputStream(file);FileOutputStream outStream = new FileOutputStream(tempFileName)){
                 IOUtil.copy(inStream,outStream,0,index,8192,md);
             } catch (IOException e) {
+                tempFile.delete();
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
                 return;
             }
 
-            try (FileOutputStream outStream = new FileOutputStream(tempFileName,true)) {
-                if (!request.isChunked())
-                    IOUtil.copy(request.getBody(), outStream, 0, request.getLength(),8192,md);
-                else
-                    IOUtil.copy(request.getBody(), outStream,-1,-1,8192,md);
-            } catch (IOException e) {
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
-                return;
-            }
+            if (!copyRequestBody(request, out, responseHeaders, md,true, tempFile)) return;
 
             try(FileInputStream inStream = new FileInputStream(file);FileOutputStream outStream = new FileOutputStream(tempFileName,true)){
                 IOUtil.copy(inStream,outStream,index,file.length()-index,8192,md);
@@ -162,15 +122,7 @@ public class PatchHandler implements HttpMethodHandler {
                 return;
             }
 
-            Files.delete(file.toPath());//todo
-            boolean renamed = new File(tempFileName).renameTo(file);
-
-            if (!renamed){
-                FileUtil.removeMd5(file);
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't rename " + tempFileName);
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
-                return;
-            }
+            if (!renameTemporarytoMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else if (((command!=null) && (command.startsWith("REMOVE")))){
             if (!file.exists()){
@@ -187,7 +139,7 @@ public class PatchHandler implements HttpMethodHandler {
             List<String> params = StringUtil.split(paramLine,' ',false,10);
 
             if ((params.size()==0) || (params.size()>2)){
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "REMOVE can't be parsed", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "REMOVE parameters can't be parsed", out);
                 return;
             }
             long from, length=-1;
@@ -196,7 +148,7 @@ public class PatchHandler implements HttpMethodHandler {
                 if (params.size()==2)
                     length = Long.parseLong(params.get(1));
             }catch (NumberFormatException nfe){
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "params for REMOVE can't be parsed", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "REMOVE parameters can't be parsed", out);
                 return;
             }
 
@@ -206,6 +158,7 @@ public class PatchHandler implements HttpMethodHandler {
             }
 
             String tempFileName = file.getPath()+"-temp";
+            File tempFile = new File(tempFileName);
 
             try(FileInputStream inStream = new FileInputStream(file);FileOutputStream outStream = new FileOutputStream(tempFileName)){
                 IOUtil.copy(inStream,outStream,0,from,8192,md);
@@ -226,15 +179,7 @@ public class PatchHandler implements HttpMethodHandler {
 
             }
 
-            Files.delete(file.toPath());//todo
-            boolean renamed = new File(tempFileName).renameTo(file);
-
-            if (!renamed){
-                FileUtil.removeMd5(file);
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't rename " + tempFileName);
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
-                return;
-            }
+            if (!renameTemporarytoMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else{
             writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "unknown header X-UPDATE "+command, out);
@@ -253,4 +198,18 @@ public class PatchHandler implements HttpMethodHandler {
         //
 
     }
+
+    public static boolean renameTemporarytoMainFile(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, File file, File tempFile) throws IOException {
+        boolean deleted = file.delete();
+        boolean renamed = tempFile.renameTo(file);
+
+        if (!renamed){
+            FileUtil.removeMd5(file);
+            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't rename " + tempFile);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
+            return false;
+        }
+        return true;
+    }
+
 }

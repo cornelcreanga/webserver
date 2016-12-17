@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
+import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.*;
 
 public class PostHandler implements HttpMethodHandler {
 
@@ -41,91 +42,21 @@ public class PostHandler implements HttpMethodHandler {
         responseHeaders.putHeader(CONNECTION, "Keep-Alive");
         responseHeaders.putHeader(VARY, "Accept-Encoding");
 
-        //http://www8.org/w8-papers/5c-protocols/key/key.html
-        if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
-            return;
-        }
+        if (!hostHeaderIsPresent(request, out, responseHeaders)) return;
 
-        if (request.getUri().contains("..")) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.FORBIDDEN, ".. is not allowed", out);
-            return;
-        }
+        if (uriContainsIllegalPath(request, out, responseHeaders)) return;
 
-
-        if (!cfg.isRootFolderWritable()) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "the root folder is configured read only", out);
-            return;
-        }
+        if (!rootFolderIsWritable(request, cfg, out, responseHeaders)) return;
 
         String contentType = request.getHeader(CONTENT_TYPE);
+
+        if (contentTypeIsFormRelated(request, out, responseHeaders, contentType)) return;
+
         if ((contentType == null) || contentType.length() == 0) {
             writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "content type is mandatory for POST", out);
             return;
         }
 
-        if (contentType.contains("application/x-www-form-urlencoded")) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "multipart/form-data is not allowed", out);
-            return;
-//            String form = IOUtil.readToken(in, -1, "UTF-8", 8 * 1024 * 1024);
-//            int limit = 10000;//max 10000 params -todo -config that
-//            try {
-//                params = StringUtil.parseFormEncodedParams(form, limit);
-//            } catch (TooManyEntriesException e) {
-//                throw new InvalidMessageException("too many form params", HttpStatus.BAD_REQUEST);
-//            }
-
-        }
-
-        if (contentType.contains("multipart/form-data")) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "multipart/form-data is not allowed", out);
-            return;
-
-//            int index = contentType.indexOf("boundary");
-//            if (index == -1) {
-//                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "multipart/form-data without boundary", out);
-//                return;
-//            }
-//            String boundary = StringUtil.right(contentType.substring(index + 1), '=');
-//            if (boundary.length() == 0) {
-//                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "boundary value is missing", out);
-//                return;
-//            }
-//            MultipartStream stream = new MultipartStream(request.getBody(), boundary.getBytes());
-//            boolean nextPart = stream.skipPreamble();
-//            Map<String, List<String>> params = new HashMap<>();
-//            while (nextPart) {
-//                String header = stream.readHeaders();
-//                int maxLineLength = cfg.getRequestMaxLineLength();
-//                int maxHeaders = cfg.getRequestMaxHeaders();
-//                HttpHeaders httpHeaders = HttpRequestParser.consumeHeaders(new ByteArrayInputStream(header.getBytes("UTF-8")), maxLineLength, maxHeaders);
-//                Map<String, String> headerParams = httpHeaders.getHeaderParams("Content-Disposition");
-//
-//                String name = headerParams.get("name");
-//                if (name == null || name.length() == 0) {//bad request
-//                    writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing/empty name parameter", out);
-//                    return;
-//                }
-//                String filename = headerParams.get("filename");
-//                if (filename == null) {
-//                    params.putIfAbsent(name, new ArrayList<>());
-//                    List<String> values = params.get(name);
-//                    ByteArrayOutputStream valueOut = new ByteArrayOutputStream();
-//                    stream.readBodyData(valueOut);
-//                    values.add(new String(valueOut.toByteArray()));
-//                } else {
-//                    System.out.println(filename);
-//                    stream.readBodyData(System.out);
-//                    //todo - save the files somewhere
-//                }
-//
-//                nextPart = stream.readBoundary();
-//            }
-//            if (request.isChunked()) {//we need to consume the ending 3 bytes of the chunked input stream
-//                while (request.getBody().read() > 0) ;
-//            }
-
-        }
 
         String extension = Mime.getExtension(contentType);
         if (extension == null) {
@@ -138,39 +69,15 @@ public class PostHandler implements HttpMethodHandler {
 
         try {
             Path path = Paths.get(cfg.getServerRootFolder() + uri + UUID.randomUUID().toString() + "." + extension);
-            try {
-                if (!path.getParent().toFile().exists()) {
-                    Files.createDirectories(path.getParent());
-                }
-            } catch (IOException e) {
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + uri);
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);
-                return;
-            }
+            if (!createFolderHierarchy(request, out, responseHeaders, path)) return;
 
-            MessageDigest md;
-            try {
-                md = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                serverLog.severe("Connection " + ContextHolder.get().getUuid() + ", message is " + e.getMessage());
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR, "cannot create resource", out);
+            MessageDigest md = instantiateMD5(request,out,responseHeaders);
+            if (md==null)
                 return;
-            }
 
             File file = path.toFile();
-            try (FileOutputStream outputStream = new FileOutputStream(file);) {
-                if (!request.isChunked())
-                    IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
-                else
-                    IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
-            } catch (IOException e) {
-                serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-                boolean removed = file.delete();
-                if (!removed)
-                    serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't remove " + file.getPath());
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);//todo - refine
-                return;
-            }
+            if (!copyRequestBody(request, out, responseHeaders, md,true, file)) return;
+
             FileUtil.createMD5file(file,md);
             writeResponseLine(HttpStatus.CREATED, out);
 
