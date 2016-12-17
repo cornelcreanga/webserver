@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -96,6 +98,12 @@ public class HandlerUtils {
                                           File outFile) throws IOException {
 
         try (FileOutputStream outputStream = new FileOutputStream(outFile,append)) {
+            try {
+                outputStream.getChannel().lock();
+            }catch (OverlappingFileLockException e){
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.LOCKED, "locked resource", responseOutStream);
+                return false;
+            }
             if (!request.isChunked())
                 IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
             else
@@ -113,7 +121,6 @@ public class HandlerUtils {
     }
 
     public static boolean renameTemporaryToMainFile(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, File file, File tempFile) throws IOException {
-        //todo - check if file exists on hd or not
 
         if (!file.exists()){
             boolean renamed = tempFile.renameTo(file);

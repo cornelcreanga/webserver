@@ -25,6 +25,9 @@ import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeErrorResponse;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
+import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.hostHeaderIsPresent;
+import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.rootFolderIsWritable;
+import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.uriContainsIllegalPath;
 
 public class DeleteHandler implements HttpMethodHandler {
 
@@ -38,22 +41,11 @@ public class DeleteHandler implements HttpMethodHandler {
         responseHeaders.putHeader(CONNECTION, "Keep-Alive");
         responseHeaders.putHeader(VARY, "Accept-Encoding");
 
-        //http://www8.org/w8-papers/5c-protocols/key/key.html
-        if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
-            return;
-        }
+        if (!hostHeaderIsPresent(request, out, responseHeaders)) return;
 
-        if (request.getUri().contains("..")) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.FORBIDDEN, ".. is not allowed", out);
-            return;
-        }
+        if (uriContainsIllegalPath(request, out, responseHeaders)) return;
 
-
-        if (!cfg.isRootFolderWritable()) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "the root folder is configured read only", out);
-            return;
-        }
+        if (!rootFolderIsWritable(request, cfg, out, responseHeaders)) return;
 
         String uri = request.getUri();
 
