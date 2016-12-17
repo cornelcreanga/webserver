@@ -4,6 +4,7 @@ import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
+import com.ccreanga.webserver.ioutil.FileUtil;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
@@ -15,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT;
@@ -109,4 +111,41 @@ public class HandlerUtils {
         }
         return true;
     }
+
+    public static boolean renameTemporaryToMainFile(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, File file, File tempFile) throws IOException {
+        //todo - check if file exists on hd or not
+
+        if (!file.exists()){
+            boolean renamed = tempFile.renameTo(file);
+            if (renamed)
+                return true;
+        }else {
+
+            File intermediate = new File(file.getParentFile() + File.separator + "." + UUID.randomUUID());
+            String fileName = file.getPath();
+            boolean renamed = file.renameTo(intermediate);
+            File newFile = new File(fileName);
+            if (renamed) {
+                renamed = tempFile.renameTo(newFile);
+                if (renamed) {
+                    boolean deleted = intermediate.delete();
+                    if (!deleted)
+                        serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", file " + intermediate + " can't be deleted");
+                    return true;
+                } else {//try to rename
+                    renamed = file.renameTo(newFile);
+                    if (!renamed)
+                        serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", file " + intermediate + " can't be renamed to " + fileName);
+                    else
+                        return true;
+                }
+            }
+        }
+
+        FileUtil.removeMd5(file);
+        serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't rename " + tempFile);
+        writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
+        return false;
+    }
+
 }

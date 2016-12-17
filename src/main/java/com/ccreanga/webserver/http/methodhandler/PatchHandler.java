@@ -11,11 +11,9 @@ import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -122,7 +120,7 @@ public class PatchHandler implements HttpMethodHandler {
                 return;
             }
 
-            if (!renameTemporarytoMainFile(request, out, responseHeaders, file, tempFile)) return;
+            if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else if (((command!=null) && (command.startsWith("REMOVE")))){
             if (!file.exists()){
@@ -179,7 +177,7 @@ public class PatchHandler implements HttpMethodHandler {
 
             }
 
-            if (!renameTemporarytoMainFile(request, out, responseHeaders, file, tempFile)) return;
+            if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else{
             writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "unknown header X-UPDATE "+command, out);
@@ -197,19 +195,6 @@ public class PatchHandler implements HttpMethodHandler {
         //insert <start> (body)
         //
 
-    }
-
-    public static boolean renameTemporarytoMainFile(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, File file, File tempFile) throws IOException {
-        boolean deleted = file.delete();
-        boolean renamed = tempFile.renameTo(file);
-
-        if (!renamed){
-            FileUtil.removeMd5(file);
-            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", can't rename " + tempFile);
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
-            return false;
-        }
-        return true;
     }
 
 }

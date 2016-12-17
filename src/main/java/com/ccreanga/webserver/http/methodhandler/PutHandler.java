@@ -5,21 +5,16 @@ import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.http.Mime;
 import com.ccreanga.webserver.ioutil.FileUtil;
-import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
@@ -29,7 +24,6 @@ import static com.ccreanga.webserver.http.HttpMessageWriter.writeErrorResponse;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
 import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
 import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.*;
-import static com.ccreanga.webserver.http.methodhandler.PatchHandler.renameTemporarytoMainFile;
 
 public class PutHandler implements HttpMethodHandler {
 
@@ -79,7 +73,7 @@ public class PutHandler implements HttpMethodHandler {
 
             if (!copyRequestBody(request, out, responseHeaders, md,false, tempFile)) return;
 
-            if (!renameTemporarytoMainFile(request, out, responseHeaders, file, tempFile)) return;
+            if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
             FileUtil.createMD5file(file,md);
             writeResponseLine(HttpStatus.NO_CONTENT, out);
