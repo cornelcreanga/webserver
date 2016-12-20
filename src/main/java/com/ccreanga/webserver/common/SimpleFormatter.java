@@ -1,10 +1,10 @@
 package com.ccreanga.webserver.common;
 
-import java.io.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
-
 
 
 public class SimpleFormatter extends Formatter {

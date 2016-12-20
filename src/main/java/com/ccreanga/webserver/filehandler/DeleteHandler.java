@@ -1,33 +1,32 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.filehandler.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.filehandler.representation.RepresentationManager;
 import com.ccreanga.webserver.http.HttpHeaders;
+import com.ccreanga.webserver.http.HttpMethodHandler;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
-import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeErrorResponse;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
-import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.hostHeaderIsPresent;
-import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.rootFolderIsWritable;
-import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.uriContainsIllegalPath;
+import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
 public class DeleteHandler implements HttpMethodHandler {
 
@@ -51,7 +50,7 @@ public class DeleteHandler implements HttpMethodHandler {
 
         try {
             Path path = Paths.get(cfg.getServerRootFolder() + uri);
-            if (!path.toFile().exists()){
+            if (!path.toFile().exists()) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.NOT_FOUND, "not found", out);
                 return;
 
@@ -60,7 +59,7 @@ public class DeleteHandler implements HttpMethodHandler {
             Files.walk(path)
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
-                    .forEach(f->{
+                    .forEach(f -> {
                         boolean delete = f.delete();
                         if (!delete)
                             notDeleted.add(f);

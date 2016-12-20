@@ -289,7 +289,7 @@ public class MultipartStream {
         return headers;
     }
 
-    public long readBodyData(OutputStream output) throws  IOException {
+    public long readBodyData(OutputStream output) throws IOException {
         return IOUtil.copy(newInputStream(), output);
     }
 

@@ -1,12 +1,12 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.etag.EtagManager;
 import com.ccreanga.webserver.common.DateUtil;
+import com.ccreanga.webserver.etag.EtagManager;
+import com.ccreanga.webserver.filehandler.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.filehandler.representation.RepresentationManager;
 import com.ccreanga.webserver.http.*;
 import com.ccreanga.webserver.http.chunked.ChunkedOutputStream;
-import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
-import com.ccreanga.webserver.http.representation.RepresentationManager;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 import com.ccreanga.webserver.repository.FileManager;
@@ -82,11 +82,11 @@ public class GetHandler implements HttpMethodHandler {
 
         if (file.isFile()) {
             //deliver file content
-            if ("true".equals(request.getSingleParam("info"))){
-                deliverFileInfo(request, responseHeaders, file, configuration, writeBody,false, out);
-            }else if ("true".equals(request.getSingleParam("extended-info"))){
-                deliverFileInfo(request, responseHeaders, file, configuration, writeBody,true, out);
-            }else
+            if ("true".equals(request.getSingleParam("info"))) {
+                deliverFileInfo(request, responseHeaders, file, configuration, writeBody, false, out);
+            } else if ("true".equals(request.getSingleParam("extended-info"))) {
+                deliverFileInfo(request, responseHeaders, file, configuration, writeBody, true, out);
+            } else
                 deliverFile(request, responseHeaders, file, configuration, writeBody, out);
         } else {
             //for a folder deliver a representation generated taking into account the content-type
@@ -109,7 +109,7 @@ public class GetHandler implements HttpMethodHandler {
                 RepresentationManager.getInstance().getRepresentation(request.getHeader(ACCEPT));
         responseHeaders.putHeader(CONTENT_TYPE, representation.getContentType());
 
-        String fileInfo = representation.getFileInfo(file,cfg, extendedInfo);
+        String fileInfo = representation.getFileInfo(file, cfg, extendedInfo);
 
         writeResponseLine(HttpStatus.OK, out);
 

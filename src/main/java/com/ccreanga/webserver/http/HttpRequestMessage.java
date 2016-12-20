@@ -100,11 +100,11 @@ public class HttpRequestMessage {
         return uriParams;
     }
 
-    public String getSingleParam(String param){
-        if ((uriParams==null) || (!uriParams.containsKey(param)))
+    public String getSingleParam(String param) {
+        if ((uriParams == null) || (!uriParams.containsKey(param)))
             return null;
         List<String> values = uriParams.get(param);
-        if (values.size()!=1)
+        if (values.size() != 1)
             return null;
         return values.get(0);
     }

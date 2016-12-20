@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.http.representation;
+package com.ccreanga.webserver.filehandler.representation;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;

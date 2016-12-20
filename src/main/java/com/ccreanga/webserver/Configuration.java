@@ -1,12 +1,13 @@
 package com.ccreanga.webserver;
 
 
-import com.ccreanga.webserver.common.*;
+import com.ccreanga.webserver.common.StringUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
 
 import static com.ccreanga.webserver.Server.accessLog;
 import static com.ccreanga.webserver.Server.serverLog;
@@ -181,9 +182,9 @@ public class Configuration {
 
         FileHandler fileHandler;
         try {
-            fileHandler = new FileHandler("access.log",true);
+            fileHandler = new FileHandler("access.log", true);
         } catch (IOException e) {
-            throw new ConfigurationException("cannot create the access log file, message is "+e.getMessage());
+            throw new ConfigurationException("cannot create the access log file, message is " + e.getMessage());
         }
 
         fileHandler.setFormatter(new com.ccreanga.webserver.common.SimpleFormatter("%5$s%6$s%n"));
@@ -196,8 +197,9 @@ public class Configuration {
     }
 
     private int parseInt(String name, int min, int max) {
-        return (int)parseLong(name,min,max);
+        return (int) parseLong(name, min, max);
     }
+
     private long parseLong(String name, long min, long max) {
         try {
             String string = (String) properties.get(name);
@@ -210,10 +212,10 @@ public class Configuration {
     }
 
     private Boolean parseBoolean(String name) {
-            String string = (String) properties.get(name);
-            if (string == null)
-                throw new ConfigurationException("Cannot find the value " + name);
-            return Boolean.valueOf(string);
+        String string = (String) properties.get(name);
+        if (string == null)
+            throw new ConfigurationException("Cannot find the value " + name);
+        return Boolean.valueOf(string);
     }
 
 

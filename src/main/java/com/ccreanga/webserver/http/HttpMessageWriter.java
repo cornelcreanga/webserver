@@ -1,7 +1,7 @@
 package com.ccreanga.webserver.http;
 
-import com.ccreanga.webserver.http.representation.FileResourceRepresentation;
-import com.ccreanga.webserver.http.representation.RepresentationManager;
+import com.ccreanga.webserver.filehandler.representation.FileResourceRepresentation;
+import com.ccreanga.webserver.filehandler.representation.RepresentationManager;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.IOException;

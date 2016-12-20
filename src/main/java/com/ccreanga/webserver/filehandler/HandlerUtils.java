@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.http.HttpHeaders;
@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,13 +66,13 @@ public class HandlerUtils {
         return false;
     }
 
-    public static boolean createFolderHierarchy(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders,  Path path) throws IOException {
+    public static boolean createFolderHierarchy(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, Path path) throws IOException {
         try {
             if (!path.getParent().toFile().exists()) {
                 Files.createDirectories(path.getParent());
             }
         } catch (IOException e) {
-            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + path.getParent()+",error is "+e.getMessage());
+            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + path.getParent() + ",error is " + e.getMessage());
             if (e.getMessage().contains("File name too long"))
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "uri name too long", out);
             else//todo - maybe refine it?
@@ -83,7 +82,7 @@ public class HandlerUtils {
         return true;
     }
 
-    public static MessageDigest instantiateMD5(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders) throws IOException{
+    public static MessageDigest instantiateMD5(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders) throws IOException {
         try {
             return MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
@@ -100,17 +99,17 @@ public class HandlerUtils {
                                           boolean append,
                                           File outFile) throws IOException {
 
-        try (FileOutputStream outputStream = new FileOutputStream(outFile,append)) {
+        try (FileOutputStream outputStream = new FileOutputStream(outFile, append)) {
             try {
                 outputStream.getChannel().lock();
-            }catch (OverlappingFileLockException e){
+            } catch (OverlappingFileLockException e) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.LOCKED, "locked resource", responseOutStream);
                 return false;
             }
             if (!request.isChunked())
-                IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(),8192,md);
+                IOUtil.copy(request.getBody(), outputStream, 0, request.getLength(), 8192, md);
             else
-                IOUtil.copy(request.getBody(), outputStream,-1,-1,8192,md);
+                IOUtil.copy(request.getBody(), outputStream, -1, -1, 8192, md);
         } catch (IOException e) {
             serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
             boolean removed = outFile.delete();
@@ -125,11 +124,11 @@ public class HandlerUtils {
 
     public static boolean renameTemporaryToMainFile(HttpRequestMessage request, OutputStream out, HttpHeaders responseHeaders, File file, File tempFile) throws IOException {
 
-        if (!file.exists()){
+        if (!file.exists()) {
             boolean renamed = tempFile.renameTo(file);
             if (renamed)
                 return true;
-        }else {
+        } else {
 
             File intermediate = new File(file.getParentFile() + File.separator + "." + UUID.randomUUID());
             String fileName = file.getPath();

@@ -3,7 +3,6 @@ package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.StringUtil;
-import com.ccreanga.webserver.TooManyEntriesException;
 import com.ccreanga.webserver.http.chunked.ChunkedInputStream;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -12,14 +11,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.ccreanga.webserver.Server.serverLog;
-import static com.ccreanga.webserver.http.HttpHeaders.*;
+import static com.ccreanga.webserver.common.StringUtil.decodeUTF8;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_LENGTH;
+import static com.ccreanga.webserver.http.HttpHeaders.TRANSFER_ENCODING;
 import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
 import static com.ccreanga.webserver.http.HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE;
-import static com.ccreanga.webserver.ioutil.IOUtil.decodeUTF8;
 
 /**
  * This class does the "hard work" - parsing the http request.

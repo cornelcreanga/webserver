@@ -1,10 +1,7 @@
 package com.ccreanga.webserver.ioutil;
 
-import com.ccreanga.webserver.InternalException;
-
 import java.io.*;
 import java.net.Socket;
-import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -31,17 +28,9 @@ public class IOUtil {
 
     public static void closeSilent(Closeable closeable) {
         try {
-            if (closeable!=null)
+            if (closeable != null)
                 closeable.close();
         } catch (IOException e) {/**ignore**/}
-    }
-
-    public static String decodeUTF8(String s) {
-        try {
-            return URLDecoder.decode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new InternalException("unknown encoding, this should never happen");
-        }
     }
 
     public static String getIp(Socket socket) {
@@ -49,19 +38,19 @@ public class IOUtil {
     }
 
     public static long copy(InputStream from, OutputStream to, int bufferSize) throws IOException {
-        return copy(from, to, -1,-1,bufferSize,null);
+        return copy(from, to, -1, -1, bufferSize, null);
     }
 
 
     public static long copy(InputStream from, OutputStream to) throws IOException {
-        return copy(from, to, -1,-1);
+        return copy(from, to, -1, -1);
     }
 
     public static long copy(InputStream from, OutputStream to, long inputOffset, long length) throws IOException {
-        return copy(from, to, inputOffset,length,8*1024,null);
+        return copy(from, to, inputOffset, length, 8 * 1024, null);
     }
 
-    public static long copy(InputStream from, OutputStream to, long inputOffset, long length, int bufferSize,MessageDigest md) throws IOException {
+    public static long copy(InputStream from, OutputStream to, long inputOffset, long length, int bufferSize, MessageDigest md) throws IOException {
 
         byte[] buffer = new byte[bufferSize];
 
@@ -84,8 +73,8 @@ public class IOUtil {
         long totalRead = 0;
         while (bytesToRead > 0 && -1 != (read = from.read(buffer, 0, bytesToRead))) {
             to.write(buffer, 0, read);
-            if (md!=null)
-                md.update(buffer,0,read);
+            if (md != null)
+                md.update(buffer, 0, read);
             totalRead += read;
             if (length > 0) {
                 bytesToRead = (int) Math.min(length - totalRead, bufferLength);

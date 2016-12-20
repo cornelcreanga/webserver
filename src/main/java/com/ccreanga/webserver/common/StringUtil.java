@@ -1,9 +1,11 @@
 package com.ccreanga.webserver.common;
 
 
+import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.TooManyEntriesException;
-import com.ccreanga.webserver.ioutil.IOUtil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,15 +75,16 @@ public class StringUtil {
         return elements.stream().
                 collect(
                         Collectors.groupingBy(
-                                s -> IOUtil.decodeUTF8(StringUtil.left(s, '=')),
+                                s -> decodeUTF8(StringUtil.left(s, '=')),
                                 Collectors.mapping(
-                                        s -> IOUtil.decodeUTF8(StringUtil.right(s, '=')),
+                                        s -> decodeUTF8(StringUtil.right(s, '=')),
                                         toList()
                                 )
                         )
                 );
 
     }
+
     public static String escapeHTML(String s) {
         StringBuilder sb = new StringBuilder((int) (s.length() * 1.1));
         for (int i = 0; i < s.length(); i++) {
@@ -131,11 +134,19 @@ public class StringUtil {
 
     public static String bytesToHex(byte[] bytes) {
         char[] hexChars = new char[bytes.length * 2];
-        for ( int j = 0; j < bytes.length; j++ ) {
+        for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public static String decodeUTF8(String s) {
+        try {
+            return URLDecoder.decode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new InternalException("unknown encoding, this should never happen");
+        }
     }
 }

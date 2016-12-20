@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.http.representation;
+package com.ccreanga.webserver.filehandler.representation;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.http.HttpStatus;
@@ -17,5 +17,5 @@ public interface FileResourceRepresentation {
 
     String getContentType();
 
-    String getFileInfo(File file, Configuration cfg,boolean extended) throws IOException;
+    String getFileInfo(File file, Configuration cfg, boolean extended) throws IOException;
 }

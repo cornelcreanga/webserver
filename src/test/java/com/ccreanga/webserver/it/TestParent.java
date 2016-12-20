@@ -5,6 +5,7 @@ import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
 import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.common.SimpleFormatter;
+import com.ccreanga.webserver.filehandler.FileMessageHandler;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -65,7 +66,7 @@ public abstract class TestParent {
         serverLog.setLevel(Level.INFO);
         configuration = new Configuration(properties);
 
-        server = new Server(configuration);
+        server = new Server(new FileMessageHandler(),configuration);
         httpclient = HttpClients.createDefault();
         httpclientNoDecompression = HttpClients.custom().disableContentCompression().build();
 

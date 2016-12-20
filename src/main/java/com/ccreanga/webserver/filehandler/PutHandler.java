@@ -1,8 +1,9 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
+import com.ccreanga.webserver.http.HttpMethodHandler;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
 import com.ccreanga.webserver.ioutil.FileUtil;
@@ -18,12 +19,9 @@ import java.security.MessageDigest;
 import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeErrorResponse;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeHeaders;
-import static com.ccreanga.webserver.http.HttpMessageWriter.writeResponseLine;
-import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.*;
+import static com.ccreanga.webserver.http.HttpMessageWriter.*;
 
 public class PutHandler implements HttpMethodHandler {
 
@@ -53,34 +51,34 @@ public class PutHandler implements HttpMethodHandler {
         try {
             Path path = Paths.get(cfg.getServerRootFolder() + uri);
             File file = path.toFile();
-            if (file.getName().startsWith(".")){
+            if (file.getName().startsWith(".")) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot have . in filename", out);
                 return;
             }
-            if ((file.exists()) && (file.isDirectory())){
+            if ((file.exists()) && (file.isDirectory())) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot overwrite folder", out);
                 return;
             }
-            if (uri.endsWith("/")){
+            if (uri.endsWith("/")) {
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing file name", out);
                 return;
             }
 
             if (!createFolderHierarchy(request, out, responseHeaders, path)) return;
 
-            MessageDigest md = instantiateMD5(request,out,responseHeaders);
-            if (md==null)
+            MessageDigest md = instantiateMD5(request, out, responseHeaders);
+            if (md == null)
                 return;
 
-            String tempFileName = file.getPath()+"-temp";
+            String tempFileName = file.getPath() + "-temp";
             File tempFile = new File(tempFileName);
 
-            if (!copyRequestBody(request, out, responseHeaders, md,false, tempFile)) return;
+            if (!copyRequestBody(request, out, responseHeaders, md, false, tempFile)) return;
 
             FileUtil.removeMd5(file);
             if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
-            FileUtil.createMD5file(file,md);
+            FileUtil.createMD5file(file, md);
             writeResponseLine(HttpStatus.NO_CONTENT, out);
 
             writeHeaders(responseHeaders, out);
@@ -93,7 +91,6 @@ public class PutHandler implements HttpMethodHandler {
         }
 
     }
-
 
 
 }

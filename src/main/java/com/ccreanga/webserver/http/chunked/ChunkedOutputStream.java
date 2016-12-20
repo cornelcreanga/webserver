@@ -9,12 +9,11 @@ import java.util.function.Function;
 import static com.ccreanga.webserver.common.Constants.CRLF;
 
 /**
- *
  * <p>
  * Chunked streaming enables content streams of unknown size to be transferred as a sequence of length-delimited buffers, which enables the sender to
  * retain connection persistence and the recipient to know when it has received the entire message.
  * </p>
- *
+ * <p>
  * <p>Structure</p>
  * <p>chunked-body = *chunk</p>
  * <p>last-chunk</p>
@@ -28,7 +27,6 @@ import static com.ccreanga.webserver.common.Constants.CRLF;
  * <p>chunk-data = 1*OCTET ; a sequence of chunk-size octets</p>
  * <p>The chunk-size field is a string of hex digits indicating the size of the chunk-data in octets. The chunked transfer coding is complete
  * when a chunk with a chunk-size of zero is received, possibly followed by a trailer, and finally terminated by an empty line.</p>
- *
  */
 public class ChunkedOutputStream extends OutputStream {
 

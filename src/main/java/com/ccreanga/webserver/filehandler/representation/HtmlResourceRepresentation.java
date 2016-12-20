@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.http.representation;
+package com.ccreanga.webserver.filehandler.representation;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
@@ -171,24 +171,24 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
 
         sb.append("<tr>");
         sb.append("<td>Name</td>");
-        sb.append("<td>"+StringUtil.escapeHTML(file.getName())+"</td>");
+        sb.append("<td>" + StringUtil.escapeHTML(file.getName()) + "</td>");
         sb.append("</tr>");
 
         sb.append("<tr>");
         sb.append("<td>Last modified</td>");
-        sb.append("<td>"+DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_LONG)+"</td>");
+        sb.append("<td>" + DateUtil.formatDateToUTC(Instant.ofEpochMilli(file.lastModified()), DateUtil.FORMATTER_LONG) + "</td>");
         sb.append("</tr>");
 
         sb.append("<tr>");
         sb.append("<td>Size</td>");
-        sb.append("<td>"+file.length()+"</td>");
+        sb.append("<td>" + file.length() + "</td>");
         sb.append("</tr>");
 
-        if (extended){
+        if (extended) {
             BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
             sb.append("<tr>");
             sb.append("<td>Creation time</td>");
-            sb.append("<td>"+attr.creationTime()+"</td>");
+            sb.append("<td>" + attr.creationTime() + "</td>");
             sb.append("</tr>");
 
             if (cfg.isRootFolderWritable()) {
@@ -202,7 +202,7 @@ public class HtmlResourceRepresentation implements FileResourceRepresentation {
             FileStore store = Files.getFileStore(file.toPath());
             if (store.supportsFileAttributeView(UserDefinedFileAttributeView.class)) {
                 UserDefinedFileAttributeView view = Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class);
-                for (String name: view.list()) {
+                for (String name : view.list()) {
                     sb.append("<tr>");
                     sb.append("<td>").append(name).append("</td>");
                     sb.append("<td>");

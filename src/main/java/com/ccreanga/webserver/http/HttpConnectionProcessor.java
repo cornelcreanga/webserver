@@ -2,6 +2,7 @@ package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.ConnectionProcessor;
+import com.ccreanga.webserver.filehandler.FileMessageHandler;
 import com.ccreanga.webserver.ioutil.LimitedInputStream;
 import com.ccreanga.webserver.ioutil.LineTooLongException;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -19,7 +20,9 @@ import static com.ccreanga.webserver.http.HttpHeaders.CONNECTION;
 
 public class HttpConnectionProcessor implements ConnectionProcessor {
 
-    public void handleConnection(Socket socket, Configuration configuration) {
+    HttpMessageHandler httpMessageHandler;
+
+    public void handleConnection(Socket socket,HttpMessageHandler httpMessageHandler, Configuration configuration) {
         try {
             InputStream input = socket.getInputStream();
             OutputStream output = socket.getOutputStream();
@@ -58,8 +61,7 @@ public class HttpConnectionProcessor implements ConnectionProcessor {
                 }
                 if (responseSyntaxCorrect) {
                     //we can handle the message now
-                    HttpMessageHandler httpMessageHandler = new HttpMessageHandler();
-                    try{
+                    try {
                         httpMessageHandler.handleMessage(request, configuration, output);
                     } catch (LimitedInputStream.LengthExceededException e) {
                         ContextHolder.get().setStatusCode(HttpStatus.PAYLOAD_TOO_LARGE.toString());

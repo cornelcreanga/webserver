@@ -2,9 +2,6 @@ package com.ccreanga.webserver.ioutil;
 
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.common.StringUtil;
-import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.logging.ContextHolder;
-import sun.security.provider.MD5;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -14,21 +11,21 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileUtil {
 
-    private static File md5File(File file){
+    private static File md5File(File file) {
         String name = file.getName();
         int last = name.lastIndexOf('.');
-        if (last!=-1)
-            name = name.substring(0,last);
-        return new File(file.getParent()+File.separator+"."+name+".md5");
+        if (last != -1)
+            name = name.substring(0, last);
+        return new File(file.getParent() + File.separator + "." + name + ".md5");
     }
 
     public static String createMD5file(File file, MessageDigest md) throws IOException {
-        if (md==null) {
+        if (md == null) {
             try (FileInputStream in = new FileInputStream(file)) {
                 md = getDigest(in);
             }
         }
-        try(FileOutputStream out = new FileOutputStream(md5File(file))){
+        try (FileOutputStream out = new FileOutputStream(md5File(file))) {
             out.write(md.digest());
         }
         return StringUtil.bytesToHex(md.digest());
@@ -52,11 +49,11 @@ public class FileUtil {
     public static String getOrCreateMd5AsHex(File file) throws IOException {
         File md5 = md5File(file);
         if (!md5.exists())
-            createMD5file(file,null);
+            createMD5file(file, null);
         return StringUtil.bytesToHex(Files.readAllBytes(md5.toPath()));
     }
 
-    public static void removeMd5(File file) throws IOException{
+    public static void removeMd5(File file) throws IOException {
         File md5 = md5File(file);
         if (md5.exists())
             md5.delete();//todo

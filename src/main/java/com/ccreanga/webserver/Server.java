@@ -1,11 +1,9 @@
 package com.ccreanga.webserver;
 
-import com.ccreanga.webserver.common.SimpleFormatter;
 import com.ccreanga.webserver.common.DateUtil;
-import com.ccreanga.webserver.http.HttpConnectionProcessor;
-import com.ccreanga.webserver.http.HttpHeaders;
-import com.ccreanga.webserver.http.HttpMessageWriter;
-import com.ccreanga.webserver.http.HttpStatus;
+import com.ccreanga.webserver.common.SimpleFormatter;
+import com.ccreanga.webserver.filehandler.FileMessageHandler;
+import com.ccreanga.webserver.http.*;
 import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.Context;
 import com.ccreanga.webserver.logging.ContextHolder;
@@ -22,7 +20,6 @@ import java.util.concurrent.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_LOG;
 
@@ -52,10 +49,11 @@ public class Server implements Runnable {
 
     private Configuration configuration;
     private ServerSocket serverSocket;
+    private HttpMessageHandler httpMessageHandler;
 
+    public Server(HttpMessageHandler httpMessageHandler,Configuration configuration) {
 
-    public Server(Configuration configuration) {
-
+        this.httpMessageHandler = httpMessageHandler;
         this.configuration = configuration;
     }
 
@@ -99,7 +97,7 @@ public class Server implements Runnable {
                                 serverLog.fine("Connection from ip " + ip + " started, uuid=" + uuid);
 
                                 ConnectionProcessor connectionProcessor = new HttpConnectionProcessor();
-                                connectionProcessor.handleConnection(socket, configuration);
+                                connectionProcessor.handleConnection(socket,httpMessageHandler, configuration);
 
                             } finally {
                                 //clear the thread local
@@ -207,7 +205,7 @@ public class Server implements Runnable {
                 System.exit(-1);
             }
 
-            server = new Server(configuration);
+            server = new Server(new FileMessageHandler(),configuration);
             Runtime.getRuntime().addShutdownHook(new Thread(new ServerShutDownHook(server)));
 
             new Thread(server).start();

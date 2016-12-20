@@ -1,7 +1,6 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.http;
 
 import com.ccreanga.webserver.Configuration;
-import com.ccreanga.webserver.http.HttpRequestMessage;
 
 import java.io.IOException;
 import java.io.OutputStream;

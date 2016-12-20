@@ -1,4 +1,4 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 public class TmpHandler {
     //        if (contentType.contains("application/x-www-form-urlencoded")) {

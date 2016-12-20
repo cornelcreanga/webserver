@@ -1,33 +1,26 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;
-import com.ccreanga.webserver.http.HttpHeaders;
-import com.ccreanga.webserver.http.HttpRequestMessage;
-import com.ccreanga.webserver.http.HttpStatus;
-import com.ccreanga.webserver.http.Mime;
+import com.ccreanga.webserver.http.*;
 import com.ccreanga.webserver.ioutil.FileUtil;
-import com.ccreanga.webserver.ioutil.IOUtil;
 import com.ccreanga.webserver.logging.ContextHolder;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
+import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
-import static com.ccreanga.webserver.http.methodhandler.HandlerUtils.*;
 
 public class PostHandler implements HttpMethodHandler {
 
@@ -71,14 +64,14 @@ public class PostHandler implements HttpMethodHandler {
             Path path = Paths.get(cfg.getServerRootFolder() + uri + UUID.randomUUID().toString() + "." + extension);
             if (!createFolderHierarchy(request, out, responseHeaders, path)) return;
 
-            MessageDigest md = instantiateMD5(request,out,responseHeaders);
-            if (md==null)
+            MessageDigest md = instantiateMD5(request, out, responseHeaders);
+            if (md == null)
                 return;
 
             File file = path.toFile();
-            if (!copyRequestBody(request, out, responseHeaders, md,true, file)) return;
+            if (!copyRequestBody(request, out, responseHeaders, md, true, file)) return;
 
-            FileUtil.createMD5file(file,md);
+            FileUtil.createMD5file(file, md);
             writeResponseLine(HttpStatus.CREATED, out);
 
             responseHeaders.putHeader(LOCATION, new String(Base64.getEncoder().encode((uri + file.getName()).getBytes("UTF-8"))));

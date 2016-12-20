@@ -4,6 +4,7 @@ import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.Server;
 import com.ccreanga.webserver.common.SimpleFormatter;
+import com.ccreanga.webserver.filehandler.FileMessageHandler;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
@@ -62,7 +63,7 @@ public class TestUnavailableServer {
         serverLog.addHandler(consoleHandler);
         serverLog.setLevel(Level.INFO);
 
-        Server server = new Server(new Configuration(properties));
+        Server server = new Server(new FileMessageHandler(),new Configuration(properties));
         CloseableHttpAsyncClient httpclient = HttpAsyncClients.custom()
                 .setMaxConnTotal(100)
                 .setMaxConnPerRoute(100)

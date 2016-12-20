@@ -1,8 +1,9 @@
-package com.ccreanga.webserver.http.methodhandler;
+package com.ccreanga.webserver.filehandler;
 
 import com.ccreanga.webserver.Configuration;
 import com.ccreanga.webserver.common.DateUtil;
 import com.ccreanga.webserver.http.HttpHeaders;
+import com.ccreanga.webserver.http.HttpMethodHandler;
 import com.ccreanga.webserver.http.HttpRequestMessage;
 import com.ccreanga.webserver.http.HttpStatus;
 

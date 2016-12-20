@@ -4,8 +4,6 @@ import com.ccreanga.webserver.InternalException;
 
 import java.util.Properties;
 
-import static com.ccreanga.webserver.Server.serverLog;
-
 /**
  * Map of mime types
  */
