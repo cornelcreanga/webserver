@@ -6,7 +6,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -16,21 +15,18 @@ import org.junit.Test;
 import java.io.*;
 import java.net.Socket;
 
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
-import static com.ccreanga.webserver.http.HttpHeaders.LOCATION;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class TestPostInvalidRequests extends TestParent {
 
     @Test
     public void testPostBodyTooLarge() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpost/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
-        StringBuilder text = new StringBuilder(1024*1024*8+2000);
-        for (int i = 0; i < 1024*1024*8+1000; i++)
+        StringBuilder text = new StringBuilder(1024 * 1024 * 8 + 2000);
+        for (int i = 0; i < 1024 * 1024 * 8 + 1000; i++)
             text.append('c');
 
         InputStreamEntity reqEntity = new InputStreamEntity(
@@ -53,7 +49,7 @@ public class TestPostInvalidRequests extends TestParent {
 
     @Test
     public void testUnknownContentType() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpost/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "unknown");
         final String text = "test text";
@@ -74,7 +70,7 @@ public class TestPostInvalidRequests extends TestParent {
 
     @Test
     public void testFormUrlEncodedContentType() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpost/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "application/x-www-form-urlencoded");
         final String text = "test text";
@@ -84,7 +80,7 @@ public class TestPostInvalidRequests extends TestParent {
 
     @Test
     public void testMultiPartContentType() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpost/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "multipart/form-data");
         final String text = "test text";
@@ -99,7 +95,7 @@ public class TestPostInvalidRequests extends TestParent {
             socket.setSoTimeout(30000);
             InputStream in = socket.getInputStream();
             OutputStream out = socket.getOutputStream();
-            out.write("POST /cucu/puc\u0000u HTTP/1.1\n".getBytes());
+            out.write("POST /testpost/puc\u0000u HTTP/1.1\n".getBytes());
             out.write("Host: localhost\n".getBytes());
 
             out.write("Accept: */*\n".getBytes());

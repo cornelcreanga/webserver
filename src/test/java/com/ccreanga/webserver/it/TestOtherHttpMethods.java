@@ -3,7 +3,8 @@ package com.ccreanga.webserver.it;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpOptions;
 import org.junit.Test;
 
 import java.io.IOException;

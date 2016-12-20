@@ -65,16 +65,14 @@ public class PatchHandler implements HttpMethodHandler {
 
             if (!copyRequestBody(request, out, responseHeaders, md,true, tempFile)) return;
 
+            FileUtil.removeMd5(file);
             try(FileInputStream inStream = new FileInputStream(tempFile);FileOutputStream outStream = new FileOutputStream(file,true)){
                 IOUtil.copy(inStream,outStream);
             }catch (IOException e) {
-                //resource is in invalid state.remove md5
-                FileUtil.removeMd5(file);
                 serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot patch resource", out);//todo - refine
                 return;
             }
-
         }else if ((command!=null) && (command.startsWith("INSERT"))){
             if (!file.exists()){
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.NOT_FOUND, "not found", out);
@@ -120,6 +118,7 @@ public class PatchHandler implements HttpMethodHandler {
                 return;
             }
 
+            FileUtil.removeMd5(file);
             if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else if (((command!=null) && (command.startsWith("REMOVE")))){
@@ -176,7 +175,7 @@ public class PatchHandler implements HttpMethodHandler {
                 }
 
             }
-
+            FileUtil.removeMd5(file);
             if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
         }else{

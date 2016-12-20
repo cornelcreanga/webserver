@@ -14,25 +14,27 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileUtil {
 
-    public static String createMD5file(File file, MessageDigest md) throws IOException {
+    private static File md5File(File file){
         String name = file.getName();
         int last = name.lastIndexOf('.');
         if (last!=-1)
             name = name.substring(0,last);
-        File md5file = new File(file.getParent()+File.separator+"."+name+".md5");
+        return new File(file.getParent()+File.separator+"."+name+".md5");
+    }
+
+    public static String createMD5file(File file, MessageDigest md) throws IOException {
         if (md==null) {
             try (FileInputStream in = new FileInputStream(file)) {
                 md = getDigest(in);
             }
         }
-        try(FileOutputStream out = new FileOutputStream(md5file)){
+        try(FileOutputStream out = new FileOutputStream(md5File(file))){
             out.write(md.digest());
         }
         return StringUtil.bytesToHex(md.digest());
     }
 
     public static MessageDigest getDigest(InputStream is) throws IOException {
-
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("MD5");
@@ -48,24 +50,16 @@ public class FileUtil {
     }
 
     public static String getOrCreateMd5AsHex(File file) throws IOException {
-        String name = file.getName();
-        int last = name.lastIndexOf('.');
-        if (last!=-1)
-            name = name.substring(0,last);
-        File md5 = new File(file.getParent()+File.separator+"."+name+".md5");
+        File md5 = md5File(file);
         if (!md5.exists())
             createMD5file(file,null);
         return StringUtil.bytesToHex(Files.readAllBytes(md5.toPath()));
     }
 
     public static void removeMd5(File file) throws IOException{
-        String name = file.getName();
-        int last = name.lastIndexOf('.');
-        if (last!=-1)
-            name = name.substring(0,last);
-        File md5 = new File(file.getParent()+File.separator+"."+name+".md5");
+        File md5 = md5File(file);
         if (md5.exists())
-            md5.delete();
+            md5.delete();//todo
     }
 
 }

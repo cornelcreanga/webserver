@@ -73,8 +73,11 @@ public class HandlerUtils {
                 Files.createDirectories(path.getParent());
             }
         } catch (IOException e) {
-            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + path.getParent());
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);
+            serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", cannot mkdirs for " + path.getParent()+",error is "+e.getMessage());
+            if (e.getMessage().contains("File name too long"))
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "uri name too long", out);
+            else//todo - maybe refine it?
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.SERVICE_UNAVAILABLE, "cannot create resource", out);
             return false;
         }
         return true;

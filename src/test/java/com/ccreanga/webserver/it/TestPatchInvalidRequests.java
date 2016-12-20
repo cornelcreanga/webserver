@@ -1,12 +1,10 @@
 package com.ccreanga.webserver.it;
 
-import com.ccreanga.webserver.Util;
 import com.ccreanga.webserver.http.HttpStatus;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
@@ -14,7 +12,6 @@ import org.junit.Test;
 
 import java.util.UUID;
 
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -26,7 +23,6 @@ public class TestPatchInvalidRequests extends TestParent {
         String uri = "/testpatch/file.txt";
         HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
         patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-        patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         patchRequest.addHeader("X-UPDATE", "NONE");
 
         try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {
@@ -37,10 +33,9 @@ public class TestPatchInvalidRequests extends TestParent {
 
     @Test
     public void testPatchNotFound() throws Exception {
-        String uri = "/testpatch/"+ UUID.randomUUID().toString();
+        String uri = "/testpatch/" + UUID.randomUUID().toString();
         HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
         patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-        patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
         patchRequest.addHeader("X-UPDATE", "INSERT");
 
         try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {
@@ -68,9 +63,8 @@ public class TestPatchInvalidRequests extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             int index = 11;
-            patchRequest.addHeader("X-UPDATE","INSERT "+index);
+            patchRequest.addHeader("X-UPDATE", "INSERT " + index);
 
             String textToAppend = "FGH";
             patchRequest.setEntity(new ByteArrayEntity(textToAppend.getBytes()));
@@ -81,8 +75,7 @@ public class TestPatchInvalidRequests extends TestParent {
 
             patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-            patchRequest.addHeader("X-UPDATE","INSERT "+"cucu");
+            patchRequest.addHeader("X-UPDATE", "INSERT " + "cucu");
 
             textToAppend = "FGH";
             patchRequest.setEntity(new ByteArrayEntity(textToAppend.getBytes()));
@@ -92,8 +85,7 @@ public class TestPatchInvalidRequests extends TestParent {
 
             patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-            patchRequest.addHeader("X-UPDATE","INSERT "+"-1");
+            patchRequest.addHeader("X-UPDATE", "INSERT " + "-1");
 
             textToAppend = "FGH";
             patchRequest.setEntity(new ByteArrayEntity(textToAppend.getBytes()));
@@ -124,9 +116,8 @@ public class TestPatchInvalidRequests extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-            int start = 1,len=33;
-            patchRequest.addHeader("X-UPDATE", "REMOVE " + start+" "+len);
+            int start = 1, len = 33;
+            patchRequest.addHeader("X-UPDATE", "REMOVE " + start + " " + len);
 
             try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {
                 assertEquals(patchResponse.getStatusLine().getStatusCode(), HttpStatus.BAD_REQUEST.value());
@@ -134,9 +125,8 @@ public class TestPatchInvalidRequests extends TestParent {
 
             patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             start = 1;
-            patchRequest.addHeader("X-UPDATE", "REMOVE " + start+" "+" abc");
+            patchRequest.addHeader("X-UPDATE", "REMOVE " + start + " " + " abc");
 
             try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {
                 assertEquals(patchResponse.getStatusLine().getStatusCode(), HttpStatus.BAD_REQUEST.value());
@@ -144,7 +134,6 @@ public class TestPatchInvalidRequests extends TestParent {
 
             patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             patchRequest.addHeader("X-UPDATE", "REMOVE");
 
             try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {

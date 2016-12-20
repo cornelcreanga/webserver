@@ -15,7 +15,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -25,7 +24,7 @@ public class TestPut extends TestParent {
 
     @Test
     public void testPutChunkedBody() throws Exception {
-        String uri = "/cucu/file_put.txt";
+        String uri = "/testputchunked/file_put.txt";
         HttpPut request = new HttpPut("http://" + host + ":" + port + uri);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
@@ -48,7 +47,6 @@ public class TestPut extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
-            request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());
@@ -63,7 +61,7 @@ public class TestPut extends TestParent {
 
     @Test
     public void testPutSimpleBody() throws Exception {
-        String uri = "/சுப்ரமணிய/cucu.txt";
+        String uri = "/testput/test_put.txt";
         HttpPut request = new HttpPut("http://" + host + ":" + port + uri);
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
@@ -80,7 +78,6 @@ public class TestPut extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
-            request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());

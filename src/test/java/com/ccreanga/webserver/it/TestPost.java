@@ -16,7 +16,8 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.util.Base64;
 
-import static com.ccreanga.webserver.http.HttpHeaders.*;
+import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
+import static com.ccreanga.webserver.http.HttpHeaders.LOCATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -25,7 +26,7 @@ public class TestPost extends TestParent {
 
     @Test
     public void testPostChunkedBody() throws Exception {
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/cucu/");
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpostchunked/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
         StringBuilder text = new StringBuilder();
@@ -51,7 +52,6 @@ public class TestPost extends TestParent {
             location = new String(Base64.getDecoder().decode(location));
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
-            request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());
@@ -63,11 +63,9 @@ public class TestPost extends TestParent {
 
     }
 
-
     @Test
-    public void testPostSimpleBody() throws Exception {
-
-        HttpPost request = new HttpPost("http://" + host + ":" + port + "/சுப்ரமணிய/");
+    public void testPostUTF8Path() throws Exception {
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/postசுப்ரமணிய/");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.setHeader(CONTENT_TYPE, "text/plain");
         final String text = "test text";
@@ -88,7 +86,42 @@ public class TestPost extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
             request.setProtocolVersion(HttpVersion.HTTP_1_1);
-            request.addHeader(ACCEPT_ENCODING, "gzip,deflate");
+            try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
+                assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
+                String content = Util.readAsUtfString(getResponse.getEntity().getContent());
+                assertEquals(content, text);
+            }
+
+
+        }
+
+
+    }
+
+    @Test
+    public void testPostSimpleBody() throws Exception {
+
+        HttpPost request = new HttpPost("http://" + host + ":" + port + "/testpost/");
+        request.setProtocolVersion(HttpVersion.HTTP_1_1);
+        request.setHeader(CONTENT_TYPE, "text/plain");
+        final String text = "test text";
+
+        request.setEntity(new ByteArrayEntity(text.getBytes()));
+
+        try (CloseableHttpResponse response = httpclient.execute(request)) {
+            StatusLine statusLine = response.getStatusLine();
+            HttpEntity entity = response.getEntity();
+            String entityContent = Util.readAsUtfString(entity.getContent());
+
+            assertEquals(statusLine.getStatusCode(), HttpStatus.CREATED.value());
+            assertEquals(entityContent, "");
+            assertNotNull(response.getFirstHeader(LOCATION));
+            String location = response.getFirstHeader(LOCATION).getValue();
+            assertNotNull(location);
+            location = new String(Base64.getDecoder().decode(location));
+
+            HttpGet getRequest = new HttpGet("http://" + host + ":" + port + location);
+            request.setProtocolVersion(HttpVersion.HTTP_1_1);
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());

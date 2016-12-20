@@ -53,6 +53,10 @@ public class PutHandler implements HttpMethodHandler {
         try {
             Path path = Paths.get(cfg.getServerRootFolder() + uri);
             File file = path.toFile();
+            if (file.getName().startsWith(".")){
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot have . in filename", out);
+                return;
+            }
             if ((file.exists()) && (file.isDirectory())){
                 writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot overwrite folder", out);
                 return;
@@ -73,6 +77,7 @@ public class PutHandler implements HttpMethodHandler {
 
             if (!copyRequestBody(request, out, responseHeaders, md,false, tempFile)) return;
 
+            FileUtil.removeMd5(file);
             if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
             FileUtil.createMD5file(file,md);

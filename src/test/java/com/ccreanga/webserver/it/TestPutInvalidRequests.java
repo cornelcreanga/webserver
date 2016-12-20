@@ -15,7 +15,7 @@ import java.net.Socket;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
 
-public class TestPutInvalidRequests extends TestParent{
+public class TestPutInvalidRequests extends TestParent {
 
     @Test
     public void testForbiddenURI() throws Exception {

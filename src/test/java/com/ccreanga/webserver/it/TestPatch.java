@@ -12,7 +12,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.junit.Test;
 
-import static com.ccreanga.webserver.http.HttpHeaders.ACCEPT_ENCODING;
 import static com.ccreanga.webserver.http.HttpHeaders.CONTENT_TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -38,8 +37,7 @@ public class TestPatch extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-            patchRequest.addHeader("X-UPDATE","APPEND");
+            patchRequest.addHeader("X-UPDATE", "APPEND");
 
             final String textToAppend = "FGH";
             patchRequest.setEntity(new ByteArrayEntity(textToAppend.getBytes()));
@@ -50,12 +48,11 @@ public class TestPatch extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             getRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            getRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());
-                assertEquals(content, text+textToAppend);
+                assertEquals(content, text + textToAppend);
             }
 
         }
@@ -83,9 +80,8 @@ public class TestPatch extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             int index = 1;
-            patchRequest.addHeader("X-UPDATE","INSERT "+index);
+            patchRequest.addHeader("X-UPDATE", "INSERT " + index);
 
             final String textToAppend = "FGH";
             patchRequest.setEntity(new ByteArrayEntity(textToAppend.getBytes()));
@@ -96,12 +92,11 @@ public class TestPatch extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             getRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            getRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());
-                assertEquals(content, text.substring(0,index)+textToAppend+text.substring(index));
+                assertEquals(content, text.substring(0, index) + textToAppend + text.substring(index));
             }
 
         }
@@ -127,7 +122,6 @@ public class TestPatch extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
             int index = 1;
             patchRequest.addHeader("X-UPDATE", "REMOVE " + index);
 
@@ -137,7 +131,6 @@ public class TestPatch extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             getRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            getRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
@@ -166,9 +159,8 @@ public class TestPatch extends TestParent {
 
             HttpPatch patchRequest = new HttpPatch("http://" + host + ":" + port + uri);
             patchRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            patchRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
-            int start = 1,len=3;
-            patchRequest.addHeader("X-UPDATE", "REMOVE " + start+" "+len);
+            int start = 1, len = 3;
+            patchRequest.addHeader("X-UPDATE", "REMOVE " + start + " " + len);
 
             try (CloseableHttpResponse patchResponse = httpclient.execute(patchRequest)) {
                 assertEquals(patchResponse.getStatusLine().getStatusCode(), HttpStatus.NO_CONTENT.value());
@@ -176,12 +168,11 @@ public class TestPatch extends TestParent {
 
             HttpGet getRequest = new HttpGet("http://" + host + ":" + port + uri);
             getRequest.setProtocolVersion(HttpVersion.HTTP_1_1);
-            getRequest.addHeader(ACCEPT_ENCODING, "gzip,deflate");
 
             try (CloseableHttpResponse getResponse = httpclient.execute(getRequest)) {
                 assertEquals(getResponse.getStatusLine().getStatusCode(), HttpStatus.OK.value());
                 String content = Util.readAsUtfString(getResponse.getEntity().getContent());
-                assertEquals(content, text.substring(0, start)+text.substring(start+len));
+                assertEquals(content, text.substring(0, start) + text.substring(start + len));
             }
 
         }
