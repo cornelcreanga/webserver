@@ -2,11 +2,11 @@ Java  Web server
 ===================
 ---------------
 
-Simple Web server delivering static content, implemented mostly for fun/exercise. It has very few external dependencies (only for logging and template processing)
+Simple Web server delivering static content and allowing file uploads, implemented mostly for fun/exercise. It has very few external dependencies (only for logging and template processing)
  
-Right now it only support GET/HEAD/OPTIONS methods. It is a simple multithreaded Java server using a synchronous I/O single connection per thread model.
+It supports GET/HEAD/POST/PUT/DELETE/PATCH/OPTIONS/TRACE/CONNECT methods. It is a simple multithreaded Java server using a synchronous I/O single connection per thread model.
  
-It only supports HTTP 1.0 and HTTP 1.1. The RFC implementation is work in progress (see below).
+HTTP 0.9 is not supported - only HTTP 1.0 and HTTP 1.1. The RFC implementation is work in progress (see below).
 
 Requirements
 ------------
@@ -27,7 +27,8 @@ The following properties can be configured
 |requestTimeoutSeconds |Timeout for keep-alive connections, it should belong in [1..3600]    |5  |
 |requestWaitingQueueSize | Thread pool waiting queue, it should belong in [1..3600]   |64  |
 |requestEtag | Indicates if the server should generate etags - Right now it only supports two values: none/weak (strong is not yet implemented)   | weak |
-|requestMaxLines | The maximum amount of headers, it should belong in [8..65535]   |200  |
+|rootFolderWritable| Is the root folder writable? It makes sense for POST/PUT/DELETE/PATCH methods||
+|requestMessageBodyMaxSize | Maximum amount of request body size. Makes sense for PUT/POST/PATCH requests. It should belong in [1048576..17179869184]   |200  |
 |requestMaxLineLength | The maximum number of lines from a request, it should belong in [256..65535]   |1024  |
 |requestMaxHeaders  | The maximum amount of headers, it should belong in [8..65535]   | 64 |
 |verbose  | If true the server will display debug information   | false |
@@ -37,13 +38,14 @@ Features
 =======
 | Name   |      Implemented      |  Notes
 |----------|:-------------:|------:|
-|Supported methods|GET, HEAD, OPTIONS||
+|Supported methods|GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, TRACE, CONNECT||
 |Robust request parsing |  yes  | It should handle properly legacy request/invalid requests |
 |Scalability|average |1 thread per socket|
 |Keep alive connection|yes|Both HTTP 1.0 and HTTP 1.1|
-|Chunked streaming|yes|for writing the HTTP 1.1 response|
-|HTTP conditionals|yes||
-|Etag generation|partial|only weak etags|
+|Chunked streaming|yes|supported for both request and response|
+|HTTP conditionals|yes| |
+|Ranged requests|yes| |
+|Etag generation|yes|based on file last modification date|
 |Access log|yes|Will be generated in the main folder, location can't be customized for the moment|
 |Compressed content|yes|only for HTTP 1.1 and only gzip and deflate|
 |Directory indexing|yes|HTML or JSON depending on the ACCEPT header|
