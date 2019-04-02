@@ -27,6 +27,8 @@ import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
+import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
+import static com.ccreanga.webserver.http.HttpStatus.NOT_FOUND;
 
 public class DeleteHandler implements HttpMethodHandler {
 
@@ -51,7 +53,7 @@ public class DeleteHandler implements HttpMethodHandler {
         try {
             Path path = Paths.get(cfg.getServerRootFolder() + uri);
             if (!path.toFile().exists()) {
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.NOT_FOUND, "not found", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, NOT_FOUND, "not found", out);
                 return;
 
             }
@@ -87,7 +89,7 @@ public class DeleteHandler implements HttpMethodHandler {
 
         } catch (InvalidPathException e) {
             serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "invalid characters", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "invalid characters", out);
             return;
         }
 

@@ -18,56 +18,63 @@ public class Context {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public Context setUuid(UUID uuid) {
         this.uuid = uuid;
+        return this;
     }
 
     public String getIp() {
         return ip;
     }
 
-    public void setIp(String ip) {
+    public Context setIp(String ip) {
         this.ip = ip;
+        return this;
     }
 
     public String getUser() {
         return user;
     }
 
-    public void setUser(String user) {
+    public Context setUser(String user) {
         this.user = user;
+        return this;
     }
 
     public String getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public Context setDate(String date) {
         this.date = date;
+        return this;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public Context setUrl(String url) {
         this.url = url;
+        return this;
     }
 
     public String getStatusCode() {
         return statusCode;
     }
 
-    public void setStatusCode(String statusCode) {
+    public Context setStatusCode(String statusCode) {
         this.statusCode = statusCode;
+        return this;
     }
 
     public String getContentLength() {
         return contentLength;
     }
 
-    public void setContentLength(String contentLength) {
+    public Context setContentLength(String contentLength) {
         this.contentLength = contentLength;
+        return this;
     }
 
     @Override

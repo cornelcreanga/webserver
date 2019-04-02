@@ -23,8 +23,7 @@ import java.util.zip.GZIPOutputStream;
 import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
-import static com.ccreanga.webserver.http.HttpStatus.PARTIAL_CONTENT;
-import static com.ccreanga.webserver.http.HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE;
+import static com.ccreanga.webserver.http.HttpStatus.*;
 
 /**
  * Get handler. Right now the RFC's are not entirely implemented (todo - add details)
@@ -47,7 +46,7 @@ public class GetHandler implements HttpMethodHandler {
         if (request.getLength() > 0) {
             long skipped = request.getBody().skip(request.getLength());
             if (request.getLength() != skipped) {//invalid http request
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "body longer than the content lenght header", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "body longer than the content lenght header", out);
                 return;
             }
         } else if (request.isChunked()) {//chunkedstream
@@ -63,7 +62,7 @@ public class GetHandler implements HttpMethodHandler {
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
         if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing host header", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "missing host header", out);
             return;
         }
 
@@ -73,10 +72,10 @@ public class GetHandler implements HttpMethodHandler {
         try {
             file = FileManager.getInstance().getFile(configuration.getServerRootFolder() + resource);
         } catch (ForbiddenException e) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.FORBIDDEN, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, FORBIDDEN, "", out);
             return;
         } catch (NotFoundException e) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.NOT_FOUND, "", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, NOT_FOUND, "", out);
             return;
         }
 
@@ -111,7 +110,7 @@ public class GetHandler implements HttpMethodHandler {
 
         String fileInfo = representation.getFileInfo(file, cfg, extendedInfo);
 
-        writeResponseLine(HttpStatus.OK, out);
+        writeResponseLine(OK, out);
 
         ContextHolder.get().setContentLength("" + fileInfo.length());
         responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? "" + fileInfo.length() : "0");
@@ -163,7 +162,7 @@ public class GetHandler implements HttpMethodHandler {
             } else {
                 //evaluate the conditionals.
                 HttpStatus statusAfterConditionals = HttpConditionals.evaluateConditional(request, etag, modifiedDate);
-                if (!statusAfterConditionals.equals(HttpStatus.OK)) {
+                if (!statusAfterConditionals.equals(OK)) {
                     responseHeaders.removeHeader(CONTENT_ENCODING);
 
                     ContextHolder.get().setContentLength("0");
@@ -205,7 +204,7 @@ public class GetHandler implements HttpMethodHandler {
 
 
             //write status+headers
-            writeResponseLine(shouldSendRange ? HttpStatus.PARTIAL_CONTENT : HttpStatus.OK, out);
+            writeResponseLine(shouldSendRange ? PARTIAL_CONTENT : OK, out);
             writeHeaders(responseHeaders, out);
             //the chunks will have the length equal with ByteStreams.BUF_SIZE (or less)
             OutputStream enclosed = new ChunkedOutputStream(out);
@@ -231,7 +230,7 @@ public class GetHandler implements HttpMethodHandler {
             String length = String.valueOf(file.length());
             ContextHolder.get().setContentLength(length);
             responseHeaders.putHeader(CONTENT_LENGTH, writeBody ? length : "0");
-            writeResponseLine(HttpStatus.OK, out);
+            writeResponseLine(OK, out);
             writeHeaders(responseHeaders, out);
             if (writeBody) {
                 IOUtil.copy(new FileInputStream(file), out);
@@ -254,7 +253,7 @@ public class GetHandler implements HttpMethodHandler {
 
         String folderRepresentation = representation.folderRepresentation(file, new File(configuration.getServerRootFolder()));
 
-        writeResponseLine(HttpStatus.OK, out);
+        writeResponseLine(OK, out);
         if (request.isHTTP1_1()) {
             //for http1 write chunked
             responseHeaders.putHeader(TRANSFER_ENCODING, "chunked");

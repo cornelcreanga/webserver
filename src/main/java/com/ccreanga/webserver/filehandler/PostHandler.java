@@ -9,6 +9,7 @@ import com.ccreanga.webserver.logging.ContextHolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +22,7 @@ import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
+import static com.ccreanga.webserver.http.HttpStatus.*;
 
 public class PostHandler implements HttpMethodHandler {
 
@@ -46,14 +48,14 @@ public class PostHandler implements HttpMethodHandler {
         if (contentTypeIsFormRelated(request, out, responseHeaders, contentType)) return;
 
         if ((contentType == null) || contentType.length() == 0) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "content type is mandatory for POST", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "content type is mandatory for POST", out);
             return;
         }
 
 
         String extension = Mime.getExtension(contentType);
         if (extension == null) {
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "content type " + contentType + " is not known", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "content type " + contentType + " is not known", out);
             return;
         }
         String uri = request.getUri();
@@ -72,15 +74,15 @@ public class PostHandler implements HttpMethodHandler {
             if (!copyRequestBody(request, out, responseHeaders, md, true, file)) return;
 
             FileUtil.createMD5file(file, md);
-            writeResponseLine(HttpStatus.CREATED, out);
+            writeResponseLine(CREATED, out);
 
-            responseHeaders.putHeader(LOCATION, new String(Base64.getEncoder().encode((uri + file.getName()).getBytes("UTF-8"))));
+            responseHeaders.putHeader(LOCATION, new String(Base64.getEncoder().encode((uri + file.getName()).getBytes(StandardCharsets.UTF_8))));
             writeHeaders(responseHeaders, out);
             ContextHolder.get().setContentLength("-");
 
         } catch (InvalidPathException e) {
             serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "invalid characters", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "invalid characters", out);
             return;
         }
 

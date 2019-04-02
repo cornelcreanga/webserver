@@ -1,10 +1,8 @@
 package com.ccreanga.webserver.common;
 
 
-import com.ccreanga.webserver.InternalException;
 import com.ccreanga.webserver.TooManyEntriesException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -143,10 +141,6 @@ public class StringUtil {
     }
 
     public static String decodeUTF8(String s) {
-        try {
-            return URLDecoder.decode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new InternalException("unknown encoding, this should never happen");
-        }
+        return URLDecoder.decode(s, StandardCharsets.UTF_8);
     }
 }

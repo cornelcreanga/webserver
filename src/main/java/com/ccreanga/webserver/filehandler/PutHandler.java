@@ -22,6 +22,8 @@ import static com.ccreanga.webserver.common.DateUtil.FORMATTER_RFC822;
 import static com.ccreanga.webserver.filehandler.HandlerUtils.*;
 import static com.ccreanga.webserver.http.HttpHeaders.*;
 import static com.ccreanga.webserver.http.HttpMessageWriter.*;
+import static com.ccreanga.webserver.http.HttpStatus.BAD_REQUEST;
+import static com.ccreanga.webserver.http.HttpStatus.NO_CONTENT;
 
 public class PutHandler implements HttpMethodHandler {
 
@@ -52,15 +54,15 @@ public class PutHandler implements HttpMethodHandler {
             Path path = Paths.get(cfg.getServerRootFolder() + uri);
             File file = path.toFile();
             if (file.getName().startsWith(".")) {
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot have . in filename", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "cannot have . in filename", out);
                 return;
             }
             if ((file.exists()) && (file.isDirectory())) {
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "cannot overwrite folder", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "cannot overwrite folder", out);
                 return;
             }
             if (uri.endsWith("/")) {
-                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "missing file name", out);
+                writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "missing file name", out);
                 return;
             }
 
@@ -79,14 +81,14 @@ public class PutHandler implements HttpMethodHandler {
             if (!renameTemporaryToMainFile(request, out, responseHeaders, file, tempFile)) return;
 
             FileUtil.createMD5file(file, md);
-            writeResponseLine(HttpStatus.NO_CONTENT, out);
+            writeResponseLine(NO_CONTENT, out);
 
             writeHeaders(responseHeaders, out);
             ContextHolder.get().setContentLength("-");
 
         } catch (InvalidPathException e) {
             serverLog.warning("Connection " + ContextHolder.get().getUuid() + ", message " + e.getMessage());
-            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, HttpStatus.BAD_REQUEST, "invalid characters", out);
+            writeErrorResponse(request.getHeader(ACCEPT), responseHeaders, BAD_REQUEST, "invalid characters", out);
             return;
         }
 

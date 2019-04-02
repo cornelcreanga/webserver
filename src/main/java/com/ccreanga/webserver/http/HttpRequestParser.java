@@ -140,7 +140,7 @@ public class HttpRequestParser {
      * @throws InvalidMessageException - if the request cannot be parsed to a valid HttpRequestMessage object
      */
     public HttpRequestMessage parseRequest(InputStream in, Configuration cfg) throws IOException, InvalidMessageException {
-        //            //todo - it would be nice to also prevent the "lazy" request
+        //todo - it would be nice to also prevent the "lazy" request - aka very slow connections
 
         int maxLineLength = cfg.getRequestMaxLineLength();
         int maxHeaders = cfg.getRequestMaxHeaders();
@@ -165,7 +165,7 @@ public class HttpRequestParser {
             //todo - check for gzip/deflate in transfer encoding
             chunk = encoding.contains("chunked");
             if ((chunk) && (encoding.lastIndexOf("chunked") != (encoding.length() - 7)))//chunked is not the last encoding
-                throw new InvalidMessageException("invalid encoding header", HttpStatus.BAD_REQUEST);
+                throw new InvalidMessageException("invalid encoding header", BAD_REQUEST);
 
         }
 
