@@ -32,10 +32,7 @@ public class PostHandler implements HttpMethodHandler {
     public void handleResponse(HttpRequestMessage request, Configuration cfg, OutputStream out) throws IOException {
 
         HttpHeaders responseHeaders = new HttpHeaders();
-        String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
-        responseHeaders.putHeader(DATE, currentDate.replace("UTC", "GMT"));
-        responseHeaders.putHeader(CONNECTION, "Keep-Alive");
-        responseHeaders.putHeader(VARY, "Accept-Encoding");
+        Common.addMandatoryHeaders(responseHeaders);
 
         if (!hostHeaderIsPresent(request, out, responseHeaders)) return;
 

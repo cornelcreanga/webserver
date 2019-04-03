@@ -55,10 +55,7 @@ public class GetHandler implements HttpMethodHandler {
         }
 
 
-        String currentDate = DateUtil.currentDate(FORMATTER_RFC822);
-        responseHeaders.putHeader(DATE, currentDate.replace("UTC", "GMT"));
-        responseHeaders.putHeader(CONNECTION, "Keep-Alive");
-        responseHeaders.putHeader(VARY, "Accept-Encoding");
+        Common.addMandatoryHeaders(responseHeaders);
 
         //http://www8.org/w8-papers/5c-protocols/key/key.html
         if ((!request.hasHeader(HOST)) && (request.isHTTP1_1())) {//host is mandatory
